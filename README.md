@@ -1,5 +1,15 @@
 # CMPUT 404 Project
 
+## Contributors
+```
+Musaed Alsobaie  
+Carrol Jirakul  
+Alex Li  
+Carlo Oliva  
+Weichen Wang  
+
+```
+
 ## Working in this repository
 When working on a new feature or issue please follow the following steps.
 
