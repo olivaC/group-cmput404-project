@@ -15,22 +15,37 @@ class UserFactory(DjangoModelFactory):
 class AuthorModelTest(TestCase):
 
     def setUp(self):
-        UserFactory(username='defaultUser', email='defaultEmail')
-
-    def test_local_author_created(self):
-        user1 = UserFactory()
-        self.assertEqual(user1.user.username, 'testuser1')
-
-    def test_local_author_full_name(self):
-        user = User.objects.get(email='defaultEmail')
+        user = UserFactory(username='defaultUser', email='defaultEmail')
         user.first_name = 'defaultFirst'
         user.last_name = 'defaultLast'
         user.save()
 
+    def test_local_author_created(self):
+        user2 = UserFactory()
+        self.assertEqual(user2.user.username, 'testuser2')
+
+    def test_local_author_full_name(self):
+        author = Author.objects.get(user__email='defaultEmail')
+        self.assertEqual(author.full_name, 'defaultFirst defaultLast')
+
+    def test_local_author_description(self):
+        author = Author.objects.get(user__email='defaultEmail')
+        author.description = 'Test Description'
+        author.save()
+
+        self.assertEqual(author.description, 'Test Description')
+
+    def test_local_author_change_name(self):
         author = Author.objects.get(user__email='defaultEmail')
 
-        self.assertEqual(user.get_full_name(), 'defaultFirst defaultLast')
         self.assertEqual(author.full_name, 'defaultFirst defaultLast')
+
+        author.user.first_name = 'NewFirst'
+        author.user.last_name = 'NewLast'
+        author.user.save()
+
+        # Only for local authors
+        self.assertEqual(author.full_name, 'NewFirst NewLast')
 
     def test_local_author_host_url(self):
         user1 = UserFactory()

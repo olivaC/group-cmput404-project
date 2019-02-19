@@ -14,13 +14,14 @@ class Author(models.Model):
     """
     user = models.OneToOneField(User, related_name='user', on_delete=models.CASCADE, blank=True, null=True)
     username = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
     host_url = models.URLField(blank=True, null=True)  # Url of different hosts
     github_url = models.CharField(max_length=100, blank=True, null=True)  # Optional
 
     @property
     def full_name(self):
         if self.user:
-            return self.user.get_full_name( )
+            return self.user.get_full_name()
 
     def __str__(self):
         return "{} - {}".format(str(self.username), self.host_url)
@@ -52,7 +53,7 @@ class FriendRequest(models.Model):
 
         # Check and make a Friend model
         requester_models = FriendRequest.objects.filter(requester=self.requestee).filter(acknowledged=True).filter(
-                status=True)
+            status=True)
         if requester_models:
             Friend.objects.create(friend1=self.requester, friend2=self.requestee)
 
