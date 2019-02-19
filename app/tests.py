@@ -20,9 +20,11 @@ class AuthorModelTest(TestCase):
         user.last_name = 'defaultLast'
         user.save()
 
+        Author.objects.create(username="RemoteAuthor", host_url="remoteurl.com")
+
     def test_local_author_created(self):
-        user2 = UserFactory()
-        self.assertEqual(user2.user.username, 'testuser2')
+        user = UserFactory()
+        self.assertEqual(user.user.username, 'testuser2')
 
     def test_local_author_full_name(self):
         author = Author.objects.get(user__email='defaultEmail')
@@ -30,6 +32,8 @@ class AuthorModelTest(TestCase):
 
     def test_local_author_description(self):
         author = Author.objects.get(user__email='defaultEmail')
+        self.assertEqual(author.description, None)
+
         author.description = 'Test Description'
         author.save()
 
@@ -59,9 +63,13 @@ class AuthorModelTest(TestCase):
         self.assertEqual(user0.user.github_url, 'giturl@testgit.com')
 
     def test_remote_author_created(self):
-        # TODO: test_remote_author_created
-        pass
+        author = Author.objects.get(username="RemoteAuthor")
+        self.assertEqual(author.username, 'RemoteAuthor')
 
     def test_remote_author_host_url(self):
-        # TODO: test_remote_author_host_url
-        pass
+        author = Author.objects.get(username="RemoteAuthor")
+        self.assertEqual(author.host_url, 'remoteurl.com')
+
+    def test_remote_author_no_user(self):
+        author = Author.objects.get(username="RemoteAuthor")
+        self.assertEqual(author.user, None)
