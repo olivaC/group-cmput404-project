@@ -73,3 +73,87 @@ class AuthorModelTest(TestCase):
     def test_remote_author_no_user(self):
         author = Author.objects.get(username="RemoteAuthor")
         self.assertEqual(author.user, None)
+
+
+class PostModelTest(TestCase):
+
+    def setUp(self):
+        user = UserFactory(username='defaultUser', email='defaultEmail')
+        user.first_name = 'defaultFirst'
+        user.last_name = 'defaultLast'
+        user.save()
+
+        Author.objects.create(username="RemoteAuthor", host_url="remoteurl.com")
+
+    def test_post_local_author_exists(self):
+        author = Author.objects.get(username="defaultUser")
+        text = "Test post"
+        post = Post.objects.create(author=author, text=text)
+        self.assertEqual(post.author, author)
+
+    def test_post_remote_author_exists(self):
+        author = Author.objects.get(username="RemoteAuthor")
+        text = "Test post"
+        post = Post.objects.create(author=author, text=text)
+        self.assertEqual(post.author, author)
+
+    def test_post_datetime_exists(self):
+        author = Author.objects.get(username="RemoteAuthor")
+        text = "Test post"
+        post = Post.objects.create(author=author, text=text)
+        self.assertTrue(post.date_created)
+        self.assertEqual(str(post.date_created.__class__), "<class 'datetime.datetime'>")
+
+    def test_post_text_exists(self):
+        author = Author.objects.get(username="RemoteAuthor")
+        text = "Test post"
+        post = Post.objects.create(author=author, text=text)
+        self.assertEqual(post.text, text)
+        post.text = "Changed Text"
+        post.save()
+        self.assertEqual(post.text, "Changed Text")
+
+    def test_post_private(self):
+        author = Author.objects.get(username="RemoteAuthor")
+        text = "Test post"
+        post = Post.objects.create(author=author, text=text)
+        self.assertTrue(post.private)
+
+    def test_post_public(self):
+        author = Author.objects.get(username="RemoteAuthor")
+        text = "Test post"
+        post = Post.objects.create(author=author, text=text)
+        self.assertTrue(post.private)
+
+        post.private = False
+        post.save()
+        self.assertFalse(post.private)
+
+    def test_post_multiple_exists(self):
+        author = Author.objects.get(username="RemoteAuthor")
+        text1 = "Test post 1"
+        text2 = "Test post 2"
+        Post.objects.create(author=author, text=text1)
+        Post.objects.create(author=author, text=text2)
+
+        posts = Post.objects.filter(author=author).order_by('id')
+        post_len = 2
+        self.assertEqual(len(posts), post_len)
+
+    def test_post_multiple_delete(self):
+        author = Author.objects.get(username="RemoteAuthor")
+        text1 = "Test post 1"
+        text2 = "Test post 2"
+        Post.objects.create(author=author, text=text1)
+        Post.objects.create(author=author, text=text2)
+
+        posts = Post.objects.filter(author=author).order_by('id')
+        post_len = 2
+        self.assertEqual(len(posts), post_len)
+
+        post = posts.filter(id=1)
+        post.delete()
+
+        posts = Post.objects.filter(author=author).order_by('id')
+
+        self.assertEqual(len(posts), 1)

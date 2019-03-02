@@ -73,8 +73,15 @@ class Friend(models.Model):
 class Post(models.Model):
     # TODO: Finish this class
     author = models.ForeignKey(Author, related_name='authorPost', on_delete=models.CASCADE)
-    commenter = models.ForeignKey(Author, related_name='authorCommenter', on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now=True)
+    private = models.BooleanField(default=True)
+    text = models.TextField(default="")
+
+    def __str__(self):
+        return "{} - {} - {}".format(self.author, self.date_created, self.private)
+
+    def __repr__(self):
+        return "{} - {} - {}".format(self.author, self.date_created, self.private)
 
 
 class Comment(models.Model):
