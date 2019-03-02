@@ -1,6 +1,8 @@
 import factory
 from django.test import TestCase
 from rest_framework.test import APITestCase
+from rest_framework import status
+from .serializers import AuthorSerializers
 from app.models import *
 from factory.django import DjangoModelFactory
 from django.contrib.auth.models import User
@@ -175,3 +177,22 @@ class UserApiTest(APITestCase):
         req = self.client.get('/api/users/')
         self.assertEqual(req.status_code, 200)
         self.assertEqual(len(req.data), 5)
+
+
+class AuthorApiTest(APITestCase):
+    def setUp(self):
+        Author.objects.create(
+            username='author1', description='description1')
+        Author.objects.create(
+            username='author2', description='description2')
+        Author.objects.create(
+            username='author3', description='description3')
+
+    def tst_get_all_authors(self):
+        # get API response
+        response = self.client.get('/api/author/')
+        # get data from db
+        authors = Author.objects.all()
+        serializer = AuthorSerializers(authors, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
