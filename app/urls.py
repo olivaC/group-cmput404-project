@@ -1,14 +1,12 @@
-from django.contrib import admin
-from django.urls import path, include, re_path
+from django.urls import path, include
 from rest_framework import routers
-from app.views import api_views,views
-from SocialDistribution import settings
-
+from app.views import api_views, views
 
 app_name = 'app'
 
 router = routers.DefaultRouter()
 router.register('author', api_views.AuthorView)
+router.register('user', api_views.UserView)
 
 urlpatterns = [
     path('api/', include(router.urls)),
