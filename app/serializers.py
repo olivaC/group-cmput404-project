@@ -21,3 +21,9 @@ class AuthorSerializers(serializers.ModelSerializer):
             'user',
         )
         depth = 2
+
+
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ('author', 'private', 'text', 'date_created')

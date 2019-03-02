@@ -12,7 +12,15 @@ class AuthorView(viewsets.ModelViewSet):
 
 class UserView(viewsets.ModelViewSet):
     """
-    The api view to retrieve author.
+    The api view to retrieve user.
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+
+class PostView(viewsets.ModelViewSet):
+    """
+    The api view to retrieve posts.
+    """
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
