@@ -1,7 +1,9 @@
 import factory
 from django.test import TestCase
+from rest_framework.test import APITestCase
 from app.models import *
 from factory.django import DjangoModelFactory
+from django.contrib.auth.models import User
 
 
 class UserFactory(DjangoModelFactory):
@@ -157,3 +159,19 @@ class PostModelTest(TestCase):
         posts = Post.objects.filter(author=author).order_by('id')
 
         self.assertEqual(len(posts), 1)
+
+
+"""
+    API TESTS
+"""
+
+
+class UserApiTest(APITestCase):
+    def setUp(self):
+        for i in range(5):
+            UserFactory()
+
+    def test_get_all_users(self):
+        req = self.client.get('/api/users/')
+        self.assertEqual(req.status_code, 200)
+        self.assertEqual(len(req.data), 5)
