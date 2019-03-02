@@ -1,6 +1,6 @@
 # CMPUT 404 Project
 
-[![Build Status](https://travis-ci.com/olivaC/group-cmput404-project.svg?branch=1-create-models)](https://travis-ci.com/olivaC/group-cmput404-project)
+[![Build Status](https://travis-ci.com/olivaC/group-cmput404-project.svg?branch=development)](https://travis-ci.com/olivaC/group-cmput404-project)
 
 ## Contributors
 ```
