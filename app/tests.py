@@ -2,7 +2,8 @@ import factory
 from django.test import TestCase
 from rest_framework.test import APITestCase
 from rest_framework.utils import json
-
+from rest_framework import status
+from .serializers import AuthorSerializers
 from app.models import *
 from factory.django import DjangoModelFactory
 from django.contrib.auth.models import User
@@ -219,3 +220,21 @@ class PostApiTest(APITestCase):
     def test_post_all_posts_user(self):
         # TODO: Once the user and author login stuff is done.
         pass
+        
+class AuthorApiTest(APITestCase):
+    def setUp(self):
+        Author.objects.create(
+            username='author1', description='description1')
+        Author.objects.create(
+            username='author2', description='description2')
+        Author.objects.create(
+            username='author3', description='description3')
+
+    def test_get_all_authors(self):
+        # get API response
+        response = self.client.get('/api/author/')
+        # get data from db
+        authors = Author.objects.all()
+        serializer = AuthorSerializers(authors, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
