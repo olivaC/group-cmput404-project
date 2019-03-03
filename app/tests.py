@@ -179,6 +179,27 @@ class UserApiTest(APITestCase):
         self.assertEqual(req.status_code, 200)
         self.assertEqual(len(req.data), 5)
 
+    def test_post_user_api(self):
+        valid_post = {
+            "id": 6,
+            "email": "testuser6@404group5.com",
+            "username": "testuser6",
+            "password": 'testpassword',
+        }
+        post = User.objects.filter(id=6)
+        self.assertEqual(len(post), 0)
+
+        response = self.client.post(
+            '/api/users/',
+            data=json.dumps(valid_post),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_get_one_user(self):
+        req = self.client.get('/api/users/1/')
+        self.assertEqual(req.status_code, 200)
+
 
 class PostApiTest(APITestCase):
     def setUp(self):
@@ -220,7 +241,8 @@ class PostApiTest(APITestCase):
     def test_post_all_posts_user(self):
         # TODO: Once the user and author login stuff is done.
         pass
-        
+
+
 class AuthorApiTest(APITestCase):
     def setUp(self):
         Author.objects.create(
@@ -229,6 +251,25 @@ class AuthorApiTest(APITestCase):
             username='author2', description='description2')
         Author.objects.create(
             username='author3', description='description3')
+
+    def test_post_author_api(self):
+        valid_post = {
+            'username': 'author4',
+            'description': 'description4',
+        }
+        post = Author.objects.filter(username='author4')
+        self.assertEqual(len(post), 0)
+
+        response = self.client.post(
+            '/api/author/',
+            data=json.dumps(valid_post),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_get_one_author(self):
+        req = self.client.get('/api/author/1/')
+        self.assertEqual(req.status_code, 200)
 
     def test_get_all_authors(self):
         # get API response
