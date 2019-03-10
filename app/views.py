@@ -15,6 +15,9 @@ def register(request):
 def login(request):
     return render(request, 'login.html')
 
+def logout(request):
+    return render(request, 'login.html')    
+
 def verify_register(request):
     username = request.POST['username']
 
@@ -41,5 +44,5 @@ def verify_login(request):
         else:
             return HttpResponseRedirect(reverse('app:index', args=(username,)))
 
-    elif(request.GET['submit'] == "Create an Account!"):
+    elif(request.GET['submit'] == "Not Registered yet? Create an Account!"):
         return HttpResponseRedirect(reverse('app:register', args=()))
