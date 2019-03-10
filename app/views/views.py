@@ -25,8 +25,9 @@ def login_view(request):
         if form.is_valid():
             user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password'])
             login(request, user)
-            redirect_url = request.POST.get('next', reverse("app:index"))
-            return HttpResponseRedirect(unquote_redirect_url(redirect_url))
+            #redirect_url = request.POST.get('next', reverse("app:index"))
+            #return HttpResponseRedirect(unquote_redirect_url(redirect_url))
+            return render(request, 'index.html') # render is simpler. I use redirect when there is a post
         else:
             request.context['next'] = unquote_redirect_url(request.GET.get('next', reverse("web:index")))
     else:
@@ -46,4 +47,5 @@ def logout_view(request):
     :return: The index page.
     """
     logout(request)
-    return HttpResponseRedirect(request.GET.get(next, reverse("app:index")))
+    #return HttpResponseRedirect(request.GET.get(next, reverse("app:index")))
+    return render(request, 'index.html') # render is simpler
