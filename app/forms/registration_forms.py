@@ -1,6 +1,32 @@
 from django import forms
 from django.contrib.auth import authenticate
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+
+
+class UserCreateForm(UserCreationForm):
+    first_name = forms.CharField(max_length=30, )
+    last_name = forms.CharField(max_length=30, )
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'password1', 'password2',)
+
+    def clean(self):
+        username = self.cleaned_data['username']
+
+        try:
+            user = User.objects.get(username=username)
+        except user.DoesNotExist:
+            print('good')
+        print(user)
+        if not user:
+            raise forms.ValidationError(u'Username "%s" is already in use.' % username)
+
+        if self.cleaned_data['password1'] != self.cleaned_data['password2']:
+            raise forms.ValidationError(u'Passwords do not match.')
+
+        return self.cleaned_data
 
 
 class LoginForm(forms.Form):
