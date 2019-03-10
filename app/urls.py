@@ -13,4 +13,6 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('', views.index),
     path('index', views.index, name="index"),
+    path('accounts/login/', views.login_view, name='login'),
+    path('accounts/logout', views.logout_view, name="logout"),
 ]
