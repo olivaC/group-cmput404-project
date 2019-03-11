@@ -36,7 +36,6 @@ def register_view(request):
             request.context['next'] = next
         except:
             request.context['next'] = request.GET.get('next', reverse("app:index"))
-
     else:
         form = UserCreateForm()
         request.context['next'] = request.GET.get('next', reverse("app:index"))
