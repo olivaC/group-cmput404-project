@@ -39,7 +39,7 @@
                         <div class="col-lg-6">
                             <div class="p-5">
                                 <div class="text-center">
-                                    <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+                                    <h1 class="h4 text-gray-900 mb-4">Log in to Team 10 Social Distribution!</h1>
                                 </div>
                                 <form action="" method="post" class="user">
                                     {% csrf_token %}
@@ -69,11 +69,11 @@
                                     {% endif %}
                                 </form>
                                 <hr>
+{#                                <div class="text-center">#}
+{#                                    <a class="small" href="forgot-password.html">Forgot Password?</a>#}
+{#                                </div>#}
                                 <div class="text-center">
-                                    <a class="small" href="forgot-password.html">Forgot Password?</a>
-                                </div>
-                                <div class="text-center">
-                                    <a class="small" href="register.html">Create an Account!</a>
+                                    <a class="small" href="{% url 'app:register' %}">Create an Account!</a>
                                 </div>
                             </div>
                         </div>
