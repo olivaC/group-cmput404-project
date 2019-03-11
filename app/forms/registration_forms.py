@@ -12,22 +12,6 @@ class UserCreateForm(UserCreationForm):
         model = User
         fields = ('username', 'first_name', 'last_name', 'password1', 'password2',)
 
-    def clean(self):
-        username = self.cleaned_data['username']
-
-        try:
-            user = User.objects.get(username=username)
-        except user.DoesNotExist:
-            print('good')
-        print(user)
-        if not user:
-            raise forms.ValidationError(u'Username "%s" is already in use.' % username)
-
-        if self.cleaned_data['password1'] != self.cleaned_data['password2']:
-            raise forms.ValidationError(u'Passwords do not match.')
-
-        return self.cleaned_data
-
 
 class LoginForm(forms.Form):
     """

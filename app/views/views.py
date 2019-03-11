@@ -14,7 +14,6 @@ from app.utilities import unquote_redirect_url
 
 @login_required
 def index(request):
-    print('yar')
     user = request.user
     request.context['user'] = user
     return render(request, 'index.html')
@@ -33,13 +32,11 @@ def register_view(request):
                 user.save()
                 user = authenticate(username=user.username, password=form.cleaned_data.get('password1'))
                 login(request, user)
-                # send_confirmation_email(user)
                 return HttpResponseRedirect(reverse('app:index'))
             request.context['next'] = next
         except:
-            messages.error(request, "Username taken/Passwords do not match")
-            request.context['form'] = form
-            return render(request, 'register.html', request.context)
+            request.context['next'] = request.GET.get('next', reverse("app:index"))
+
     else:
         form = UserCreateForm()
         request.context['next'] = request.GET.get('next', reverse("app:index"))
