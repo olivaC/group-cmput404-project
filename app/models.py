@@ -84,12 +84,15 @@ class Post(models.Model):
         return "{} - {} - {}".format(self.author, self.date_created, self.private)
 
 class Image(models.Model):
-    author = models.ForeignKey(Author, related_name='authorImage', on_delete=models.CASCADE)
-    file = models.FileField(upload_to=get_image_dir)
-
     def get_image_dir(instance, filename):
         authorName = instance.author.username
         return f"images/{authorName}/{filename}"
+
+    author = models.ForeignKey(Author, related_name='authorImage', on_delete=models.CASCADE)
+    private = models.BooleanField(default=True)
+    file = models.FileField(upload_to=get_image_dir)
+
+
 
 class Comment(models.Model):
     # TODO: Finish this class
