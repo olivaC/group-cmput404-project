@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 
 # Create your views here.
 from django.urls import reverse
@@ -41,6 +41,26 @@ def index(request):
     request.context['posts'] = posts
 
     return render(request, 'index.html', request.context)
+
+
+def delete_post(request, id=None):
+
+    post = get_object_or_404(Post, id=id)
+
+    try:
+        if request.method == 'POST':
+            form = PostCreateForm(request.POST)
+            post.delete()
+            # messages.success(request, 'Post deleted')
+            return redirect('../../')
+
+    except Exception as e:
+        messages.warning(request, 'Post could not be deleted')
+
+    form = PostCreateForm()
+    request.context['form'] = form
+
+    return render(request, 'post_delete.html', request.context)
 
 
 def register_view(request):

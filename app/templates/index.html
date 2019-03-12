@@ -40,12 +40,15 @@
                    aria-expanded="true" aria-controls="collapseCardExample">
                     <h6 class="m-0 font-weight-bold text-primary">{{ post.author.username }}
                         - {{ post.date_created }}</h6>
+
                 </a>
                 <!-- Card Content - Collapse -->
                 <div class="collapse show" id="collapseCardExample{{ post.id }}">
                     <div class="card-body">
                         {{ post.text }}
                     </div>
+                    <a href="/delete/{{ post.id }}">Delete this post </a>
+
                 </div>
             </div>
         {% endfor %}

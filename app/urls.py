@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 from app.views import api_views, views
+from django.conf.urls import url
 
 app_name = 'app'
 
@@ -16,4 +17,5 @@ urlpatterns = [
     path('accounts/login/', views.login_view, name='login'),
     path('accounts/logout', views.logout_view, name="logout"),
     path('register', views.register_view, name="register"),
+    url(r'^delete/(?P<id>\d+)/$', views.delete_post, name="delete")
 ]
