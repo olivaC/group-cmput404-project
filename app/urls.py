@@ -16,4 +16,6 @@ urlpatterns = [
     path('accounts/login/', views.login_view, name='login'),
     path('accounts/logout', views.logout_view, name="logout"),
     path('register', views.register_view, name="register"),
+    path('uploadimage', views.upload_image_view, name="uploadimage"),
+    path('images/<str:username>/<str:filename>', views.get_image, name="images"),
 ]

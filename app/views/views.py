@@ -1,8 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
+from app.models import *
+import mimetypes
 
 # Create your views here.
 from django.urls import reverse
@@ -75,3 +78,43 @@ def logout_view(request):
     """
     logout(request)
     return HttpResponseRedirect(request.GET.get(next, reverse("app:index")))
+
+@login_required
+@csrf_exempt
+def upload_image_view(request):
+    """
+    View for uploading an image
+
+    :param request
+    :return: 200 or 500
+    """
+    if request.method == 'POST':
+        imageForm = ImageForm(request.POST, request.FILES)
+        if imageForm.is_valid():
+            image = Image()
+            image.author = Author.objects.get(user=request.user)
+            image.private = request.POST.get("private", True)
+            image.file = request.FILES["file"]
+            image.save()
+            return HttpResponse("True")
+        else:
+            return HttpResponse("Not Valid: " + str(imageForm.errors), status=500)
+    else:
+        return HttpResponse("Must be Post", status=500)
+
+@csrf_exempt
+def get_image(request, username, filename):
+    """
+        
+    """
+    try:
+        path = Image.get_image_dir(username, filename)
+        mimeType = mimetypes.guess_type(path)[0]
+        image = Image.objects.get(file=path)
+        if image.private:
+            #TODO Check is Friend
+            return HttpResponse(status=403)
+        with open(path, "rb") as file:
+            return HttpResponse(file.read(), content_type=mimeType)
+    except:
+        return HttpResponse(status=404)

@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from settings_server import *
+from django.forms import ModelForm
 
 
 class Author(models.Model):
@@ -85,14 +86,19 @@ class Post(models.Model):
 
 class Image(models.Model):
     def get_image_dir(instance, filename):
-        authorName = instance.author.username
-        return f"images/{authorName}/{filename}"
-
+        if isinstance(instance, str):
+            return f"images/{instance}/{filename}"
+        else:
+            authorName = instance.author.username
+            return Image.get_image_dir(authorName, filename)
     author = models.ForeignKey(Author, related_name='authorImage', on_delete=models.CASCADE)
     private = models.BooleanField(default=True)
     file = models.FileField(upload_to=get_image_dir)
 
-
+class ImageForm(ModelForm):
+    class Meta:
+        model = Image
+        fields = ["file", "private"]
 
 class Comment(models.Model):
     # TODO: Finish this class
