@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+
+{% block page_title %}
+    401 Group | My Profile
+{% endblock %}
+
+{% block content %}
+    <h1 class="h3 mb-4 text-gray-800">My Profile</h1>
+    <hr>
+    <img class="img-profile rounded-circle" src="https://source.unsplash.com/QAB-WJcbgJk/60x60">
+    <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+
+    </form>
+{% endblock %}

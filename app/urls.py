@@ -17,6 +17,8 @@ urlpatterns = [
     path('accounts/login/', views.login_view, name='login'),
     path('accounts/logout', views.logout_view, name="logout"),
     path('register', views.register_view, name="register"),
-    path('my-posts', views.my_posts_view, name="myposts"),
+    path('my-posts', views.my_posts_view, name="my_posts"),
+    path('profile', views.profile_view, name="profile"),
+    path('profile/edit/', views.edit_profile, name="edit_profile"),
     url(r'^delete/(?P<id>\d+)/$', views.delete_post, name="delete")
 ]
