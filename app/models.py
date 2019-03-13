@@ -17,10 +17,10 @@ class Author(models.Model):
     """
     user = models.OneToOneField(User, related_name='user', on_delete=models.CASCADE, blank=True, null=True)
     username = models.CharField(max_length=50, unique=True, blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
     host_url = models.URLField(blank=True, null=True)  # Url of different hosts
     github_url = models.CharField(max_length=100, blank=True, null=True)  # Optional
-    author_id = models.UUIDField(default=uuid.uuid4, editable=False, blank=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
     url = models.CharField(max_length=150, blank=True, null=True)
 
     @property
@@ -36,9 +36,9 @@ class Author(models.Model):
         return "{} - {}".format(str(self.username), self.host_url)
 
     def save(self, *args, **kwargs):
-        if not self.author_id:
-            self.author_id = uuid.uuid4()
-        self.url = "{}/author/{}".format(self.host_url, self.author_id)
+        if not self.id:
+            self.id = uuid.uuid4()
+        self.url = "{}/author/{}".format(self.host_url, self.id)
         super(self.__class__, self).save(*args, **kwargs)
 
 

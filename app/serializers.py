@@ -14,13 +14,13 @@ class AuthorSerializers(serializers.ModelSerializer):
         model = Author
         fields = (
             'id',
+            'url',
             'username',
-            'description',
+            'bio',
             'host_url',
             'github_url',
             'user',
         )
-        depth = 2
 
 
 class PostSerializer(serializers.ModelSerializer):
