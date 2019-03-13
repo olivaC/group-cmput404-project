@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 
 # Create your views here.
 from django.urls import reverse
@@ -41,6 +41,55 @@ def index(request):
     request.context['posts'] = posts
 
     return render(request, 'index.html', request.context)
+
+
+@login_required
+def my_posts_view(request):
+    user = request.user
+    request.context['user'] = user
+
+    posts = Post.objects.all().filter(author=user.user).order_by('-id')
+
+    if request.method == 'POST':
+        next = request.POST.get("next", reverse("app:index"))
+        form = PostCreateForm(request.POST)
+        try:
+            if form.is_valid():
+                if form.cleaned_data.get('text'):
+                    Post.objects.create(author=user.user, text=form.cleaned_data.get('text'))
+                    return HttpResponseRedirect(reverse('app:index'))
+            request.context['next'] = next
+            messages.warning(request, 'Cannot post something empty!')
+
+
+        except:
+            request.context['next'] = request.GET.get('next', reverse("app:index"))
+
+    form = PostCreateForm()
+    request.context['form'] = form
+    request.context['posts'] = posts
+
+    return render(request, 'myposts.html', request.context)
+
+
+def delete_post(request, id=None):
+    post = get_object_or_404(Post, id=id)
+
+    try:
+        if request.method == 'POST':
+            form = PostCreateForm(request.POST)
+            post.delete()
+            # messages.success(request, 'Post deleted')
+            return redirect('../../my-posts')
+            # return redirect('../../')
+
+    except Exception as e:
+        messages.warning(request, 'Post could not be deleted')
+
+    form = PostCreateForm()
+    request.context['form'] = form
+
+    return render(request, 'post_delete.html', request.context)
 
 
 def register_view(request):
