@@ -93,7 +93,7 @@ def upload_image_view(request):
         if imageForm.is_valid():
             image = Image()
             image.author = Author.objects.get(user=request.user)
-            image.private = request.POST.get("private", True)
+            image.private = int(request.POST.get("private", "0"))
             image.file = request.FILES["file"]
             image.save()
             return HttpResponse("True")
