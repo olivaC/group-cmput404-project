@@ -1,16 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-<<<<<<< HEAD
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from app.models import *
 import mimetypes
-=======
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
->>>>>>> c3a8a490b9f0ca429d2e0dfa383d95e623e87dd4
 
 # Create your views here.
 from django.urls import reverse
