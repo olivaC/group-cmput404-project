@@ -24,7 +24,7 @@ def index(request):
     user = request.user
     request.context['user'] = user
 
-    posts = Post.objects.all().filter(author=user.user).order_by('-date_created')
+    posts = Post.objects.all().filter(author=user.user).order_by('-id')
 
     if request.method == 'POST':
         next = request.POST.get("next", reverse("app:index"))
@@ -154,6 +154,7 @@ def logout_view(request):
     logout(request)
     return HttpResponseRedirect(request.GET.get(next, reverse("app:index")))
 
+
 @login_required
 @csrf_exempt
 def upload_image_view(request):
@@ -177,6 +178,7 @@ def upload_image_view(request):
     else:
         return HttpResponse("Must be Post", status=500)
 
+
 @csrf_exempt
 def get_image(request, username, filename):
     """
@@ -187,9 +189,37 @@ def get_image(request, username, filename):
         mimeType = mimetypes.guess_type(path)[0]
         image = Image.objects.get(file=path)
         if image.private:
-            #TODO Check is Friend
+            # TODO Check is Friend
             return HttpResponse(status=403)
         with open(path, "rb") as file:
             return HttpResponse(file.read(), content_type=mimeType)
     except:
         return HttpResponse(status=404)
+
+
+@login_required
+def create_post_view(request):
+    user = request.user
+    request.context['user'] = user
+
+    if request.method == 'POST':
+        next = request.POST.get("next", reverse("app:index"))
+        form = PostCreateForm(request.POST)
+        try:
+            if form.is_valid():
+                if form.cleaned_data.get('text'):
+                    Post.objects.create(author=user.user, text=form.cleaned_data.get('text'),
+                                        description=form.cleaned_data.get('description'),
+                                        title=form.cleaned_data.get('title'), privacy=form.cleaned_data.get('privacy'))
+                    return HttpResponseRedirect(reverse('app:index'))
+            request.context['next'] = next
+            messages.warning(request, 'Cannot post something empty!')
+
+
+        except:
+            request.context['next'] = request.GET.get('next', reverse("app:index"))
+
+    form = PostCreateForm()
+    request.context['form'] = form
+
+    return render(request, 'create_post.html', request.context)

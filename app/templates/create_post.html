@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+
+{% block page_title %}
+    401 Group | Create Post
+{% endblock %}
+
+{% block content %}
+    <h1 class="h3 mb-4 text-gray-800">Create a new post</h1>
+    <div>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <div class="col-lg-8">
+                <!-- /.panel-heading -->
+                <div class="form-group row">
+                    {{ form.post.errors }}
+                    <input type="text" id="id_title" name="title" class="form-control"
+                           placeholder="Post title"
+                           value="{{ form.title.value|default:"" }}" autofocus required>
+
+                </div>
+                <div class="form-group row">
+
+                    <input type="text" id="id_description" name="description" class="form-control"
+                           placeholder="Brief description"
+                           value="{{ form.description.value|default:"" }}" autofocus required>
+
+                </div>
+                <div class="form-group row">
+                    <textarea id="id_text" name="text" placeholder="Post Text"
+                              class="form-control" required>{{ form.text.value|default:"" }}</textarea>
+
+                </div>
+                <div class="form-group row">
+                    {{ form.privacy }}
+                </div>
+            </div>
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            <button class="btn btn-primary" type="submit">Submit</button>
+        </form>
+
+    </div>
+    <hr>
+    <div>
+        {% for post in posts %}
+            <div class="card shadow mb-4">
+                <!-- Card Header - Accordion -->
+                <a href="#collapseCardExample{{ post.id }}" class="d-block card-header py-3" data-toggle="collapse"
+                   role="button"
+                   aria-expanded="true" aria-controls="collapseCardExample">
+                    <h6 class="m-0 font-weight-bold text-primary">{{ post.author.username }}
+                        - {{ post.date_created }}</h6>
+
+                </a>
+                <!-- Card Content - Collapse -->
+                <div class="collapse show" id="collapseCardExample{{ post.id }}">
+                    <div class="card-body">
+                        {{ post.text }}
+                    </div>
+
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

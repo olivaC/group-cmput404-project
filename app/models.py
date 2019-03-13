@@ -28,9 +28,9 @@ class Author(models.Model):
         if self.user:
             return self.user.get_full_name()
 
-    @property
-    def id(self):
-        return "{}/author/{}".format(self.host_url, self.author_id)
+    # @property
+    # def id(self):
+    #     return "{}/author/{}".format(self.host_url, self.author_id)
 
     def __str__(self):
         return "{} - {}".format(str(self.username), self.host_url)
@@ -85,18 +85,28 @@ class Friend(models.Model):
         return "{} {}".format(self.friend1.username, self.friend2.username)
 
 
+POST_PRIVACY = (
+    ('Only me', 'Only me'),
+    ('All friends on my host', 'All friends on my host'),
+    ('All friends', 'All friends'),
+    ('My friends friends', 'My friends friends'),
+)
+
+
 class Post(models.Model):
     # TODO: Finish this class
     author = models.ForeignKey(Author, related_name='authorPost', on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now=True)
-    private = models.BooleanField(default=True)
+    title = models.CharField(max_length=100, blank=True, null=True)
+    description = models.CharField(max_length=50, blank=True, null=True)  # brief description
+    privacy = models.CharField(max_length=100, choices=POST_PRIVACY, default='Only me')
     text = models.TextField(default="")
 
     def __str__(self):
-        return "{} - {} - {}".format(self.author, self.date_created, self.private)
+        return "{} - {} - {}".format(self.author, self.date_created, self.privacy)
 
     def __repr__(self):
-        return "{} - {} - {}".format(self.author, self.date_created, self.private)
+        return "{} - {} - {}".format(self.author, self.date_created, self.privacy)
 
 
 class Image(models.Model):
