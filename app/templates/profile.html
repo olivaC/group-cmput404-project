@@ -12,6 +12,7 @@
     <h2>{{ user.first_name }} {{ user.last_name }}</h2>
     <h5>Username: {{ user.username}}</h5>
     <h5>Email: {{ user.email }}</h5>
-    <h5>Bio: {{ user.author.description }}</h5>
+    <h5>Bio: {{ author.description }}</h5>
+    <h5>Github: {{ author.github_url }}</h5>
     <a href="/profile/edit" class="btn btn-primary">Edit</a>
 {% endblock %}

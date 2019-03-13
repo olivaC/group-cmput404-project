@@ -1,9 +1,9 @@
-from django.forms import ModelForm
+from django.forms import ModelForm, inlineformset_factory
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserChangeForm
 
-from app.models import Post
+from app.models import Post, Author
 
 
 class PostCreateForm(ModelForm):
@@ -21,4 +21,13 @@ class EditProfileForm(UserChangeForm):
             'first_name',
             'last_name',
             'username'
+        )
+
+
+class EditBio(UserChangeForm):
+    class Meta:
+        model = Author
+        fields = (
+            'description',
+            'github_url',
         )

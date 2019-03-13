@@ -9,9 +9,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 
 from SocialDistribution import settings
-from app.forms.post_forms import PostCreateForm, EditProfileForm
+from app.forms.post_forms import PostCreateForm, EditProfileForm, EditBio
 from app.forms.registration_forms import LoginForm, UserCreateForm
-from app.models import Post
+from app.models import Post, Author
 from app.utilities import unquote_redirect_url
 
 
@@ -95,49 +95,35 @@ def delete_post(request, id=None):
 
 @login_required
 def profile_view(request):
-    args = {'user': request.user}
-
-    # user = request.user
-    # request.context['user'] = user
-    #
-    # posts = Post.objects.all().filter(author=user.user).order_by('-id')
-    #
-    # if request.method == 'POST':
-    #     next = request.POST.get("next", reverse("app:index"))
-    #     form = PostCreateForm(request.POST)
-    #     try:
-    #         if form.is_valid():
-    #             if form.cleaned_data.get('text'):
-    #                 Post.objects.create(author=user.user, text=form.cleaned_data.get('text'))
-    #                 return HttpResponseRedirect(reverse('app:index'))
-    #         request.context['next'] = next
-    #         messages.warning(request, 'Cannot post something empty!')
-    #
-    #
-    #     except:
-    #         request.context['next'] = request.GET.get('next', reverse("app:index"))
-    #
-    # form = PostCreateForm()
-    # request.context['form'] = form
-    # request.context['posts'] = posts
+    user = request.user
+    author = get_object_or_404(Author, user=user)
+    args = {'author': author}
 
     return render(request, 'profile.html', args)
 
 
 def edit_profile(request):
-    if request.method == 'POST':
-        form = EditProfileForm(request.POST, instance=request.user)
+    user = request.user
+    author = get_object_or_404(Author, user=user)
+    try:
+        if request.method == 'POST':
+            user_form = EditProfileForm(instance=user)
+            form = EditBio(request.POST, instance=author)
 
-        if form.is_valid():
-            form.save()
-            return redirect('/profile')
+            if form.is_valid():
+                form.save()
 
-    else:
-        form = EditProfileForm(instance=request.user)
-        args = {'form': form}
-        return render(request, 'edit_profile.html', args)
+                return redirect('/profile')
 
-    return
+    except Exception as e:
+        messages.warning(request, 'Error update')
+
+    user_form = EditProfileForm(instance=user)
+    form = EditBio(instance=author)
+    args = {'bio_form': form,
+            'user_form': user_form
+            }
+    return render(request, 'edit_profile.html', args)
 
 
 def register_view(request):
