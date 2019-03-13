@@ -87,7 +87,7 @@ class Post(models.Model):
 class Image(models.Model):
     def get_image_dir(instance, filename):
         if isinstance(instance, str):
-            return f"images/{instance}/{filename}"
+            return "images/{username}/{filename}".format(username=instance, filename=filename)
         else:
             authorName = instance.author.username
             return Image.get_image_dir(authorName, filename)
