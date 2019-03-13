@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
@@ -18,6 +20,8 @@ class Author(models.Model):
     description = models.TextField(blank=True, null=True)
     host_url = models.URLField(blank=True, null=True)  # Url of different hosts
     github_url = models.CharField(max_length=100, blank=True, null=True)  # Optional
+    author_id = models.UUIDField(default=uuid.uuid4, editable=False, blank=False)
+    url = models.CharField(max_length=150, blank=True, null=True)
 
     @property
     def full_name(self):
@@ -26,6 +30,12 @@ class Author(models.Model):
 
     def __str__(self):
         return "{} - {}".format(str(self.username), self.host_url)
+
+    def save(self, *args, **kwargs):
+        if not self.author_id:
+            self.author_id = uuid.uuid4()
+        self.url = "{}/author/{}".format(self.host_url, self.author_id)
+        super(self.__class__, self).save(*args, **kwargs)
 
 
 class FriendRequest(models.Model):
@@ -84,6 +94,7 @@ class Post(models.Model):
     def __repr__(self):
         return "{} - {} - {}".format(self.author, self.date_created, self.private)
 
+
 class Image(models.Model):
     def get_image_dir(instance, filename):
         if isinstance(instance, str):
@@ -91,14 +102,17 @@ class Image(models.Model):
         else:
             authorName = instance.author.username
             return Image.get_image_dir(authorName, filename)
+
     author = models.ForeignKey(Author, related_name='authorImage', on_delete=models.CASCADE)
     private = models.IntegerField(default=0)
     file = models.FileField(upload_to=get_image_dir)
+
 
 class ImageForm(ModelForm):
     class Meta:
         model = Image
         fields = ["file", "private"]
+
 
 class Comment(models.Model):
     # TODO: Finish this class
@@ -114,5 +128,7 @@ class Server(models.Model):
 def create_user_author(sender, instance, created, **kwargs):
     if created:
         Author.objects.create(user=instance, host_url=DOMAIN)
+        instance.user.author_id = uuid.uuid4()
+        instance.user.url = "{}/author/{}".format(instance.user.host_url, instance.user.author_id)
         instance.user.username = instance.username
         instance.user.save()

@@ -24,7 +24,7 @@ def index(request):
     user = request.user
     request.context['user'] = user
 
-    posts = Post.objects.all().filter(author=user.user).order_by('-id')
+    posts = Post.objects.all().filter(author=user.user).order_by('-date_created')
 
     if request.method == 'POST':
         next = request.POST.get("next", reverse("app:index"))
