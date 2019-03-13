@@ -80,7 +80,8 @@ def delete_post(request, id=None):
             form = PostCreateForm(request.POST)
             post.delete()
             # messages.success(request, 'Post deleted')
-            return redirect('../../')
+            return redirect('../../my-posts')
+            # return redirect('../../')
 
     except Exception as e:
         messages.warning(request, 'Post could not be deleted')
