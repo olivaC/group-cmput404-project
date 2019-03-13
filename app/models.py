@@ -90,6 +90,7 @@ POST_PRIVACY = (
     ('All friends on my host', 'All friends on my host'),
     ('All friends', 'All friends'),
     ('My friends friends', 'My friends friends'),
+    ('Public', 'Public'),
 )
 
 
