@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block content %}
-    <h1 class="h3 mb-4 text-gray-800">Welcome {{ user.first_name }} {{ user.last_name }}</h1>
+    <h1 class="h3 mb-4 text-gray-800">My Posts {{ user.first_name }} {{ user.last_name }}</h1>
     <div>
         <form action="" method="POST">
             {% csrf_token %}
@@ -47,6 +47,7 @@
                     <div class="card-body">
                         {{ post.text }}
                     </div>
+                    <a href="/delete/{{ post.id }}">Delete this post </a>
 
                 </div>
             </div>

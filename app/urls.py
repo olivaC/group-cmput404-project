@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 from app.views import api_views, views
+from django.conf.urls import url
 
 app_name = 'app'
 
@@ -16,6 +17,11 @@ urlpatterns = [
     path('accounts/login/', views.login_view, name='login'),
     path('accounts/logout', views.logout_view, name="logout"),
     path('register', views.register_view, name="register"),
+<<<<<<< HEAD
     path('uploadimage', views.upload_image_view, name="uploadimage"),
     path('images/<str:username>/<str:filename>', views.get_image, name="images"),
+=======
+    path('my-posts', views.my_posts_view, name="myposts"),
+    url(r'^delete/(?P<id>\d+)/$', views.delete_post, name="delete")
+>>>>>>> c3a8a490b9f0ca429d2e0dfa383d95e623e87dd4
 ]

@@ -1,17 +1,24 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+<<<<<<< HEAD
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from app.models import *
 import mimetypes
+=======
+from django.http import HttpResponseRedirect
+from django.shortcuts import render, get_object_or_404, redirect
+>>>>>>> c3a8a490b9f0ca429d2e0dfa383d95e623e87dd4
 
 # Create your views here.
 from django.urls import reverse
 
 from SocialDistribution import settings
+from app.forms.post_forms import PostCreateForm
 from app.forms.registration_forms import LoginForm, UserCreateForm
+from app.models import Post
 from app.utilities import unquote_redirect_url
 
 
@@ -19,7 +26,78 @@ from app.utilities import unquote_redirect_url
 def index(request):
     user = request.user
     request.context['user'] = user
-    return render(request, 'index.html')
+
+    posts = Post.objects.all().filter(author=user.user).order_by('-id')
+
+    if request.method == 'POST':
+        next = request.POST.get("next", reverse("app:index"))
+        form = PostCreateForm(request.POST)
+        try:
+            if form.is_valid():
+                if form.cleaned_data.get('text'):
+                    Post.objects.create(author=user.user, text=form.cleaned_data.get('text'))
+                    return HttpResponseRedirect(reverse('app:index'))
+            request.context['next'] = next
+            messages.warning(request, 'Cannot post something empty!')
+
+
+        except:
+            request.context['next'] = request.GET.get('next', reverse("app:index"))
+
+    form = PostCreateForm()
+    request.context['form'] = form
+    request.context['posts'] = posts
+
+    return render(request, 'index.html', request.context)
+
+
+@login_required
+def my_posts_view(request):
+    user = request.user
+    request.context['user'] = user
+
+    posts = Post.objects.all().filter(author=user.user).order_by('-id')
+
+    if request.method == 'POST':
+        next = request.POST.get("next", reverse("app:index"))
+        form = PostCreateForm(request.POST)
+        try:
+            if form.is_valid():
+                if form.cleaned_data.get('text'):
+                    Post.objects.create(author=user.user, text=form.cleaned_data.get('text'))
+                    return HttpResponseRedirect(reverse('app:index'))
+            request.context['next'] = next
+            messages.warning(request, 'Cannot post something empty!')
+
+
+        except:
+            request.context['next'] = request.GET.get('next', reverse("app:index"))
+
+    form = PostCreateForm()
+    request.context['form'] = form
+    request.context['posts'] = posts
+
+    return render(request, 'myposts.html', request.context)
+
+
+def delete_post(request, id=None):
+    post = get_object_or_404(Post, id=id)
+
+    try:
+        if request.method == 'POST':
+            form = PostCreateForm(request.POST)
+            post.delete()
+            # messages.success(request, 'Post deleted')
+            return redirect('../../my-posts')
+            # return redirect('../../')
+
+    except Exception as e:
+        messages.warning(request, 'Post could not be deleted')
+
+    form = PostCreateForm()
+    request.context['form'] = form
+
+    return render(request, 'post_delete.html', request.context)
 
 
 def register_view(request):
