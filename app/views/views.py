@@ -288,4 +288,3 @@ def create_post_view(request):
     request.context['form'] = form
 
     return render(request, 'create_post.html', request.context)
-
