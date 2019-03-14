@@ -161,7 +161,7 @@ def upload_image_view(request):
     View for uploading an image
 
     :param request
-    :return: 200 or 500
+    :return: Image File Path if Success, 500 otherwise.
     """
     if request.method == 'POST':
         imageForm = ImageForm(request.POST, request.FILES)
@@ -171,7 +171,7 @@ def upload_image_view(request):
             image.private = int(request.POST.get("private", "0"))
             image.file = request.FILES["file"]
             image.save()
-            return HttpResponse("True")
+            return HttpResponse(str(image.file))
         else:
             return HttpResponse("Not Valid: " + str(imageForm.errors), status=500)
     else:
@@ -180,7 +180,10 @@ def upload_image_view(request):
 @csrf_exempt
 def get_image(request, username, filename):
     """
-        
+        View for getting an image
+
+        :param request
+        :return: 404 if image does not exist, 403 if no permission and image file if success
     """
     try:
         path = Image.get_image_dir(username, filename)
