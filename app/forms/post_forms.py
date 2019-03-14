@@ -27,13 +27,10 @@ class EditProfileForm(UserChangeForm):
 
 
 class EditBio(UserChangeForm):
-    text = forms.Textarea()
-    title = forms.CharField()
-    description = forms.CharField()
 
     class Meta:
         model = Author
         fields = (
-            'description',
+            'bio',
             'github_url',
         )

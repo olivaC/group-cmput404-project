@@ -6,13 +6,18 @@
 {% endblock %}
 
 {% block content %}
-    <h1 class="h3 mb-4 text-gray-800">My Profile</h1>
-    <hr>
-    <img class="img-profile rounded-circle" src="https://source.unsplash.com/QAB-WJcbgJk/60x60">
-    <h2>{{ user.first_name }} {{ user.last_name }}</h2>
-    <h5>Username: {{ user.username}}</h5>
-    <h5>Email: {{ user.email }}</h5>
-    <h5>Bio: {{ author.description }}</h5>
-    <h5>Github: {{ author.github_url }}</h5>
+
+    <div>
+        <h1 class="h3 mb-4 text-gray-800">My Profile</h1>
+        <hr>
+        <img class="img-profile rounded-circle" src="https://source.unsplash.com/QAB-WJcbgJk/60x60">
+        <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+        <h5>Username: {{ user.username }}</h5>
+        <h5>Email: {{ user.email }}</h5>
+        <h5>Bio: {{ author.bio }}</h5>
+        <h5>Github: {{ author.github_url }}</h5>
+
+    </div>
+
     <a href="/profile/edit" class="btn btn-primary">Edit</a>
 {% endblock %}
