@@ -6,15 +6,65 @@
 {% endblock %}
 
 {% block content %}
-    <h1 class="h3 mb-4 text-gray-800">My Profile</h1>
-    <hr>
-    <img class="img-profile rounded-circle" src="https://source.unsplash.com/QAB-WJcbgJk/60x60">
-    <h2>{{ user.first_name }} {{ user.last_name }}</h2>
-    <form method="POST">
+    <h1 class="h3 mb-4 text-gray-800">Edit My Profile</h1>
+    <form action="" method="POST">
         {% csrf_token %}
-        {{ user_form.as_p }}
-        {{ bio_form.as_p }}
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <div class="row">
+            <label for="id_first_name" class="col-form-label">First Name
+                <span
+                        class="text-danger">*</span></label>
+            <div class="col-sm-6">
+                <input type="text" id="id_first_name" name="first_name"
+                       class="form-control" placeholder="First Name"
+                       value="{{ user_form.first_name.value|default:"" }}"
+                       required>
+            </div>
+        </div>
+        <div class="row">
+            <label for="id_last_name" class="col-form-label">Last Name
+                <span
+                        class="text-danger">*</span></label>
+            <div class="col-sm-6">
+                <input type="text" id="id_last_name" name="last_name"
+                       class="form-control" placeholder="Last Name"
+                       value="{{ user_form.last_name.value|default:"" }}"
+                       required>
+            </div>
+        </div>
+        <div class="row">
+            <label for="id_username" class="col-form-label">Username
+                <span
+                        class="text-danger">*</span></label>
+            <div class="col-sm-6">
+                <input type="text" id="id_username" name="username"
+                       class="form-control" placeholder="Username"
+                       value="{{ bio_form.username.value|default:"" }}"
+                       required>
+            </div>
+        </div>
+
+        <div class="row">
+            <label for="id_bio" class="col-form-label">Bio
+                <span
+                        class="text-danger"></span></label>
+            <div class="col-sm-6">
+                <textarea id="id_bio" name="bio"
+                          class="form-control"
+                          placeholder="Enter short bio here">{{ bio_form.bio.value|default:"" }}</textarea>
+            </div>
+        </div>
+        <div class="row">
+            <label for="id_username" class="col-form-label">Github URL
+            </label>
+            <div class="col-sm-6">
+                <input type="url" id="id_github_url" name="github_url"
+                       class="form-control" placeholder="Github url"
+                       value="{{ bio_form.github_url.value|default:"" }}"
+                >
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
 
     </form>
 {% endblock %}

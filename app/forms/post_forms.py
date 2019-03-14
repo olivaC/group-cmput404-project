@@ -16,21 +16,22 @@ class PostCreateForm(ModelForm):
         exclude = ('author', 'date_created')
 
 
-class EditProfileForm(UserChangeForm):
+class EditProfileForm(ModelForm):
     class Meta:
         model = User
         fields = (
             'first_name',
             'last_name',
-            'username'
         )
 
 
-class EditBio(UserChangeForm):
+class EditBio(ModelForm):
+    username = forms.CharField()
 
     class Meta:
         model = Author
         fields = (
+            'username',
             'bio',
             'github_url',
         )

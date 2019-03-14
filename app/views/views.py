@@ -112,11 +112,22 @@ def edit_profile(request):
     author = get_object_or_404(Author, user=user)
     try:
         if request.method == 'POST':
-            user_form = EditProfileForm(instance=user)
-            form = EditBio(request.POST, instance=author)
+            edit_form = EditProfileForm(request.POST)
+            bio_form = EditBio(request.POST)
 
-            if form.is_valid():
-                form.save()
+            if edit_form.is_valid():
+                user.first_name = edit_form.cleaned_data.get('first_name')
+                user.last_name = edit_form.cleaned_data.get('last_name')
+
+                if bio_form.is_valid():
+                    bio_form.save()
+                    user.username = bio_form.cleaned_data.get('username')
+                elif bio_form.data.get('username') == author.username:
+                    author.bio = bio_form.cleaned_data.get('bio')
+                    author.github_url = bio_form.cleaned_data.get('github_url')
+                    author.save()
+
+                user.save()
 
                 return redirect('/profile')
 
