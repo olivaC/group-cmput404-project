@@ -74,7 +74,7 @@ def my_posts_view(request):
     request.context['form'] = form
     request.context['posts'] = posts
 
-    return render(request, 'myposts.html', request.context)
+    return render(request, 'posts/my_posts.html', request.context)
 
 
 def delete_post(request, id=None):
@@ -86,7 +86,6 @@ def delete_post(request, id=None):
             post.delete()
             # messages.success(request, 'Post deleted')
             return redirect('../../my-posts')
-            # return redirect('../../')
 
     except Exception as e:
         messages.warning(request, 'Post could not be deleted')
@@ -94,7 +93,13 @@ def delete_post(request, id=None):
     form = PostCreateForm()
     request.context['form'] = form
 
-    return render(request, 'post_delete.html', request.context)
+    return render(request, 'posts/post_delete.html', request.context)
+
+
+def edit_post(request, id=None):
+    post = get_object_or_404(Post, id=id)
+
+    return render(request, 'edit_post.html', request.context)
 
 
 def register_view(request):
@@ -222,4 +227,4 @@ def create_post_view(request):
     form = PostCreateForm()
     request.context['form'] = form
 
-    return render(request, 'create_post.html', request.context)
+    return render(request, 'posts/create_post.html', request.context)
