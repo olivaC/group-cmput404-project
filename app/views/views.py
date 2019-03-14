@@ -5,6 +5,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from app.models import *
+from django.core.exceptions import ObjectDoesNotExist
+import base64
 import mimetypes
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
@@ -161,7 +163,7 @@ def upload_image_view(request):
     View for uploading an image
 
     :param request
-    :return: 200 or 500
+    :return: Image File Path if Success, 500 otherwise.
     """
     if request.method == 'POST':
         imageForm = ImageForm(request.POST, request.FILES)
@@ -171,25 +173,32 @@ def upload_image_view(request):
             image.private = int(request.POST.get("private", "0"))
             image.file = request.FILES["file"]
             image.save()
-            return HttpResponse("True")
+            return HttpResponse(str(image.file))
         else:
             return HttpResponse("Not Valid: " + str(imageForm.errors), status=500)
     else:
         return HttpResponse("Must be Post", status=500)
 
 @csrf_exempt
-def get_image(request, username, filename):
+def get_image(request, username, filename, encoding=""):
     """
-        
+        View for getting an image
+
+        :param request
+        :return: 404 if image does not exist, 403 if no permission and image file if success
     """
+    path = Image.get_image_dir(username, filename)
+    mimeType = mimetypes.guess_type(path)[0]
+    
     try:
-        path = Image.get_image_dir(username, filename)
-        mimeType = mimetypes.guess_type(path)[0]
         image = Image.objects.get(file=path)
         if image.private:
             #TODO Check is Friend
             return HttpResponse(status=403)
         with open(path, "rb") as file:
-            return HttpResponse(file.read(), content_type=mimeType)
-    except:
-        return HttpResponse(status=404)
+            if encoding == "base64":
+                return HttpResponse("data:" + mimeType + ";base64," + str(base64.b64encode(file.read())), content_type="text/plain")
+            else:
+                return HttpResponse(file.read(), content_type=mimeType)
+    except (FileNotFoundError, ObjectDoesNotExist) as e:
+        return HttpResponse(path, status=404)
