@@ -4,10 +4,7 @@
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
     <!-- Sidebar - Brand -->
-    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
-        <div class="sidebar-brand-icon rotate-n-15">
-            <i class="fas fa-laugh-wink"></i>
-        </div>
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'app:index' %}">
         <div class="sidebar-brand-text mx-3">Team 10 Social Distribution</div>
     </a>
 
@@ -30,17 +27,17 @@
     </div>
 
     <li class="nav-item">
-        <a class="nav-link" href="my-posts">
+        <a class="nav-link" href="{% url 'app:my_posts' %}">
             <i class="fas fa-fw fa-chart-area"></i>
             <span>My Posts</span></a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="charts.html">
+        <a class="nav-link" href="{% url 'app:index' %}">
             <i class="fas fa-fw fa-chart-area"></i>
             <span>@ Mentions</span></a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="charts.html">
+        <a class="nav-link" href="{% url 'app:index' %}">
             <i class="fas fa-fw fa-chart-area"></i>
             <span>Public Activity</span></a>
     </li>
@@ -89,17 +86,17 @@
     </div>
 
     <li class="nav-item">
-        <a class="nav-link" href="tables.html">
+        <a class="nav-link" href="{% url 'app:index' %}">
             <i class="fas fa-fw fa-table"></i>
             <span>Following</span></a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="tables.html">
+        <a class="nav-link" href="{% url 'app:index' %}">
             <i class="fas fa-fw fa-table"></i>
             <span>Followers</span></a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="tables.html">
+        <a class="nav-link" href="{% url 'app:index' %}">
             <i class="fas fa-fw fa-table"></i>
             <span>Mutual Friends</span></a>
     </li>
