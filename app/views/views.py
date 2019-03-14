@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.decorators import login_required
+from django.forms import model_to_dict
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
@@ -109,7 +110,7 @@ def profile_view(request):
 
 def edit_profile(request):
     user = request.user
-    author = get_object_or_404(Author, user=user)
+    author = request.user.user
     try:
         if request.method == 'POST':
             edit_form = EditProfileForm(request.POST)
@@ -120,7 +121,11 @@ def edit_profile(request):
                 user.last_name = edit_form.cleaned_data.get('last_name')
 
                 if bio_form.is_valid():
-                    bio_form.save()
+                    # bio_form.save()
+                    author.bio = bio_form.cleaned_data.get('bio')
+                    author.github_url = bio_form.cleaned_data.get('github_url')
+                    author.username = bio_form.data.get('username')
+                    author.save()
                     user.username = bio_form.cleaned_data.get('username')
                 elif bio_form.data.get('username') == author.username:
                     author.bio = bio_form.cleaned_data.get('bio')
@@ -134,12 +139,13 @@ def edit_profile(request):
                     user.username = bio_form.data.get('username')
 
                 user.save()
+                redirect('app:index')
 
     except Exception as e:
         messages.warning(request, 'Error update')
 
-    user_form = EditProfileForm(instance=user)
-    form = EditBio(instance=author)
+    user_form = EditProfileForm(initial=model_to_dict(user))
+    form = EditBio(initial=model_to_dict(author))
     args = {'bio_form': form,
             'user_form': user_form
             }
