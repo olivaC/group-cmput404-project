@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from app.models import *
+from django.core.exceptions import ObjectDoesNotExist
 import base64
 import mimetypes
 from django.http import HttpResponseRedirect
@@ -188,12 +189,16 @@ def get_image(request, username, filename, encoding=""):
     """
     path = Image.get_image_dir(username, filename)
     mimeType = mimetypes.guess_type(path)[0]
-    image = Image.objects.get(file=path)
-    if image.private:
-        #TODO Check is Friend
-        return HttpResponse(status=403)
-    with open(path, "rb") as file:
-        if encoding == "base64":
-            return HttpResponse("data:" + mimeType + ";base64," + str(base64.b64encode(file.read())), content_type="text/plain")
-        else:
-            return HttpResponse(file.read(), content_type=mimeType)
+    
+    try:
+        image = Image.objects.get(file=path)
+        if image.private:
+            #TODO Check is Friend
+            return HttpResponse(status=403)
+        with open(path, "rb") as file:
+            if encoding == "base64":
+                return HttpResponse("data:" + mimeType + ";base64," + str(base64.b64encode(file.read())), content_type="text/plain")
+            else:
+                return HttpResponse(file.read(), content_type=mimeType)
+    except (FileNotFoundError, ObjectDoesNotExist) as e:
+        return HttpResponse(path, status=404)
