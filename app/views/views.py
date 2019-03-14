@@ -126,10 +126,14 @@ def edit_profile(request):
                     author.bio = bio_form.cleaned_data.get('bio')
                     author.github_url = bio_form.cleaned_data.get('github_url')
                     author.save()
+                else:
+                    author.bio = bio_form.cleaned_data.get('bio')
+                    author.github_url = bio_form.cleaned_data.get('github_url')
+                    author.username = bio_form.data.get('username')
+                    author.save()
+                    user.username = bio_form.data.get('username')
 
                 user.save()
-
-                return redirect('/profile')
 
     except Exception as e:
         messages.warning(request, 'Error update')
