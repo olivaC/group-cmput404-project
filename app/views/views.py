@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from app.models import *
+import base64
 import mimetypes
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
@@ -178,21 +179,21 @@ def upload_image_view(request):
         return HttpResponse("Must be Post", status=500)
 
 @csrf_exempt
-def get_image(request, username, filename):
+def get_image(request, username, filename, encoding=""):
     """
         View for getting an image
 
         :param request
         :return: 404 if image does not exist, 403 if no permission and image file if success
     """
-    try:
-        path = Image.get_image_dir(username, filename)
-        mimeType = mimetypes.guess_type(path)[0]
-        image = Image.objects.get(file=path)
-        if image.private:
-            #TODO Check is Friend
-            return HttpResponse(status=403)
-        with open(path, "rb") as file:
+    path = Image.get_image_dir(username, filename)
+    mimeType = mimetypes.guess_type(path)[0]
+    image = Image.objects.get(file=path)
+    if image.private:
+        #TODO Check is Friend
+        return HttpResponse(status=403)
+    with open(path, "rb") as file:
+        if encoding == "base64":
+            return HttpResponse("data:" + mimeType + ";base64," + str(base64.b64encode(file.read())), content_type="text/plain")
+        else:
             return HttpResponse(file.read(), content_type=mimeType)
-    except:
-        return HttpResponse(status=404)
