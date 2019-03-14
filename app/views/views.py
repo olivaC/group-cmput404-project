@@ -1,10 +1,14 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.decorators import login_required
+from django.forms import model_to_dict
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from app.models import *
+from django.core.exceptions import ObjectDoesNotExist
+import base64
 import mimetypes
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
@@ -13,9 +17,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 
 from SocialDistribution import settings
-from app.forms.post_forms import PostCreateForm
+from app.forms.post_forms import PostCreateForm, EditProfileForm, EditBio
 from app.forms.registration_forms import LoginForm, UserCreateForm
-from app.models import Post
+from app.models import Post, Author
 from app.utilities import unquote_redirect_url
 
 
@@ -102,6 +106,59 @@ def edit_post(request, id=None):
     return render(request, 'edit_post.html', request.context)
 
 
+@login_required
+def profile_view(request):
+    user = request.user
+    author = get_object_or_404(Author, user=user)
+    args = {'author': author}
+
+    return render(request, 'profile.html', args)
+
+
+def edit_profile(request):
+    user = request.user
+    author = request.user.user
+    try:
+        if request.method == 'POST':
+            edit_form = EditProfileForm(request.POST)
+            bio_form = EditBio(request.POST)
+
+            if edit_form.is_valid():
+                user.first_name = edit_form.cleaned_data.get('first_name')
+                user.last_name = edit_form.cleaned_data.get('last_name')
+
+                if bio_form.is_valid():
+                    # bio_form.save()
+                    author.bio = bio_form.cleaned_data.get('bio')
+                    author.github_url = bio_form.cleaned_data.get('github_url')
+                    author.username = bio_form.data.get('username')
+                    author.save()
+                    user.username = bio_form.cleaned_data.get('username')
+                elif bio_form.data.get('username') == author.username:
+                    author.bio = bio_form.cleaned_data.get('bio')
+                    author.github_url = bio_form.cleaned_data.get('github_url')
+                    author.save()
+                else:
+                    author.bio = bio_form.cleaned_data.get('bio')
+                    author.github_url = bio_form.cleaned_data.get('github_url')
+                    author.username = bio_form.data.get('username')
+                    author.save()
+                    user.username = bio_form.data.get('username')
+
+                user.save()
+                redirect('app:index')
+
+    except Exception as e:
+        messages.warning(request, 'Error update')
+
+    user_form = EditProfileForm(initial=model_to_dict(user))
+    form = EditBio(initial=model_to_dict(author))
+    args = {'bio_form': form,
+            'user_form': user_form
+            }
+    return render(request, 'edit_profile.html', args)
+
+
 def register_view(request):
     if request.method == 'POST':
         next = request.POST.get("next", reverse("app:index"))
@@ -167,7 +224,7 @@ def upload_image_view(request):
     View for uploading an image
 
     :param request
-    :return: 200 or 500
+    :return: Image File Path if Success, 500 otherwise.
     """
     if request.method == 'POST':
         imageForm = ImageForm(request.POST, request.FILES)
@@ -177,7 +234,7 @@ def upload_image_view(request):
             image.private = int(request.POST.get("private", "0"))
             image.file = request.FILES["file"]
             image.save()
-            return HttpResponse("True")
+            return HttpResponse(str(image.file))
         else:
             return HttpResponse("Not Valid: " + str(imageForm.errors), status=500)
     else:
@@ -185,21 +242,29 @@ def upload_image_view(request):
 
 
 @csrf_exempt
-def get_image(request, username, filename):
+def get_image(request, username, filename, encoding=""):
     """
-        
+        View for getting an image
+
+        :param request
+        :return: 404 if image does not exist, 403 if no permission and image file if success
     """
+    path = Image.get_image_dir(username, filename)
+    mimeType = mimetypes.guess_type(path)[0]
+    
     try:
-        path = Image.get_image_dir(username, filename)
-        mimeType = mimetypes.guess_type(path)[0]
         image = Image.objects.get(file=path)
         if image.private:
             # TODO Check is Friend
             return HttpResponse(status=403)
         with open(path, "rb") as file:
-            return HttpResponse(file.read(), content_type=mimeType)
-    except:
-        return HttpResponse(status=404)
+            if encoding == "base64":
+                return HttpResponse("data:" + mimeType + ";base64," + str(base64.b64encode(file.read())),
+                                    content_type="text/plain")
+            else:
+                return HttpResponse(file.read(), content_type=mimeType)
+    except (FileNotFoundError, ObjectDoesNotExist) as e:
+        return HttpResponse(path, status=404)
 
 
 @login_required
