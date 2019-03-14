@@ -19,7 +19,6 @@ class AuthorSerializers(serializers.ModelSerializer):
             'bio',
             'host_url',
             'github_url',
-            'user',
         )
 
 

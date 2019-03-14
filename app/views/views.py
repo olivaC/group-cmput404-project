@@ -1,6 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.decorators import login_required
+from django.forms import model_to_dict
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
@@ -15,9 +17,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 
 from SocialDistribution import settings
-from app.forms.post_forms import PostCreateForm
+from app.forms.post_forms import PostCreateForm, EditProfileForm, EditBio
 from app.forms.registration_forms import LoginForm, UserCreateForm
-from app.models import Post
+from app.models import Post, Author
 from app.utilities import unquote_redirect_url
 
 
@@ -97,6 +99,59 @@ def delete_post(request, id=None):
     request.context['form'] = form
 
     return render(request, 'post_delete.html', request.context)
+
+
+@login_required
+def profile_view(request):
+    user = request.user
+    author = get_object_or_404(Author, user=user)
+    args = {'author': author}
+
+    return render(request, 'profile.html', args)
+
+
+def edit_profile(request):
+    user = request.user
+    author = request.user.user
+    try:
+        if request.method == 'POST':
+            edit_form = EditProfileForm(request.POST)
+            bio_form = EditBio(request.POST)
+
+            if edit_form.is_valid():
+                user.first_name = edit_form.cleaned_data.get('first_name')
+                user.last_name = edit_form.cleaned_data.get('last_name')
+
+                if bio_form.is_valid():
+                    # bio_form.save()
+                    author.bio = bio_form.cleaned_data.get('bio')
+                    author.github_url = bio_form.cleaned_data.get('github_url')
+                    author.username = bio_form.data.get('username')
+                    author.save()
+                    user.username = bio_form.cleaned_data.get('username')
+                elif bio_form.data.get('username') == author.username:
+                    author.bio = bio_form.cleaned_data.get('bio')
+                    author.github_url = bio_form.cleaned_data.get('github_url')
+                    author.save()
+                else:
+                    author.bio = bio_form.cleaned_data.get('bio')
+                    author.github_url = bio_form.cleaned_data.get('github_url')
+                    author.username = bio_form.data.get('username')
+                    author.save()
+                    user.username = bio_form.data.get('username')
+
+                user.save()
+                redirect('app:index')
+
+    except Exception as e:
+        messages.warning(request, 'Error update')
+
+    user_form = EditProfileForm(initial=model_to_dict(user))
+    form = EditBio(initial=model_to_dict(author))
+    args = {'bio_form': form,
+            'user_form': user_form
+            }
+    return render(request, 'edit_profile.html', args)
 
 
 def register_view(request):
@@ -199,7 +254,12 @@ def get_image(request, username, filename, encoding=""):
             return HttpResponse(status=403)
         with open(path, "rb") as file:
             if encoding == "base64":
+<<<<<<< HEAD
                 return HttpResponse("data:" + mimeType + ";base64," + str(base64.b64encode(file.read())), content_type="text/plain")
+=======
+                return HttpResponse("data:" + mimeType + ";base64," + str(base64.b64encode(file.read())),
+                                    content_type="text/plain")
+>>>>>>> ad1acccefcb1f06b0c22db5017dad8a099e74dec
             else:
                 return HttpResponse(file.read(), content_type=mimeType)
     except (FileNotFoundError, ObjectDoesNotExist) as e:
@@ -232,3 +292,7 @@ def create_post_view(request):
     request.context['form'] = form
 
     return render(request, 'create_post.html', request.context)
+<<<<<<< HEAD
+=======
+
+>>>>>>> ad1acccefcb1f06b0c22db5017dad8a099e74dec
