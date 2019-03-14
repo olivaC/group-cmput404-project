@@ -8,10 +8,12 @@ from app.models import Post, Author
 
 class PostCreateForm(ModelForm):
     text = forms.Textarea()
+    title = forms.CharField()
+    description = forms.CharField()
 
     class Meta:
         model = Post
-        exclude = ('author', 'date_created', 'private')
+        exclude = ('author', 'date_created')
 
 
 class EditProfileForm(UserChangeForm):
@@ -25,6 +27,10 @@ class EditProfileForm(UserChangeForm):
 
 
 class EditBio(UserChangeForm):
+    text = forms.Textarea()
+    title = forms.CharField()
+    description = forms.CharField()
+
     class Meta:
         model = Author
         fields = (

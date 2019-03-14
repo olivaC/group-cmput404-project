@@ -17,8 +17,11 @@ urlpatterns = [
     path('accounts/login/', views.login_view, name='login'),
     path('accounts/logout', views.logout_view, name="logout"),
     path('register', views.register_view, name="register"),
+    path('uploadimage', views.upload_image_view, name="uploadimage"),
+    path('images/<str:username>/<str:filename>', views.get_image, name="images"),
     path('my-posts', views.my_posts_view, name="my_posts"),
+    path('create-post', views.create_post_view, name='create_post'),
+    url(r'^delete/(?P<id>\d+)/$', views.delete_post, name="delete"),
     path('profile', views.profile_view, name="profile"),
     path('profile/edit/', views.edit_profile, name="edit_profile"),
-    url(r'^delete/(?P<id>\d+)/$', views.delete_post, name="delete")
 ]

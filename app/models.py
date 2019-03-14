@@ -1,8 +1,11 @@
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from settings_server import *
+from django.forms import ModelForm
 
 
 class Author(models.Model):
@@ -14,17 +17,29 @@ class Author(models.Model):
     """
     user = models.OneToOneField(User, related_name='user', on_delete=models.CASCADE, blank=True, null=True)
     username = models.CharField(max_length=50, unique=True, blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
     host_url = models.URLField(blank=True, null=True)  # Url of different hosts
     github_url = models.CharField(max_length=100, blank=True, null=True)  # Optional
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    url = models.CharField(max_length=150, blank=True, null=True)
 
     @property
     def full_name(self):
         if self.user:
             return self.user.get_full_name()
 
+    # @property
+    # def id(self):
+    #     return "{}/author/{}".format(self.host_url, self.author_id)
+
     def __str__(self):
         return "{} - {}".format(str(self.username), self.host_url)
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.id = uuid.uuid4()
+        self.url = "{}/author/{}".format(self.host_url, self.id)
+        super(self.__class__, self).save(*args, **kwargs)
 
 
 class FriendRequest(models.Model):
@@ -70,18 +85,48 @@ class Friend(models.Model):
         return "{} {}".format(self.friend1.username, self.friend2.username)
 
 
+POST_PRIVACY = (
+    ('Only me', 'Only me'),
+    ('All friends on my host', 'All friends on my host'),
+    ('All friends', 'All friends'),
+    ('My friends friends', 'My friends friends'),
+    ('Public', 'Public'),
+)
+
+
 class Post(models.Model):
     # TODO: Finish this class
     author = models.ForeignKey(Author, related_name='authorPost', on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now=True)
-    private = models.BooleanField(default=True)
+    title = models.CharField(max_length=100, blank=True, null=True)
+    description = models.CharField(max_length=50, blank=True, null=True)  # brief description
+    privacy = models.CharField(max_length=100, choices=POST_PRIVACY, default='Only me')
     text = models.TextField(default="")
 
     def __str__(self):
-        return "{} - {} - {}".format(self.author, self.date_created, self.private)
+        return "{} - {} - {}".format(self.author, self.date_created, self.privacy)
 
     def __repr__(self):
-        return "{} - {} - {}".format(self.author, self.date_created, self.private)
+        return "{} - {} - {}".format(self.author, self.date_created, self.privacy)
+
+
+class Image(models.Model):
+    def get_image_dir(instance, filename):
+        if isinstance(instance, str):
+            return "images/{username}/{filename}".format(username=instance, filename=filename)
+        else:
+            authorName = instance.author.username
+            return Image.get_image_dir(authorName, filename)
+
+    author = models.ForeignKey(Author, related_name='authorImage', on_delete=models.CASCADE)
+    private = models.IntegerField(default=0)
+    file = models.FileField(upload_to=get_image_dir)
+
+
+class ImageForm(ModelForm):
+    class Meta:
+        model = Image
+        fields = ["file", "private"]
 
 
 class Comment(models.Model):
@@ -98,5 +143,7 @@ class Server(models.Model):
 def create_user_author(sender, instance, created, **kwargs):
     if created:
         Author.objects.create(user=instance, host_url=DOMAIN)
+        instance.user.author_id = uuid.uuid4()
+        instance.user.url = "{}/author/{}".format(instance.user.host_url, instance.user.author_id)
         instance.user.username = instance.username
         instance.user.save()
