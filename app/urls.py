@@ -19,6 +19,7 @@ urlpatterns = [
     path('register', views.register_view, name="register"),
     path('uploadimage', views.upload_image_view, name="uploadimage"),
     path('images/<str:username>/<str:filename>', views.get_image, name="images"),
+    path('images/<str:username>/<str:filename>/<str:encoding>', views.get_image, name="images"),
     path('my-posts', views.my_posts_view, name="myposts"),
     path('create-post', views.create_post_view, name='create_post'),
     url(r'^delete/(?P<id>\d+)/$', views.delete_post, name="delete")
