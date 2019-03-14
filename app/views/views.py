@@ -254,12 +254,8 @@ def get_image(request, username, filename, encoding=""):
             return HttpResponse(status=403)
         with open(path, "rb") as file:
             if encoding == "base64":
-<<<<<<< HEAD
-                return HttpResponse("data:" + mimeType + ";base64," + str(base64.b64encode(file.read())), content_type="text/plain")
-=======
                 return HttpResponse("data:" + mimeType + ";base64," + str(base64.b64encode(file.read())),
                                     content_type="text/plain")
->>>>>>> ad1acccefcb1f06b0c22db5017dad8a099e74dec
             else:
                 return HttpResponse(file.read(), content_type=mimeType)
     except (FileNotFoundError, ObjectDoesNotExist) as e:
@@ -292,7 +288,3 @@ def create_post_view(request):
     request.context['form'] = form
 
     return render(request, 'create_post.html', request.context)
-<<<<<<< HEAD
-=======
-
->>>>>>> ad1acccefcb1f06b0c22db5017dad8a099e74dec
