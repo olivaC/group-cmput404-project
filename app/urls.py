@@ -24,3 +24,4 @@ urlpatterns = [
     url(r'^delete/(?P<id>\d+)/$', views.delete_post, name="delete"),
     path('profile', views.profile_view, name="profile"),
     path('profile/edit/', views.edit_profile, name="edit_profile"),
+]
