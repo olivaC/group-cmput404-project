@@ -12,6 +12,7 @@ router.register('posts', api_views.PostView)
 
 urlpatterns = [
     path('api/', include(router.urls)),
+    path('api/postsbyauthor/<str:author>/', api_views.posts_by_author),
     path('', views.index),
     path('index', views.index, name="index"),
     path('accounts/login/', views.login_view, name='login'),
