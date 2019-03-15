@@ -2,7 +2,7 @@
 
 
 {% block page_title %}
-    401 Group | Dashboard
+    401 Group 10 | Delete
 {% endblock %}
 
 {% block content %}
@@ -11,7 +11,7 @@
         {% csrf_token %}
         Are you sure you want to delete this post?
         <input class="btn btn-primary" type="submit" value="Yes"/>
-        <a href='../../'>Cancel</a>
+        <a href='{% url 'app:my_posts' %}'>Cancel</a>
     </form>
 
 {% endblock %}
