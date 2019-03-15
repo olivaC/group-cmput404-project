@@ -22,15 +22,14 @@ class PostView(viewsets.ModelViewSet):
     """
     The api view to retrieve posts.
     """
-    queryset = Post.objects.all()
     serializer_class = PostSerializer
-    
-def posts_by_author(request, author):
-    """
-    The api view to retrieve posts by author id.
-    """
-    if request.method == 'GET':
-        print(author)
-        posts = Post.objects.all().filter(author=author)
-        serializer = PostSerializer(posts, many=True)
-        return JsonResponse(serializer.data, safe=False)
+    allowed_methods = ['GET', 'POST', 'PATCH']
+
+    def get_queryset(self):
+        queryset = Post.objects.all()
+        user = self.request.user
+        if user.is_staff:
+            return queryset
+        else:
+            queryset = queryset.filter(author=user.user)
+            return queryset

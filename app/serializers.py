@@ -25,4 +25,8 @@ class AuthorSerializers(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ('id', 'date_created', 'author_id', 'text', 'description', 'privacy', 'title')
+        fields = ('id', 'author', 'privacy', 'title', 'text', 'date_created', 'description')
+
+    def update(self, instance, validated_data):
+        print(validated_data)
+        x = validated_data

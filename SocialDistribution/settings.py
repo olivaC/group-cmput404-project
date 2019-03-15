@@ -37,6 +37,13 @@ MIDDLEWARE = [
 
 ]
 
+# Django rest framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication'
+    ]
+}
+
 ROOT_URLCONF = 'SocialDistribution.urls'
 
 TEMPLATES = [
