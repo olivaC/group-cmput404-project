@@ -23,6 +23,7 @@ class PostView(viewsets.ModelViewSet):
     The api view to retrieve posts.
     """
     serializer_class = PostSerializer
+    allowed_methods = ['GET', 'POST', 'PATCH']
 
     def get_queryset(self):
         queryset = Post.objects.all()

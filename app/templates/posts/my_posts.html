@@ -14,7 +14,7 @@
                 <a href="#collapseCardExample{{ post.id }}" class="d-block card-header py-3" data-toggle="collapse"
                    role="button"
                    aria-expanded="true" aria-controls="collapseCardExample">
-                    <h6 class="m-0 font-weight-bold text-primary">{{ post.author.username }}
+                    <h6 class="m-0 font-weight-bold text-primary">{{ post.title }}
                         - {{ post.date_created }}</h6>
 
                 </a>
@@ -25,7 +25,7 @@
                     </div>
                     <div class="card-footer">
                         <span>
-                            <a href="/delete/{{ post.id }}" class="btn btn-warning">Edit</a>
+                            <a href="{% url 'app:edit_post' id=post.id %}" class="btn btn-warning">Edit</a>
                             <a href="/delete/{{ post.id }}" class="btn btn-danger">Delete</a>
                         </span>
                     </div>

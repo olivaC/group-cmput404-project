@@ -1,11 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.decorators import login_required
 from django.forms import model_to_dict
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import render
+from django.http import HttpResponse
 from app.models import *
 from django.core.exceptions import ObjectDoesNotExist
 import base64
@@ -50,60 +48,6 @@ def index(request):
     request.context['posts'] = posts
 
     return render(request, 'index.html', request.context)
-
-
-@login_required
-def my_posts_view(request):
-    user = request.user
-    request.context['user'] = user
-
-    posts = Post.objects.all().filter(author=user.user).order_by('-id')
-
-    if request.method == 'POST':
-        next = request.POST.get("next", reverse("app:index"))
-        form = PostCreateForm(request.POST)
-        try:
-            if form.is_valid():
-                if form.cleaned_data.get('text'):
-                    Post.objects.create(author=user.user, text=form.cleaned_data.get('text'))
-                    return HttpResponseRedirect(reverse('app:index'))
-            request.context['next'] = next
-            messages.warning(request, 'Cannot post something empty!')
-
-
-        except:
-            request.context['next'] = request.GET.get('next', reverse("app:index"))
-
-    form = PostCreateForm()
-    request.context['form'] = form
-    request.context['posts'] = posts
-
-    return render(request, 'posts/my_posts.html', request.context)
-
-
-def delete_post(request, id=None):
-    post = get_object_or_404(Post, id=id)
-
-    try:
-        if request.method == 'POST':
-            form = PostCreateForm(request.POST)
-            post.delete()
-            # messages.success(request, 'Post deleted')
-            return redirect('../../my-posts')
-
-    except Exception as e:
-        messages.warning(request, 'Post could not be deleted')
-
-    form = PostCreateForm()
-    request.context['form'] = form
-
-    return render(request, 'posts/post_delete.html', request.context)
-
-
-def edit_post(request, id=None):
-    post = get_object_or_404(Post, id=id)
-
-    return render(request, 'edit_post.html', request.context)
 
 
 @login_required
@@ -251,7 +195,7 @@ def get_image(request, username, filename, encoding=""):
     """
     path = Image.get_image_dir(username, filename)
     mimeType = mimetypes.guess_type(path)[0]
-    
+
     try:
         image = Image.objects.get(file=path)
         if image.private:
@@ -267,29 +211,3 @@ def get_image(request, username, filename, encoding=""):
         return HttpResponse(path, status=404)
 
 
-@login_required
-def create_post_view(request):
-    user = request.user
-    request.context['user'] = user
-
-    if request.method == 'POST':
-        next = request.POST.get("next", reverse("app:index"))
-        form = PostCreateForm(request.POST)
-        try:
-            if form.is_valid():
-                if form.cleaned_data.get('text'):
-                    Post.objects.create(author=user.user, text=form.cleaned_data.get('text'),
-                                        description=form.cleaned_data.get('description'),
-                                        title=form.cleaned_data.get('title'), privacy=form.cleaned_data.get('privacy'))
-                    return HttpResponseRedirect(reverse('app:index'))
-            request.context['next'] = next
-            messages.warning(request, 'Cannot post something empty!')
-
-
-        except:
-            request.context['next'] = request.GET.get('next', reverse("app:index"))
-
-    form = PostCreateForm()
-    request.context['form'] = form
-
-    return render(request, 'posts/create_post.html', request.context)
