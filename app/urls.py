@@ -26,5 +26,6 @@ urlpatterns = [
     url(r'^delete/(?P<id>\d+)/$', app.views.post_views.delete_post, name="delete"),
     path('profile', views.profile_view, name="profile"),
     path('profile/edit/', views.edit_profile, name="edit_profile"),
-    path('post/edit/<int:id>/', post_views.edit_post, name="edit_post")
+    path('post/edit/<int:id>/', post_views.edit_post, name="edit_post"),
+    path('public-posts', app.views.post_views.public_post_view, name="public_posts")
 ]

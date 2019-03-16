@@ -31,15 +31,15 @@
             <i class="fas fa-fw fa-chart-area"></i>
             <span>My Posts</span></a>
     </li>
+{#    <li class="nav-item">#}
+{#        <a class="nav-link" href="{% url 'app:index' %}">#}
+{#            <i class="fas fa-fw fa-chart-area"></i>#}
+{#            <span>@ Mentions</span></a>#}
+{#    </li>#}
     <li class="nav-item">
-        <a class="nav-link" href="{% url 'app:index' %}">
+        <a class="nav-link" href="{% url 'app:public_posts' %}">
             <i class="fas fa-fw fa-chart-area"></i>
-            <span>@ Mentions</span></a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="{% url 'app:index' %}">
-            <i class="fas fa-fw fa-chart-area"></i>
-            <span>Public Activity</span></a>
+            <span>Public Posts</span></a>
     </li>
 
 
