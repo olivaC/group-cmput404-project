@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+
+{% block page_title %}
+    401 Group 10 | Author
+{% endblock %}
+
+{% block content %}
+    <h1 class="h3 mb-4 text-gray-800">Author</h1>
+    <div>
+        {% for author in authors %}
+            <div class="card shadow mb-4">
+                <!-- Card Header - Accordion -->
+                <a href="/author/{{ author.id }}" class="d-block card-header py-3" role="button"
+                   aria-expanded="true" aria-controls="collapseCardExample">
+                    <h6 class="m-0 font-weight-bold text-primary">{{ author.username }}</h6>
+
+                </a>
+                <!-- Card Content - Collapse -->
+                <div class="collapse show" id="collapseCardExample{{ author.id }}">
+                    <div class="card-body">
+                        {{ author.user.first_name}} {{ author.user.last_name }}
+                    </div>
+                    <div class="card-footer">
+                        <span>
+                            <a href="" class="btn btn-warning">Follow</a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

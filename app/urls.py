@@ -27,5 +27,6 @@ urlpatterns = [
     path('author/<uuid:id>', views.profile_view, name="profile"),
     path('profile/edit/', views.edit_profile, name="edit_profile"),
     path('post/edit/<int:id>/', post_views.edit_post, name="edit_post"),
-    path('public-posts', app.views.post_views.public_post_view, name="public_posts")
+    path('public-posts', app.views.post_views.public_post_view, name="public_posts"),
+    path('search/', views.search_view, name="search_author")
 ]
