@@ -22,6 +22,7 @@ class Author(models.Model):
     github_url = models.CharField(max_length=100, blank=True, null=True)  # Optional
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
     url = models.CharField(max_length=150, blank=True, null=True)
+    friends = models.ManyToManyField("self", blank=True, related_name='author_friends')
 
     @property
     def full_name(self):
@@ -82,28 +83,36 @@ class Friend(models.Model):
 
 
 POST_PRIVACY = (
-    ('Only me', 'Only me'),
-    ('All friends on my host', 'All friends on my host'),
-    ('All friends', 'All friends'),
-    ('My friends friends', 'My friends friends'),
-    ('Public', 'Public'),
+    ('Private', 'PRIVATE'),
+    ('All friends on my host', 'SERVERONLY'),
+    ('All friends', 'FRIENDS'),
+    ('My friends friends', 'FOAF'),
+    ('Public', 'PUBLIC'),
+)
+
+POST_CONTENT_TYPE = (
+    ('Plain Text', 'text/plain'),
+    ('Markdown', 'text/markdown')
 )
 
 
 class Post(models.Model):
     # TODO: Finish this class
     author = models.ForeignKey(Author, related_name='authorPost', on_delete=models.CASCADE)
-    date_created = models.DateTimeField(auto_now=True)
+    published = models.DateTimeField(auto_now=True)
     title = models.CharField(max_length=100, blank=True, null=True)
     description = models.CharField(max_length=50, blank=True, null=True)  # brief description
-    privacy = models.CharField(max_length=100, choices=POST_PRIVACY, default='Only me')
-    text = models.TextField(default="")
+    visibility = models.CharField(max_length=100, choices=POST_PRIVACY, default='Private')
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    content = models.TextField(default="")
+    contentType = models.CharField(max_length=100, choices=POST_CONTENT_TYPE, default='Plain Text')
+    unlisted = models.BooleanField(default=False)
 
     def __str__(self):
-        return "{} - {} - {}".format(self.author, self.date_created, self.privacy)
+        return "{} - {} - {}".format(self.author, self.published, self.visibility)
 
     def __repr__(self):
-        return "{} - {} - {}".format(self.author, self.date_created, self.privacy)
+        return "{} - {} - {}".format(self.author, self.published, self.visibility)
 
 
 class Image(models.Model):
