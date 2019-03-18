@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 
 import app.views.post_views
-from app.views import api_views, views, post_views
+from app.views import api_views, views, post_views, user_views
 from django.conf.urls import url
 
 app_name = 'app'
@@ -26,5 +26,7 @@ urlpatterns = [
     url(r'^delete/(?P<id>\d+)/$', app.views.post_views.delete_post, name="delete"),
     path('profile', views.profile_view, name="profile"),
     path('profile/edit/', views.edit_profile, name="edit_profile"),
-    path('post/edit/<int:id>/', post_views.edit_post, name="edit_post")
+    path('post/edit/<int:id>/', post_views.edit_post, name="edit_post"),
+    path('authors', user_views.all_author_view, name="all_authors"),
+    path('authors/follow/<str:id>/', user_views.follow_view, name="follow"),
 ]

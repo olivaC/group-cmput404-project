@@ -27,24 +27,6 @@ def index(request):
     request.context['user'] = user
 
     posts = Post.objects.all().filter(author=user.user).order_by('-id')
-
-    if request.method == 'POST':
-        next = request.POST.get("next", reverse("app:index"))
-        form = PostCreateForm(request.POST)
-        try:
-            if form.is_valid():
-                if form.cleaned_data.get('text'):
-                    Post.objects.create(author=user.user, text=form.cleaned_data.get('text'))
-                    return HttpResponseRedirect(reverse('app:index'))
-            request.context['next'] = next
-            messages.warning(request, 'Cannot post something empty!')
-
-
-        except:
-            request.context['next'] = request.GET.get('next', reverse("app:index"))
-
-    form = PostCreateForm()
-    request.context['form'] = form
     request.context['posts'] = posts
 
     return render(request, 'index.html', request.context)
@@ -209,5 +191,3 @@ def get_image(request, username, filename, encoding=""):
                 return HttpResponse(file.read(), content_type=mimeType)
     except (FileNotFoundError, ObjectDoesNotExist) as e:
         return HttpResponse(path, status=404)
-
-
