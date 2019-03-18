@@ -83,16 +83,16 @@ class Friend(models.Model):
 
 
 POST_PRIVACY = (
-    ('Private', 'PRIVATE'),
-    ('All friends on my host', 'SERVERONLY'),
-    ('All friends', 'FRIENDS'),
-    ('My friends friends', 'FOAF'),
-    ('Public', 'PUBLIC'),
+    ('PRIVATE', 'Private'),
+    ('SERVERONLY', 'All friends on my host'),
+    ('FRIENDS', 'All friends'),
+    ('FOAF', 'My friends friends'),
+    ('PUBLIC', 'Public'),
 )
 
 POST_CONTENT_TYPE = (
-    ('Plain Text', 'text/plain'),
-    ('Markdown', 'text/markdown')
+    ('text/plain', 'Plain Text'),
+    ('text/markdown', 'Markdown')
 )
 
 
