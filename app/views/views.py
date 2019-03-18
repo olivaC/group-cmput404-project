@@ -207,3 +207,18 @@ def get_image(request, username, filename, encoding=""):
                 return HttpResponse(file.read(), content_type=mimeType)
     except (FileNotFoundError, ObjectDoesNotExist) as e:
         return HttpResponse(path, status=404)
+
+
+def search_view(request, username=None):
+    print('hi')
+    queryset_list = Author.objects.all()
+    query = request.GET.get("q")
+    if query:
+        queryset_list = queryset_list.filter(username__icontains=query)
+
+    else:
+        return HttpResponseRedirect('/search/')
+
+    request.context['authors'] = queryset_list
+
+    return render(request, 'search_author.html', request.context)
