@@ -32,13 +32,11 @@ def index(request):
     return render(request, 'index.html', request.context)
 
 
-@login_required
-def profile_view(request):
-    user = request.user
-    author = get_object_or_404(Author, user=user)
-    args = {'author': author}
+def profile_view(request, id=None):
+    author = get_object_or_404(Author, id=id)
+    request.context['author'] = author
 
-    return render(request, 'profile.html', args)
+    return render(request, 'profile.html', request.context)
 
 
 def edit_profile(request):

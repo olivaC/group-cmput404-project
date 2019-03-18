@@ -107,3 +107,11 @@ def create_post_view(request):
     request.context['form'] = form
 
     return render(request, 'posts/create_post.html', request.context)
+
+
+def public_post_view(request):
+    posts = Post.objects.all().filter(privacy="Public").order_by('-id')
+
+    request.context['posts'] = posts
+
+    return render(request, 'posts/public_posts.html', request.context)

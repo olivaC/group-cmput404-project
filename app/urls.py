@@ -24,9 +24,10 @@ urlpatterns = [
     path('my-posts', app.views.post_views.my_posts_view, name="my_posts"),
     path('create-post', app.views.post_views.create_post_view, name='create_post'),
     url(r'^delete/(?P<id>\d+)/$', app.views.post_views.delete_post, name="delete"),
-    path('profile', views.profile_view, name="profile"),
+    path('author/<uuid:id>', views.profile_view, name="profile"),
     path('profile/edit/', views.edit_profile, name="edit_profile"),
     path('post/edit/<int:id>/', post_views.edit_post, name="edit_post"),
     path('authors', user_views.all_author_view, name="all_authors"),
     path('authors/follow/<str:id>/', user_views.follow_view, name="follow"),
+    path('public-posts', app.views.post_views.public_post_view, name="public_posts")
 ]
