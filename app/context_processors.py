@@ -4,7 +4,6 @@ from app.models import *
 
 
 def add_variable_to_context(request):
-    x = request
     if request.user.is_authenticated:
         author = request.user.user
         requests = FollowRequest.objects.all().filter(friend=author).filter(acknowledged=False)

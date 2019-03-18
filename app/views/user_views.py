@@ -9,9 +9,12 @@ from app.models import Author, FollowRequest
 @login_required
 def all_author_view(request):
     user = request.user
+    current_author = request.user.user
     authors = Author.objects.all().order_by('username')
     request.context['user'] = user
     request.context['authors'] = authors
+    following = FollowRequest.objects.all().filter(author=current_author)
+    request.context['following'] = following
 
     return render(request, 'authors/all_authors.html', request.context)
 
