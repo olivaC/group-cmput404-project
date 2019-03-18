@@ -39,47 +39,14 @@ class Author(models.Model):
         super(self.__class__, self).save(*args, **kwargs)
 
 
-class FriendRequest(models.Model):
-    """
-    Friend class, status will indicate whether a request was rejected or accepted.
-
-    Example: Author A and Author B;
-
-    A friend requests B --> FR = FriendRequest()
-    A is following B
-        1) Check if B exists as a requester
-        2) If B exists as a requester, check if A is requestee, check if A already accepted a friend request
-        3) If A already accepted a friend request, create a Friend object
-    """
-    requester = models.ForeignKey(Author, related_name='requester', on_delete=models.CASCADE)
-    requestee = models.ForeignKey(Author, related_name='requestee', on_delete=models.CASCADE)
-    date_created = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=False)
+class FollowRequest(models.Model):
+    author = models.ForeignKey(Author, related_name='author_request', on_delete=models.CASCADE)
+    friend = models.ForeignKey(Author, related_name='friend_request', on_delete=models.CASCADE)
     acknowledged = models.BooleanField(default=False)
-
-    def __str__(self):
-        return "{} to {} on {}".format(self.requester, self.requestee, self.date_created)
-
-    def save(self, *args, **kwargs):
-        super(self.__class__, self).save(*args, **kwargs)
-
-        # Check and make a Friend model
-        requester_models = FriendRequest.objects.filter(requester=self.requestee).filter(acknowledged=True).filter(
-            status=True)
-        if requester_models:
-            Friend.objects.create(friend1=self.requester, friend2=self.requestee)
-
-
-class Friend(models.Model):
-    """
-    Only create by checking FriendRequest.
-    """
-    friend1 = models.ForeignKey(Author, related_name='friend1', on_delete=models.CASCADE)
-    friend2 = models.ForeignKey(Author, related_name='friend2', on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "{} {}".format(self.friend1.username, self.friend2.username)
+        return "{} {} - {}".format(self.author.username, self.friend.username, self.acknowledged)
 
 
 POST_PRIVACY = (

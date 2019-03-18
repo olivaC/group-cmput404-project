@@ -234,9 +234,9 @@ class PostApiTest(APITestCase):
     #         author = Author.objects.get(id=2)
     #         Post.objects.create(author=author, private=True, text=text)
 
-        # resp = self.client.get('/api/posts/')
-        # self.assertEqual(resp.status_code, 200)
-        # self.assertEqual(len(resp.data), 3)
+    # resp = self.client.get('/api/posts/')
+    # self.assertEqual(resp.status_code, 200)
+    # self.assertEqual(len(resp.data), 3)
 
     def test_post_all_posts_user(self):
         # TODO: Once the user and author login stuff is done.
