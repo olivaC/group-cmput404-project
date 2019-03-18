@@ -29,4 +29,5 @@ urlpatterns = [
     path('authors', user_views.all_author_view, name="all_authors"),
     path('authors/follow/<str:id>/', user_views.follow_view, name="follow"),
     path('public-posts', app.views.post_views.public_post_view, name="public_posts")
+    path('search/', views.search_view, name="search_author")
 ]
