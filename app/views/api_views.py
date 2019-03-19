@@ -18,18 +18,13 @@ class UserView(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
 
-class PostView(viewsets.ModelViewSet):
+class PublicPostView(viewsets.ModelViewSet):
     """
     The api view to retrieve posts.
     """
     serializer_class = PostSerializer
-    allowed_methods = ['GET', 'POST', 'PATCH']
+    allowed_methods = ['GET']
 
     def get_queryset(self):
-        queryset = Post.objects.all()
-        user = self.request.user
-        if user.is_staff:
-            return queryset
-        else:
-            queryset = queryset.filter(author=user.user)
-            return queryset
+        queryset = Post.objects.all().filter(visibility="PUBLIC")
+        return queryset
