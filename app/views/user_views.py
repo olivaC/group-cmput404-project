@@ -35,10 +35,10 @@ def follow_view(request, id):
 def unfollow_view(request, id):
     current_author = request.user.user
     auth = Author.objects.filter(id=id).first()
-    if auth:
-        current_author.add(auth)
-        current_author.save()
-    return HttpResponseRedirect(reverse("app:all_authors"))
+    unfollow = FollowRequest.objects.all().filter(author=current_author).filter(friend=auth)
+    if unfollow:
+        unfollow.delete()
+    return HttpResponseRedirect(reverse("app:following"))
 
 
 @login_required

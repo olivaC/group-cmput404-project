@@ -16,6 +16,12 @@
                         - {{ follower.date_created }}
                     </h6>
                 </div>
+                <div class="card-footer">
+                        <span>
+                                <a href="{% url 'app:unfollow' id=follower.friend.id %}"
+                                   class="btn btn-danger">Unfollow</a>
+                        </span>
+                </div>
             </div>
         {% endfor %}
     </div>

@@ -20,7 +20,7 @@
                 <div class="card-footer">
                         <span>
                                 <a href="{% url 'app:follow' id=author.id %}" class="btn btn-warning">Follow</a>
-                                <a href="" class="btn btn-danger">Unfollow</a>
+                                <a href="{% url 'app:unfollow' id=author.id %}" class="btn btn-danger">Unfollow</a>
                         </span>
                 </div>
             </div>
