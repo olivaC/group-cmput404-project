@@ -22,6 +22,7 @@ class Author(models.Model):
     github_url = models.CharField(max_length=100, blank=True, null=True)  # Optional
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
     url = models.CharField(max_length=150, blank=True, null=True)
+    friends = models.ManyToManyField("self", blank=True, related_name='author_friends')
 
     @property
     def full_name(self):
@@ -38,72 +39,47 @@ class Author(models.Model):
         super(self.__class__, self).save(*args, **kwargs)
 
 
-class FriendRequest(models.Model):
-    """
-    Friend class, status will indicate whether a request was rejected or accepted.
-
-    Example: Author A and Author B;
-
-    A friend requests B --> FR = FriendRequest()
-    A is following B
-        1) Check if B exists as a requester
-        2) If B exists as a requester, check if A is requestee, check if A already accepted a friend request
-        3) If A already accepted a friend request, create a Friend object
-    """
-    requester = models.ForeignKey(Author, related_name='requester', on_delete=models.CASCADE)
-    requestee = models.ForeignKey(Author, related_name='requestee', on_delete=models.CASCADE)
-    date_created = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=False)
+class FollowRequest(models.Model):
+    author = models.ForeignKey(Author, related_name='author_request', on_delete=models.CASCADE)
+    friend = models.ForeignKey(Author, related_name='friend_request', on_delete=models.CASCADE)
     acknowledged = models.BooleanField(default=False)
-
-    def __str__(self):
-        return "{} to {} on {}".format(self.requester, self.requestee, self.date_created)
-
-    def save(self, *args, **kwargs):
-        super(self.__class__, self).save(*args, **kwargs)
-
-        # Check and make a Friend model
-        requester_models = FriendRequest.objects.filter(requester=self.requestee).filter(acknowledged=True).filter(
-            status=True)
-        if requester_models:
-            Friend.objects.create(friend1=self.requester, friend2=self.requestee)
-
-
-class Friend(models.Model):
-    """
-    Only create by checking FriendRequest.
-    """
-    friend1 = models.ForeignKey(Author, related_name='friend1', on_delete=models.CASCADE)
-    friend2 = models.ForeignKey(Author, related_name='friend2', on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "{} {}".format(self.friend1.username, self.friend2.username)
+        return "{} {} - {}".format(self.author.username, self.friend.username, self.acknowledged)
 
 
 POST_PRIVACY = (
-    ('Only me', 'Only me'),
-    ('All friends on my host', 'All friends on my host'),
-    ('All friends', 'All friends'),
-    ('My friends friends', 'My friends friends'),
-    ('Public', 'Public'),
+    ('PRIVATE', 'Private'),
+    ('SERVERONLY', 'All friends on my host'),
+    ('FRIENDS', 'All friends'),
+    ('FOAF', 'My friends friends'),
+    ('PUBLIC', 'Public'),
+)
+
+POST_CONTENT_TYPE = (
+    ('text/plain', 'Plain Text'),
+    ('text/markdown', 'Markdown')
 )
 
 
 class Post(models.Model):
     # TODO: Finish this class
     author = models.ForeignKey(Author, related_name='authorPost', on_delete=models.CASCADE)
-    date_created = models.DateTimeField(auto_now=True)
+    published = models.DateTimeField(auto_now=True)
     title = models.CharField(max_length=100, blank=True, null=True)
     description = models.CharField(max_length=50, blank=True, null=True)  # brief description
-    privacy = models.CharField(max_length=100, choices=POST_PRIVACY, default='Only me')
-    text = models.TextField(default="")
+    visibility = models.CharField(max_length=100, choices=POST_PRIVACY, default='Private')
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    content = models.TextField(default="")
+    contentType = models.CharField(max_length=100, choices=POST_CONTENT_TYPE, default='Plain Text')
+    unlisted = models.BooleanField(default=False)
 
     def __str__(self):
-        return "{} - {} - {}".format(self.author, self.date_created, self.privacy)
+        return "{} - {} - {}".format(self.author, self.published, self.visibility)
 
     def __repr__(self):
-        return "{} - {} - {}".format(self.author, self.date_created, self.privacy)
+        return "{} - {} - {}".format(self.author, self.published, self.visibility)
 
 
 class Image(models.Model):
@@ -140,6 +116,6 @@ def create_user_author(sender, instance, created, **kwargs):
     if created:
         Author.objects.create(user=instance, host_url=DOMAIN)
         instance.user.author_id = uuid.uuid4()
-        instance.user.url = "{}/author/{}".format(instance.user.host_url, instance.user.author_id)
+        instance.user.url = "{}/api/author/{}".format(instance.user.host_url, instance.user.author_id)
         instance.user.username = instance.username
         instance.user.save()

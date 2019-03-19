@@ -15,15 +15,19 @@
                    role="button"
                    aria-expanded="true" aria-controls="collapseCardExample">
                     <h6 class="m-0 font-weight-bold text-primary">{{ post.title }} by {{ post.author.username }}
-                        <br>{{ post.date_created }}</h6>
+                        <br>{{ post.published }}</h6>
 
                 </a>
                 <!-- Card Content - Collapse -->
                 <div class="collapse show" id="collapseCardExample{{ post.id }}">
                     <div class="card-body">
-                        {{ post.text }}
+                        {{ post.content }}
                     </div>
-
+                </div>
+                <div class="card-footer">
+                        <span>
+                            <a href="" class="btn btn-outline-primary">Comment</a>
+                        </span>
                 </div>
             </div>
         {% endfor %}

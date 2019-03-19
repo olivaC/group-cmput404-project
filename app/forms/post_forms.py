@@ -7,13 +7,13 @@ from app.models import Post, Author
 
 
 class PostCreateForm(ModelForm):
-    text = forms.Textarea()
+    content = forms.Textarea()
     title = forms.CharField()
     description = forms.CharField()
 
     class Meta:
         model = Post
-        exclude = ('author', 'date_created')
+        exclude = ('author', 'published')
 
 
 class EditProfileForm(ModelForm):
