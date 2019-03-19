@@ -116,6 +116,6 @@ def create_user_author(sender, instance, created, **kwargs):
     if created:
         Author.objects.create(user=instance, host_url=DOMAIN)
         instance.user.author_id = uuid.uuid4()
-        instance.user.url = "{}/author/{}".format(instance.user.host_url, instance.user.author_id)
+        instance.user.url = "{}/api/author/{}".format(instance.user.host_url, instance.user.author_id)
         instance.user.username = instance.username
         instance.user.save()

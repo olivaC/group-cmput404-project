@@ -8,15 +8,19 @@
 {% block content %}
     <h1 class="h3 mb-4 text-gray-800">Followers</h1>
     <div>
-        {% for follower in followers %}
-            <div class="card shadow mb-4">
-                <!-- Card Header - Accordion -->
-                <div class="d-block card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">{{ follower.author.username }}
-                        - {{ follower.date_created }}
-                    </h6>
+        {% if followers %}
+            {% for follower in followers %}
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Accordion -->
+                    <div class="d-block card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">{{ follower.author.username }}
+                            - {{ follower.date_created }}
+                        </h6>
+                    </div>
                 </div>
-            </div>
-        {% endfor %}
+            {% endfor %}
+        {% else %}
+            You currently have no followers.
+        {% endif %}
     </div>
 {% endblock %}

@@ -28,6 +28,11 @@ def follow_view(request, id):
             author=current_author,
             friend=auth
         )
+
+    auth_follow = FollowRequest.objects.all().filter(friend=current_author).filter(author=auth)
+    if auth_follow:
+        current_author.friends.add(auth)
+        current_author.save()
     return HttpResponseRedirect(reverse("app:all_authors"))
 
 
@@ -38,7 +43,21 @@ def unfollow_view(request, id):
     unfollow = FollowRequest.objects.all().filter(author=current_author).filter(friend=auth)
     if unfollow:
         unfollow.delete()
+        current_author.friends.remove(auth)
+        current_author.save()
     return HttpResponseRedirect(reverse("app:following"))
+
+
+@login_required
+def unfollow_mutual_view(request, id):
+    current_author = request.user.user
+    auth = Author.objects.filter(id=id).first()
+    unfollow = FollowRequest.objects.all().filter(author=current_author).filter(friend=auth)
+    if unfollow:
+        unfollow.delete()
+        current_author.friends.remove(auth)
+        current_author.save()
+    return HttpResponseRedirect(reverse("app:mutual_friends"))
 
 
 @login_required
@@ -73,3 +92,10 @@ def all_following_view(request):
     request.context['following'] = following
 
     return render(request, 'authors/following.html', request.context)
+
+
+@login_required
+def mutual_friends_view(request):
+    friends = request.user.user.friends.all()
+    request.context['friends'] = friends
+    return render(request, 'authors/mutual_friends.html', request.context)

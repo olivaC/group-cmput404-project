@@ -29,9 +29,11 @@ urlpatterns = [
     path('authors', user_views.all_author_view, name="all_authors"),
     path('authors/follow/<uuid:id>/', user_views.follow_view, name="follow"),
     path('authors/unfollow/<uuid:id>/', user_views.unfollow_view, name="unfollow"),
+    path('authors/unfollow-mutual/<uuid:id>/', user_views.unfollow_mutual_view, name="unfollow_mutual"),
     path('public-posts', app.views.post_views.public_post_view, name="public_posts"),
     path('search/', views.search_view, name="search_author"),
     path('new_followers/', user_views.new_followers_view, name="new_followers"),
     path('followers/', user_views.all_followers_view, name="followers"),
     path('following/', user_views.all_following_view, name="following"),
+    path('mutual-friends/', user_views.mutual_friends_view, name="mutual_friends"),
 ]
