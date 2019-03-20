@@ -32,5 +32,5 @@ class PostView(viewsets.ModelViewSet):
         else:
             author = self.request.user.user
             posts = Post.objects.all().filter(author=author) | Post.objects.all().filter(visibility="PUBLIC")
-            posts = posts.order_by('published')
+            posts = posts.order_by('-published')
             return posts

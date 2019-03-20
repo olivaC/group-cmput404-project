@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.forms import model_to_dict
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 from django.http import HttpResponse
 from app.models import *
 from django.core.exceptions import ObjectDoesNotExist
@@ -22,11 +22,13 @@ from app.utilities import unquote_redirect_url
 
 
 @login_required
+@requires_csrf_token
 def index(request):
     user = request.user
     request.context['user'] = user
 
-    posts = Post.objects.all().filter(author=user.user).order_by('-id')
+    posts = Post.objects.all().filter(author=user.user) | Post.objects.all().filter(visibility="PUBLIC")
+    posts = posts.order_by('-published')
     request.context['posts'] = posts
 
     return render(request, 'index.html', request.context)
