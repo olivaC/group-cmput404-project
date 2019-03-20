@@ -27,36 +27,16 @@ def index(request):
     request.context['user'] = user
 
     posts = Post.objects.all().filter(author=user.user).order_by('-id')
-
-    if request.method == 'POST':
-        next = request.POST.get("next", reverse("app:index"))
-        form = PostCreateForm(request.POST)
-        try:
-            if form.is_valid():
-                if form.cleaned_data.get('text'):
-                    Post.objects.create(author=user.user, text=form.cleaned_data.get('text'))
-                    return HttpResponseRedirect(reverse('app:index'))
-            request.context['next'] = next
-            messages.warning(request, 'Cannot post something empty!')
-
-
-        except:
-            request.context['next'] = request.GET.get('next', reverse("app:index"))
-
-    form = PostCreateForm()
-    request.context['form'] = form
     request.context['posts'] = posts
 
     return render(request, 'index.html', request.context)
 
 
-@login_required
-def profile_view(request):
-    user = request.user
-    author = get_object_or_404(Author, user=user)
-    args = {'author': author}
+def profile_view(request, id=None):
+    author = get_object_or_404(Author, id=id)
+    request.context['author'] = author
 
-    return render(request, 'profile.html', args)
+    return render(request, 'profile.html', request.context)
 
 
 def edit_profile(request):
@@ -211,3 +191,16 @@ def get_image(request, username, filename, encoding=""):
         return HttpResponse(path, status=404)
 
 
+def search_view(request, username=None):
+    print('hi')
+    queryset_list = Author.objects.all()
+    query = request.GET.get("q")
+    if query:
+        queryset_list = queryset_list.filter(username__icontains=query)
+
+    else:
+        return HttpResponseRedirect('/search/')
+
+    request.context['authors'] = queryset_list
+
+    return render(request, 'search_author.html', request.context)

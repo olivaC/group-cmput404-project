@@ -66,8 +66,10 @@ def edit_post(request, id=None):
         if form.is_valid():
             post.title = form.cleaned_data.get('title')
             post.description = form.cleaned_data.get('description')
-            post.privacy = form.cleaned_data.get('privacy')
-            post.text = form.cleaned_data.get('text')
+            post.visibility = form.cleaned_data.get('visibility')
+            post.content = form.cleaned_data.get('content')
+            post.unlisted = form.cleaned_data.get('unlisted')
+            post.contentType = form.cleaned_data.get('contentType')
             post.save()
             return HttpResponseRedirect(reverse('app:my_posts'))
 
@@ -91,10 +93,13 @@ def create_post_view(request):
         form = PostCreateForm(request.POST)
         try:
             if form.is_valid():
-                if form.cleaned_data.get('text'):
-                    Post.objects.create(author=user.user, text=form.cleaned_data.get('text'),
+                if form.cleaned_data.get('content'):
+                    Post.objects.create(author=user.user, content=form.cleaned_data.get('content'),
                                         description=form.cleaned_data.get('description'),
-                                        title=form.cleaned_data.get('title'), privacy=form.cleaned_data.get('privacy'))
+                                        title=form.cleaned_data.get('title'),
+                                        visibility=form.cleaned_data.get('visibility'),
+                                        unlisted=form.cleaned_data.get('unlisted'),
+                                        contentType=form.cleaned_data.get('contentType'))
                     return HttpResponseRedirect(reverse('app:index'))
             request.context['next'] = next
             messages.warning(request, 'Cannot post something empty!')
@@ -107,3 +112,11 @@ def create_post_view(request):
     request.context['form'] = form
 
     return render(request, 'posts/create_post.html', request.context)
+
+
+def public_post_view(request):
+    posts = Post.objects.all().filter(visibility="PUBLIC").order_by('-id')
+
+    request.context['posts'] = posts
+
+    return render(request, 'posts/public_posts.html', request.context)

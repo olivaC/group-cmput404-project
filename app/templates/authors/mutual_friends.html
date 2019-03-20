@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+
+{% block page_title %}
+    401 Group | All Following
+{% endblock %}
+
+{% block content %}
+    <h1 class="h3 mb-4 text-gray-800">Mutual Friends</h1>
+    <div>
+        {% if friends %}
+            {% for friend in friends %}
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Accordion -->
+                    <div class="d-block card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">{{ friend.username }}
+                            - {{ friend.host_url }}
+                        </h6>
+                    </div>
+                    <div class="card-footer">
+                        <span>
+                                <a href="{% url 'app:unfollow_mutual' id=friend.id %}"
+                                   class="btn btn-danger">Unfollow</a>
+                        </span>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <h2>You currently have no mutual friends.</h2>
+        {% endif %}
+    </div>
+{% endblock %}

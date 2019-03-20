@@ -6,13 +6,14 @@
 {% endblock %}
 
 {% block content %}
-    <h1 class="h3 mb-4 text-gray-800">Edit Post</h1>
+    <h1 class="h3 mb-4 text-gray-800">Create Post</h1>
     <div>
         <form action="" method="POST">
             {% csrf_token %}
             <div class="col-lg-8">
                 <!-- /.panel-heading -->
                 <div class="form-group row">
+                    <label for="id_title" class="col-form-label">Title<span class="text-danger">*</span></label>
                     {{ form.post.errors }}
                     <input type="text" id="id_title" name="title" class="form-control"
                            placeholder="Post title"
@@ -20,6 +21,8 @@
 
                 </div>
                 <div class="form-group row">
+                    <label for="id_description" class="col-form-label">Brief Description<span
+                            class="text-danger">*</span></label>
 
                     <input type="text" id="id_description" name="description" class="form-control"
                            placeholder="Brief description"
@@ -27,12 +30,26 @@
 
                 </div>
                 <div class="form-group row">
-                    <textarea id="id_text" name="text" placeholder="Post Text"
-                              class="form-control" required>{{ form.text.value|default:"" }}</textarea>
+                    <label for="id_text" class="col-form-label">Content<span class="text-danger">*</span></label>
+
+                    <textarea id="id_text" name="content" placeholder="Post Content"
+                              class="form-control" required>{{ form.content.value|default:"" }}</textarea>
 
                 </div>
                 <div class="form-group row">
-                    {{ form.privacy }}
+                    <label class="col-form-label">Content Type<span class="text-danger">*</span></label>
+
+                    {{ form.contentType }}
+                </div>
+                <div class="form-group row">
+                    <label class="col-form-label">Visibility<span class="text-danger">*</span></label>
+
+                    {{ form.visibility }}
+                </div>
+                <div class="form-group row">
+                    <label class="col-form-label">Unlisted<span class="text-danger">*</span></label>
+
+                    {{ form.unlisted }}
                 </div>
             </div>
             {% if messages %}
