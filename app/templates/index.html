@@ -8,6 +8,35 @@
 {% block content %}
     <h1 class="h3 mb-4 text-gray-800">Welcome {{ user.first_name }} {{ user.last_name }}</h1>
     <div>
+        <script>
+            "use strict";                                                       
+            function asyncFetch(endpoint, callback) {
+                fetch(endpoint)
+                    .then(r => r.json())
+                    .then(json => {
+                        console.log(json);
+                        callback(json);
+                    })
+                    .catch(e => console.log(e));
+            }
+
+            async function putStream() {
+                var posts;
+                var activities;
+                var githubURL = "{{user.user.github_url}}"; // not safe          
+                console.log(githubURL);
+
+                await asyncFetch('/api/posts/', json => posts = json);
+                await asyncFetch(githubURL, json => activities = json);
+                console.log(activities);
+
+            }
+
+            putStream();
+
+
+        </script>
+
         {% for post in posts %}
             <div class="card shadow mb-4">
                 <!-- Card Header - Accordion -->
