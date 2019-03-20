@@ -16,8 +16,8 @@
                     <a href="/author/{{ author.id }}" role="button" aria-expanded="true">
                         <h6 class="m-0 font-weight-bold text-primary">{{ author.username }}</h6>
                     </a>
-                    <h6 class="m-0 font-weight-bold text-primary">URL {{ author.host_url }}
-                    </h6>
+                    <h6>{{ author.user.first_name }} {{ author.user.last_name }}</h6>
+                    <h6>URL {{ author.host_url }}</h6>
                 </div>
 
                 <!-- Card Content - Collapse -->

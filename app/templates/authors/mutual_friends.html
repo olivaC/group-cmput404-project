@@ -16,8 +16,8 @@
                         <a href="/author/{{ friend.id }}" role="button" aria-expanded="true">
                             <h6 class="m-0 font-weight-bold text-primary">{{ friend.username }}</h6>
                         </a>
-                        <h6 class="m-0 font-weight-bold text-primary">URL {{ friend.host_url }}
-                        </h6>
+                        <h6>{{ friend.user.first_name }} {{ friend.user.last_name }}</h6>
+                        <h6>URL {{ friend.host_url }}</h6>
                     </div>
                     <div class="card-footer">
                         <span>

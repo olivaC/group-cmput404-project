@@ -16,8 +16,8 @@
                         <a href="/author/{{ follower.author.id }}" role="button" aria-expanded="true" >
                             <h6 class="m-0 font-weight-bold text-primary">{{ follower.author.username }}</h6>
                         </a>
-                        <h6 class="m-0 font-weight-bold text-primary">Created: {{ follower.date_created }}
-                        </h6>
+                        <h6>{{ follower.author.user.first_name }} {{ follower.author.user.last_name }}</h6>
+
                     </div>
                 </div>
             {% endfor %}
