@@ -1,6 +1,4 @@
 from rest_framework import viewsets
-from rest_framework.generics import DestroyAPIView
-from rest_framework.response import Response
 from rest_framework import permissions
 
 from app.serializers import *
@@ -69,5 +67,3 @@ class FollowRequestView(viewsets.ModelViewSet):
         else:
             queryset = FollowRequest.objects.all().filter(author=self.request.user.user).order_by('-date_created')
             return queryset
-
-
