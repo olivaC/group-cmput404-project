@@ -8,6 +8,7 @@
 {% block content %}
 
     <div class="card-body" style="background-color: white">
+        <img class="icon-circle" src="{{ author.image.url }}">
         <h1 class="m-0 h2 text-gray-800">{{ author.user.first_name }} {{ author.user.last_name }}</h1>
         <div class="h5" >
             {{ author.username }}

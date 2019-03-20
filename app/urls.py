@@ -1,5 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
+from django.conf import settings
+from django.conf.urls.static import static
 
 import app.views.post_views
 from app.views import api_views, views, post_views, user_views
@@ -36,4 +38,4 @@ urlpatterns = [
     path('followers/', user_views.all_followers_view, name="followers"),
     path('following/', user_views.all_following_view, name="following"),
     path('mutual-friends/', user_views.mutual_friends_view, name="mutual_friends"),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
