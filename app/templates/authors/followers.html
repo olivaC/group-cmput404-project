@@ -13,8 +13,10 @@
                 <div class="card shadow mb-4">
                     <!-- Card Header - Accordion -->
                     <div class="d-block card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">{{ follower.author.username }}
-                            - {{ follower.date_created }}
+                        <a href="/author/{{ follower.author.id }}" role="button" aria-expanded="true" >
+                            <h6 class="m-0 font-weight-bold text-primary">{{ follower.author.username }}</h6>
+                        </a>
+                        <h6 class="m-0 font-weight-bold text-primary">Created: {{ follower.date_created }}
                         </h6>
                     </div>
                 </div>
