@@ -1,0 +1,30 @@
+# Travis yml file taken some parts from https://github.com/travis-ci/travis-ci/issues/10118
+sudo: required
+language: python
+python:
+  - "3.5"
+# command to install dependencies
+cache: pip
+install:
+  - pip install -r requirements.txt
+# browser source
+addons:
+  apt:
+    sources:
+    - google-chrome
+    packages:
+    - google-chrome-stable
+# install browser and driver
+before_script:
+  - wget http://chromedriver.storage.googleapis.com/2.42/chromedriver_linux64.zip
+  - unzip chromedriver_linux64.zip -d /home/travis/virtualenv/python3.5/bin/
+  - export CHROME_BIN=chromium-browser
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - mysql -e 'create database test;' -u root
+  - sleep 3
+# command to run tests
+script:
+  - python manage.py makemigrations
+  - python manage.py migrate
+  - python manage.py test

@@ -1,0 +1,73 @@
+{% load static %}
+
+<!-- Sidebar -->
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+    <!-- Sidebar - Brand -->
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'app:index' %}">
+        <div class="sidebar-brand-text mx-3">Team 10 Social Distribution</div>
+    </a>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider my-0">
+
+    <!-- Nav Item - Dashboard -->
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'app:index' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Stream</span></a>
+    </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider">
+
+    <!-- Heading -->
+    <div class="sidebar-heading">
+        Stream
+    </div>
+
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'app:my_posts' %}">
+            <i class="fas fa-fw fa-user"></i>
+            <span>My Posts</span></a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'app:public_posts' %}">
+            <i class="fas fa-fw fa-chart-area"></i>
+            <span>Public Posts</span></a>
+    </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider">
+
+    <!-- Heading -->
+    <div class="sidebar-heading">
+        Friends
+    </div>
+
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'app:following' %}">
+            <i class="fas fa-fw fa-users"></i>
+            <span>Following</span></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'app:followers' %}">
+            <i class="fas fa-fw fa-users"></i>
+            <span>Followers</span></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'app:mutual_friends' %}">
+            <i class="fas fa-fw fa-users"></i>
+            <span>Mutual Friends</span></a>
+    </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider d-none d-md-block">
+
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+
+</ul>
