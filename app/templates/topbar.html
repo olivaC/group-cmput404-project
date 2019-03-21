@@ -22,7 +22,7 @@
         </div>
     </form>
 
-    <a href="{% url 'app:create_post' %}" class="btn btn-danger">Create New Post</a>
+    <a href="{% url 'app:create_post' %}" class="mr-3 btn btn-danger">Create New Post</a>
     <a href="{% url 'app:all_authors' %}" class="btn btn-primary">All Authors</a>
 
 
@@ -97,7 +97,7 @@
                aria-haspopup="true" aria-expanded="false">
                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ user.first_name }}</span>
                 <i class="fas fa-laugh-wink"></i>
-                {#                <img class="img-profile rounded-circle" src="https://source.unsplash.com/QAB-WJcbgJk/60x60">#}
+{#                <img class="img-profile rounded-circle" src="{{ req.author.image.url }}">#}
             </a>
             <!-- Dropdown - User Information -->
             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">

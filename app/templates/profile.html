@@ -7,15 +7,23 @@
 
 {% block content %}
 
-    <div>
-        <h1 class="h3 mb-4 text-gray-800">Profile</h1>
+    <div class="card-body" style="background-color: white">
+        <img class="m-2" style="object-fit: cover;" width="100" height="100" src="{{ author.image.url }}">
+        <h1 class="m-0 h2 text-gray-800">{{ author.user.first_name }} {{ author.user.last_name }}</h1>
+        <div class="h5" >
+            {{ author.username }}
+            {% if author.github_url is not None %}
+                <p style="display:inline;">| {{ author.github_url }}</p>
+            {% endif %}
+
+        </div>
+
         <hr>
-        {#        <img class="img-profile rounded-circle" src="https://source.unsplash.com/QAB-WJcbgJk/60x60">#}
-        <h2>{{ author.user.first_name }} {{ author.user.last_name }}</h2>
-        <h5>Username: {{ author.username }}</h5>
-        {#        <h5>Email: {{ user.email }}</h5>#}
-        <h5>Bio: {{ author.bio }}</h5>
-        <h5>Github: {{ author.github_url}}</h5>
+        {% if author.bio is not None %}
+            <p>{{ author.bio }}</p>
+        {% endif %}
+
+
     </div>
     {#    <a href="/profile/edit" class="btn btn-primary">Edit</a>#}
 {% endblock %}

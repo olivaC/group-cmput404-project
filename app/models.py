@@ -23,6 +23,7 @@ class Author(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
     url = models.CharField(max_length=150, blank=True, null=True)
     friends = models.ManyToManyField("self", blank=True, related_name='author_friends')
+    image = models.ImageField(default='default.jpg', upload_to='profile_pics')
 
     @property
     def full_name(self):
