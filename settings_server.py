@@ -25,7 +25,10 @@ DATABASES = {
 }
 
 # This will have to change when added to production server
-DOMAIN = "http://127.0.0.1:8000"
+if 'I_AM_HEROKU' in os.environ:
+    DOMAIN = "https://young-plains-33934.herokuapp.com"
+else:
+    DOMAIN = "http://127.0.0.1:8000"
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
