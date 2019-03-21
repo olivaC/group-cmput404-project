@@ -8,9 +8,15 @@
 {% block content %}
 
     <div class="card-body" style="background-color: white">
-        <img class="m-2" style="object-fit: cover;" width="100" height="100" src="{{ author.image.url }}">
+        {% if author.image %}
+            <img class="m-2" style="object-fit: cover;" width="100" height="100" src="{{ author.image.url }}">
+        {% else %}
+            <img class="m-2" style="object-fit: cover;" width="100" height="100"
+                 src="https://www.betwext.com/wp-content/uploads/2018/09/blank-profile-picture-973460_640.png"/>
+        {% endif %}
+
         <h1 class="m-0 h2 text-gray-800">{{ author.user.first_name }} {{ author.user.last_name }}</h1>
-        <div class="h5" >
+        <div class="h5">
             {{ author.username }}
             {% if author.github_url is not None %}
                 <p style="display:inline;">| {{ author.github_url }}</p>

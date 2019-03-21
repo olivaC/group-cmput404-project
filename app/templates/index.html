@@ -13,8 +13,15 @@
                 <!-- Card Header - Accordion -->
                 <div class="d-block card-header py-3">
                     <div class="inline-group">
-                        <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50" height="50"
+
+                        {% if post.author.image %}
+                            <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50" height="50"
                              src="{{ post.author.image.url }}">
+                        {% else %}
+                            <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50"
+                                 height="50"
+                                 src="https://www.betwext.com/wp-content/uploads/2018/09/blank-profile-picture-973460_640.png"/>
+                        {% endif %}
 
                         <a href="/author/{{ post.author.id }}" class="ml-2 font-weight-bold text-primary">
                             {{ post.author.username }}

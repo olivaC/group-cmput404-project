@@ -14,11 +14,18 @@
                     <!-- Card Header - Accordion -->
                     <div class="d-block card-header py-3">
                         <div class="inline-group">
-                            <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50"
-                                 height="50"
-                                 src="{{ follower.author.image.url }}">
+                            {% if follower.author.image %}
+                                <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50"
+                                     height="50"
+                                     src="{{ follower.author.image.url }}">
+                            {% else %}
+                                <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50"
+                                     height="50"
+                                     src="https://www.betwext.com/wp-content/uploads/2018/09/blank-profile-picture-973460_640.png"/>
+                            {% endif %}
+
                             <a href="/author/{{ follower.author.id }}" class="ml-2 font-weight-bold text-primary">
-                                {{ follower.author.username  }}
+                                {{ follower.author.username }}
                             </a>
                             <div style="margin-left: 4em;">
                                 <h6 style="text-transform: uppercase">{{ follower.author.user.first_name }} {{ follower.author.user.last_name }}</h6>
