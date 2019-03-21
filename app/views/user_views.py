@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from app.models import Author, FollowRequest
+from app.models import Author, FollowRequest, Post
 
 
 @login_required
@@ -97,5 +97,9 @@ def all_following_view(request):
 @login_required
 def mutual_friends_view(request):
     friends = request.user.user.friends.all()
+    posts = Post.objects.all().filter(author__id__in=friends).filter(visibility="FRIENDS") | Post.objects.all().filter(
+        author__id__in=friends).filter(visibility="SERVERONLY") | Post.objects.all().filter(
+        author__id__in=friends).filter(visibility="PUBLIC")
     request.context['friends'] = friends
+    request.context['posts'] = posts
     return render(request, 'authors/mutual_friends.html', request.context)

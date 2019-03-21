@@ -12,12 +12,40 @@
             {% for friend in friends %}
                 <div class="card shadow mb-4">
                     <!-- Card Header - Accordion -->
+
                     <div class="d-block card-header py-3">
                         <a href="/author/{{ friend.id }}" role="button" aria-expanded="true">
                             <h6 class="m-0 font-weight-bold text-primary">{{ friend.username }}</h6>
                         </a>
                         <h6>{{ friend.user.first_name }} {{ friend.user.last_name }}</h6>
                         <h6>URL {{ friend.host_url }}</h6>
+
+                    <div class="collapse show" id="collapseCardExample{{ friend.id }}">
+                        <div class="card-body">
+                            {% for post in posts %}
+                                {% if post.author == friend %}
+                                    <div class="card shadow mb-4">
+                                        <!-- Card Header - Accordion -->
+                                        <div class="d-block card-header py-3">
+                                            <h6 class="m-0 font-weight-bold text-primary">{{ post.title }}
+                                                - {{ post.published }}
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            {{ post.content }}
+                                        </div>
+                                        <div class="card-footer">
+                        <span>
+                            <a href="" class="btn btn-outline-primary">Comment</a>
+                        </span>
+                                        </div>
+
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+
+                        </div>
+
                     </div>
                     <div class="card-footer">
                         <span>

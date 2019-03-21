@@ -12,6 +12,8 @@ router = routers.DefaultRouter()
 router.register('author', api_views.AuthorView)
 router.register('users', api_views.UserView)
 router.register('posts', api_views.PostView, base_name='posts')
+router.register('author-posts', api_views.AuthorPostView, base_name='author_posts')
+router.register('follow-request', api_views.FollowRequestView, base_name="follow_request")
 
 urlpatterns = [
     path('api/', include(router.urls)),

@@ -26,8 +26,26 @@ class AuthorSerializers(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ('id', 'author', 'visibility', 'title', 'content', 'published', 'unlisted')
+        fields = ('id', 'published', 'author', 'title', 'content', 'contentType', 'visibility', 'unlisted')
+        depth = 1
 
-    def update(self, instance, validated_data):
-        print(validated_data)
-        x = validated_data
+
+class FollowRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FollowRequest
+        fields = ('id',
+                  'author',
+                  'friend')
+
+    def create(self, validated_data):
+        if validated_data.get('author'):
+            author = validated_data.get('author')
+            friend = validated_data.get('friend')
+            FollowRequest.objects.create(
+                author=author,
+                friend=friend
+            )
+            auth_follow = FollowRequest.objects.all().filter(friend=author).filter(author=friend)
+            if auth_follow:
+                author.friends.add(friend)
+                author.save()
