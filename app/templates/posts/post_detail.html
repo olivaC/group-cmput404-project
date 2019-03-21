@@ -35,7 +35,7 @@
         <h2>Comments</h2>
 
         {% for comment in comments %}
-            {{ comment.author.username }} on {{ comment.published }}<br>
+            {{ comment.author.username }} on {{ comment.published|timezone:"America/Edmonton" }}<br>
 
             {{ comment.comment }}
             <hr>
