@@ -8,23 +8,6 @@
 {% block content %}
     <h1 class="h3 mb-4 text-gray-800">Welcome {{ user.first_name }} {{ user.last_name }}</h1>
     <div>
-        <script>
-            "use strict";
-            var user = "{{user}}";
-            var githubURL = "{{user.user.github_url}}"; // not safe
-            function fetchjson(endpoint){
-                return fetch(endpoint).then(response => response.json()).catch(e => console.log(e));
-            }
-
-
-            Promise.all([fetchjson("/api/posts"), fetchjson(githubURL)])
-            .then(([posts, activities]) => {
-
-            })
-
-
-        </script>
-
         {% for post in posts %}
             <div class="card shadow mb-4">
                 <!-- Card Header - Accordion -->

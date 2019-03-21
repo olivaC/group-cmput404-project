@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.forms import model_to_dict
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
@@ -19,6 +20,10 @@ from app.forms.post_forms import PostCreateForm, EditProfileForm, EditBio
 from app.forms.registration_forms import LoginForm, UserCreateForm
 from app.models import Post, Author
 from app.utilities import unquote_redirect_url
+from requests import get
+from urllib.parse import urlparse
+from json import loads, dumps
+
 
 
 @login_required
@@ -27,6 +32,24 @@ def index(request):
     request.context['user'] = user
 
     posts = Post.objects.all().filter(author=user.user).order_by('-id')
+
+    if user.user.github_url:
+        parse_result = urlparse(user.user.github_url)
+        # api_url = f'{parse_result.scheme}://api.{parse_result.netloc}/users{parse_result.path}/events'
+        events_url = (
+            parse_result.scheme +
+            '://api.' +
+            parse_result.netloc +
+            '/users' +
+            parse_result.path +
+            '/events'
+        )
+        events = loads(get(events_url).content)
+        event_type[]
+
+
+
+
     request.context['posts'] = posts
 
     return render(request, 'index.html', request.context)
@@ -89,12 +112,14 @@ def register_view(request):
         form = UserCreateForm(request.POST)
         try:
             if form.is_valid():
-                user = form.save(request.POST)
-                user.username = form.cleaned_data['username']
+                user = User.objects.create_user(
+                    form.cleaned_data['username'],
+                    password=form.cleaned_data.get('password1')
+                )
                 user.first_name = form.cleaned_data['first_name']
                 user.last_name = form.cleaned_data['last_name']
                 user.save()
-                user = authenticate(username=user.username, password=form.cleaned_data.get('password1'))
+                user = authenticate(username=user.username, password=user.password)
                 login(request, user)
                 return HttpResponseRedirect(reverse('app:index'))
             request.context['next'] = next

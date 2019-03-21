@@ -15,14 +15,14 @@ class Author(models.Model):
     host_url: host url
     github_url: optional github url from an author
     """
-    user = models.OneToOneField(User, related_name='user', on_delete=models.CASCADE, blank=True, null=True)
-    username = models.CharField(max_length=50, unique=True, blank=True, null=True)
-    bio = models.TextField(blank=True, null=True)
-    host_url = models.URLField(blank=True, null=True)  # Url of different hosts
-    github_url = models.CharField(max_length=100, blank=True, null=True)  # Optional
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
-    url = models.CharField(max_length=150, blank=True, null=True)
-    friends = models.ManyToManyField("self", blank=True, related_name='author_friends')
+    user        = models.OneToOneField(User, related_name='user', on_delete=models.CASCADE, blank=True, null=True)
+    username    = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    bio         = models.TextField(blank=True, null=True)
+    host_url    = models.URLField(blank=True, null=True)  # Url of different hosts
+    github_url  = models.CharField(max_length=100, blank=True, null=True)  # Optional
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    url         = models.CharField(max_length=150, blank=True, null=True)
+    friends     = models.ManyToManyField("self", blank=True, related_name='author_friends')
 
     @property
     def full_name(self):
@@ -65,15 +65,15 @@ POST_CONTENT_TYPE = (
 
 class Post(models.Model):
     # TODO: Finish this class
-    author = models.ForeignKey(Author, related_name='authorPost', on_delete=models.CASCADE)
-    published = models.DateTimeField(auto_now=True)
-    title = models.CharField(max_length=100, blank=True, null=True)
+    author      = models.ForeignKey(Author, related_name='authorPost', on_delete=models.CASCADE)
+    published   = models.DateTimeField(auto_now=True)
+    title       = models.CharField(max_length=100, blank=True, null=True)
     description = models.CharField(max_length=50, blank=True, null=True)  # brief description
-    visibility = models.CharField(max_length=100, choices=POST_PRIVACY, default='Private')
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
-    content = models.TextField(default="")
+    visibility  = models.CharField(max_length=100, choices=POST_PRIVACY, default='Private')
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    content     = models.TextField(default="")
     contentType = models.CharField(max_length=100, choices=POST_CONTENT_TYPE, default='Plain Text')
-    unlisted = models.BooleanField(default=False)
+    unlisted    = models.BooleanField(default=False)
 
     def __str__(self):
         return "{} - {} - {}".format(self.author, self.published, self.visibility)
