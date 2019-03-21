@@ -11,6 +11,9 @@ Carlo Oliva
 Weichen Wang  
 ```
 
+## Webservice API Documentation
+[Link to the API Documentation](https://github.com/olivaC/group-cmput404-project/wiki/Web-Service-API-&-Documentation)
+
 ## Working in this repository
 When working on a new feature or issue please follow the following steps.
 
