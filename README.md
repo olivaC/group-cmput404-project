@@ -2,6 +2,10 @@
 
 [![Build Status](https://travis-ci.com/olivaC/group-cmput404-project.svg?branch=development)](https://travis-ci.com/olivaC/group-cmput404-project)
 
+## Link to Group 10 Social Distribution
+
+https://young-plains-33934.herokuapp.com
+
 ## Contributors
 ```
 Musaed Alsobaie  
