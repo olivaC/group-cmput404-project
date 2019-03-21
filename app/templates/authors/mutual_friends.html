@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load tz %}
 
 
 {% block page_title %}
@@ -28,7 +29,7 @@
                                             <!-- Card Header - Accordion -->
                                             <div class="d-block card-header py-3">
                                                 <h6 class="m-0 font-weight-bold text-primary">{{ post.title }}
-                                                    - {{ post.published }}
+                                                    - {{ post.published|timezone:"America/Edmonton" }}
                                                 </h6>
                                             </div>
                                             <div class="card-body">

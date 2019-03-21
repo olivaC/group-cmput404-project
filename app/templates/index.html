@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load tz %}
 
 
 {% block page_title %}
@@ -22,10 +23,10 @@
 
                     </div>
                 </div>
-                 <div class="collapse show" id="collapseCardExample{{ post.id }}">
+                <div class="collapse show" id="collapseCardExample{{ post.id }}">
                     <div class="card-body">
                         <h5 class="mb-0 text-gray-800">{{ post.title }}</h5>
-                        <p class="small text-gray">{{ post.published }}</p>
+                        <p class="small text-gray">{{ post.published|timezone:"America/Edmonton" }}</p>
                         <hr>
                         <p class="m-4">{{ post.content }}</p>
                     </div>
@@ -38,24 +39,24 @@
             </div>
         {% endfor %}
     </div>
-{#    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>#}
-{##}
-{#    <script>#}
-{##}
-{#        let csrftoken = Cookies.get('csrftoken');#}
-{#        let url = 'http://127.0.0.1:8000/api/posts/';#}
-{#        fetch(url, {#}
-{#            credentials: 'include',#}
-{#            method: 'GET',#}
-{#            mode: 'same-origin',#}
-{#            headers: {#}
-{#                'Accept': 'application/json',#}
-{#                'Content-Type': 'application/json',#}
-{#                'X-CSRFToken': csrftoken#}
-{#            },#}
-{#        }).then((response) => response.json()).then((responseJson) => {#}
-{#            console.log(responseJson)#}
-{#        });#}
-{##}
-{#    </script>#}
+    {#    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>#}
+    {##}
+    {#    <script>#}
+    {##}
+    {#        let csrftoken = Cookies.get('csrftoken');#}
+    {#        let url = 'http://127.0.0.1:8000/api/posts/';#}
+    {#        fetch(url, {#}
+    {#            credentials: 'include',#}
+    {#            method: 'GET',#}
+    {#            mode: 'same-origin',#}
+    {#            headers: {#}
+    {#                'Accept': 'application/json',#}
+    {#                'Content-Type': 'application/json',#}
+    {#                'X-CSRFToken': csrftoken#}
+    {#            },#}
+    {#        }).then((response) => response.json()).then((responseJson) => {#}
+    {#            console.log(responseJson)#}
+    {#        });#}
+    {##}
+    {#    </script>#}
 {% endblock %}
