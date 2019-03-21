@@ -102,8 +102,18 @@ class ImageForm(ModelForm):
 
 
 class Comment(models.Model):
-    # TODO: Finish this class
-    pass
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    post = models.ForeignKey(Post, related_name='CommentPost', on_delete=models.CASCADE)
+    author = models.ForeignKey(Author, related_name='authorComment', on_delete=models.CASCADE)
+    comment = models.TextField(default="")
+    contentType = models.CharField(max_length=100, choices=POST_CONTENT_TYPE, default='Plain Text')
+    published = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "{} - {} - {}".format(self.author, self.published, self.id)
+
+    def __repr__(self):
+        return "{} - {} - {} ".format(self.author, self.published, self.id)
 
 
 class Server(models.Model):
