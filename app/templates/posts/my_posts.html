@@ -11,17 +11,24 @@
         {% for post in posts %}
             <div class="card shadow mb-4">
                 <!-- Card Header - Accordion -->
-                <div class="d-block card-header py-3" role="button"
-                   aria-expanded="true" aria-controls="collapseCardExample">
-                    <h6 class="m-0 font-weight-bold text-primary">{{ post.author.username }}</h6>
-                    <h6 class="m-0 font-weight-bold text-primary">{{ post.published }}</h6>
+                <div class="d-block card-header py-3">
+                    <div class="inline-group">
+                        <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50" height="50"
+                             src="{{ post.author.image.url }}">
 
+                        <a href="/author/{{ post.author.id }}" class="ml-2 font-weight-bold text-primary">
+                            {{ post.author.username }}
+                        </a>
+
+                    </div>
                 </div>
                 <!-- Card Content - Collapse -->
                 <div class="collapse show" id="collapseCardExample{{ post.id }}">
                     <div class="card-body">
-                        <h5>{{ post.title }}</h5>
-                        {{ post.content }}
+                        <h5 class="mb-0 text-gray-800">{{ post.title }}</h5>
+                        <p class="small text-gray">{{ post.published }}</p>
+                        <hr>
+                        <p class="m-4">{{ post.content }}</p>
                     </div>
                     <div class="card-footer">
                         <span>

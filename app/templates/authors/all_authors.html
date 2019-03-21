@@ -13,11 +13,16 @@
             <div class="card shadow mb-4">
                 <!-- Card Header - Accordion -->
                 <div class="d-block card-header py-3">
-                    <a href="/author/{{ author.id }}" role="button" aria-expanded="true">
-                        <h6 class="m-0 font-weight-bold text-primary">{{ author.username }}</h6>
-                    </a>
-                    <h6>{{ author.user.first_name }} {{ author.user.last_name }}</h6>
-                    <h6>URL {{ author.host_url }}</h6>
+                    <div class="inline-group">
+                        <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50" height="50"
+                             src="{{ author.image.url }}">
+
+                        <a href="/author/{{ author.id }}" class="ml-2 font-weight-bold text-primary">
+                            {{ author.username }}
+                        </a>
+                        <h6>{{ author.user.first_name }} {{ author.user.last_name }}</h6>
+                        <h6>URL {{ author.host_url }}</h6>
+                    </div>
                 </div>
 
                 <!-- Card Content - Collapse -->

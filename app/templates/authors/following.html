@@ -13,10 +13,14 @@
                 <div class="card shadow mb-4">
                     <!-- Card Header - Accordion -->
                     <div class="d-block card-header py-3">
-                        <a href="/author/{{ follower.friend.id }}" role="button" aria-expanded="true">
-                            <h6 class="m-0 font-weight-bold text-primary">{{ follower.friend.username }}</h6>
-                        </a>
-                        <h6>{{ follower.friend.user.first_name }} {{ follower.friend.user.last_name }}</h6>
+                        <div class="inline-group">
+                            <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50"
+                                 height="50"
+                                 src="{{ follower.friend.image.url }}">
+                            <a href="/author/{{ follower.friend.id }}" class="ml-2 font-weight-bold text-primary">
+                                {{ follower.friend.username }}
+                            </a>
+                        </div>
                     </div>
                     <div class="card-footer">
                         <span>
