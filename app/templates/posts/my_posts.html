@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load tz %}
 
 {% block page_title %}
     401 Group 10 | My Posts
@@ -33,7 +33,7 @@
                 <div class="collapse show" id="collapseCardExample{{ post.id }}">
                     <div class="card-body">
                         <h5 class="mb-0 text-gray-800">{{ post.title }}</h5>
-                        <p class="small text-gray">{{ post.published }}</p>
+                        <p class="small text-gray">{{ post.published|timezone:"America/Edmonton" }}</p>
                         <hr>
                         <p class="m-4">{{ post.content }}</p>
                     </div>

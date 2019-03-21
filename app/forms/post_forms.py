@@ -3,7 +3,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserChangeForm
 
-from app.models import Post, Author
+from app.models import Post, Author, Comment
 
 
 class PostCreateForm(ModelForm):
@@ -34,4 +34,16 @@ class EditBio(ModelForm):
             'username',
             'bio',
             'github_url',
+        )
+
+
+class CommentCreateForm(ModelForm):
+    comment = forms.Textarea()
+
+    class Meta:
+        model = Comment
+        exclude = (
+            'post',
+            'author',
+            'published'
         )
