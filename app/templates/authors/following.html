@@ -20,6 +20,10 @@
                             <a href="/author/{{ follower.friend.id }}" class="ml-2 font-weight-bold text-primary">
                                 {{ follower.friend.username }}
                             </a>
+                            <div style="margin-left: 4em;">
+                                <h6 style="text-transform: uppercase">{{ follower.friend.user.first_name }} {{ follower.friend.user.last_name }}</h6>
+                                <h6>URL {{ follower.friend.host_url }}</h6>
+                            </div>
                         </div>
                     </div>
                     <div class="card-footer">

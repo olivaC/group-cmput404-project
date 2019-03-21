@@ -11,21 +11,27 @@
         {% for author in authors %}
             <div class="card shadow mb-4">
                 <!-- Card Header - Accordion -->
-                <a href="/author/{{ author.id }}" class="d-block card-header py-3" role="button"
-                   aria-expanded="true" aria-controls="collapseCardExample">
-                    <h6 class="m-0 font-weight-bold text-primary">{{ author.username }}</h6>
+                <div class="d-block card-header py-3">
+                    <div class="inline-group">
+                        <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50" height="50"
+                             src="{{ author.image.url }}">
 
-                </a>
+                        <a href="/author/{{ author.id }}" class="ml-2 font-weight-bold text-primary">
+                            {{ author.username }}
+                        </a>
+                        <div style="margin-left: 4em;">
+                            <h6 style="text-transform: uppercase">{{ author.user.first_name }} {{ author.user.last_name }}</h6>
+                            <h6>URL {{ author.host_url }}</h6>
+                        </div>
+
+                    </div>
+                </div>
+
                 <!-- Card Content - Collapse -->
-                <div class="collapse show" id="collapseCardExample{{ author.id }}">
-                    <div class="card-body">
-                        {{ author.user.first_name}} {{ author.user.last_name }}
-                    </div>
-                    <div class="card-footer">
+                <div class="card-footer">
                         <span>
-                            <a href="" class="btn btn-warning">Follow</a>
+                                <a href="{% url 'app:follow' id=author.id %}" class="btn btn-warning">Follow</a>
                         </span>
-                    </div>
                 </div>
             </div>
         {% endfor %}

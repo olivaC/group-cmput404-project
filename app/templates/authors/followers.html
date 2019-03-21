@@ -20,6 +20,10 @@
                             <a href="/author/{{ follower.author.id }}" class="ml-2 font-weight-bold text-primary">
                                 {{ follower.author.username  }}
                             </a>
+                            <div style="margin-left: 4em;">
+                                <h6 style="text-transform: uppercase">{{ follower.author.user.first_name }} {{ follower.author.user.last_name }}</h6>
+                                <h6>URL {{ follower.author.host_url }}</h6>
+                            </div>
                         </div>
                     </div>
                 </div>
