@@ -112,5 +112,10 @@ STATICFILES_DIRS = (
 )
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-django_heroku.settings(locals())
+
+# Taken from https://github.com/heroku/django-heroku/issues/39
+if 'I_AM_HEROKU' in os.environ:
+    # Configure Django App for Heroku.
+    django_heroku.settings(locals())
+
 
