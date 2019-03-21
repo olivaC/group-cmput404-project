@@ -13,7 +13,8 @@ def all_author_view(request):
     authors = Author.objects.all().order_by('username')
     request.context['user'] = user
     request.context['authors'] = authors
-    following = FollowRequest.objects.all().filter(author=current_author)
+    following = FollowRequest.objects.all().filter(author=current_author).values('friend')
+    following = Author.objects.all().filter(id__in=following)
     request.context['following'] = following
 
     return render(request, 'authors/all_authors.html', request.context)

@@ -38,8 +38,12 @@ DEFAULT_IMAGE = "https://www.betwext.com/wp-content/uploads/2018/09/blank-profil
                 <!-- Card Content - Collapse -->
                 <div class="card-footer">
                         <span>
-                                <a href="{% url 'app:follow' id=author.id %}" class="btn btn-warning">Follow</a>
+                            {% if author in following %}
+
                                 <a href="{% url 'app:unfollow' id=author.id %}" class="btn btn-danger">Unfollow</a>
+                            {% else %}
+                                <a href="{% url 'app:follow' id=author.id %}" class="btn btn-warning">Follow</a>
+                            {% endif %}
                         </span>
                 </div>
             </div>
