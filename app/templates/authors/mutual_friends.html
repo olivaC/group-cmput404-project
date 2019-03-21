@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load tz %}
 
 
 {% block page_title %}
@@ -19,6 +20,7 @@
                         <h6 class="m-0 font-weight-bold text-primary">{{ friend.username }}
                             - {{ friend.host_url }}
                         </h6>
+
                     </a>
                     <div class="collapse show" id="collapseCardExample{{ friend.id }}">
                         <div class="card-body">
@@ -35,6 +37,7 @@
                                             {{ post.content }}
                                         </div>
                                         <div class="card-footer">
+
                         <span>
                             <a href="" class="btn btn-outline-primary">Comment</a>
                         </span>
