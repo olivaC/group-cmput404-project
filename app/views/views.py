@@ -98,10 +98,17 @@ def register_view(request):
                 user.username = form.cleaned_data['username']
                 user.first_name = form.cleaned_data['first_name']
                 user.last_name = form.cleaned_data['last_name']
+                user.is_active = False
                 user.save()
-                user = authenticate(username=user.username, password=form.cleaned_data.get('password1'))
-                login(request, user)
+                messages.success(request,
+                                 'You have signed up successfully! Please wait for the admin to approved your account')
+                # user = authenticate(username=user.username, password=form.cleaned_data.get('password1'))
+                # login(request, user)
                 return HttpResponseRedirect(reverse('app:index'))
+            else:
+                messages.success(request,
+                                 'Sign up error')
+
             request.context['next'] = next
         except:
             request.context['next'] = request.GET.get('next', reverse("app:index"))
