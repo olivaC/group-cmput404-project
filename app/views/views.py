@@ -25,6 +25,7 @@ from app.utilities import unquote_redirect_url
 @requires_csrf_token
 def index(request):
     user = request.user
+    print(user.user.id)
     request.context['user'] = user
 
     posts = Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
