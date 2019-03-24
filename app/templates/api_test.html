@@ -9,11 +9,16 @@
     * author/posts
     * author/<uuid:id>/posts
     * posts/<uuid:id>
-    *
+    * posts/<uuid:id>/comments
+    * author/<uuid:id>/friends
+    * author/<uuid:id>/following
+    * author/following
+    * author/<uuid:id>/followers
+    * author/followers
     * */
 
     let csrftoken = Cookies.get('csrftoken');
-    let url = '{{ domain }}/api/posts';
+    let url = '{{ domain }}/api/author/followers';
     fetch(url, {
         credentials: 'include',
         method: 'GET',

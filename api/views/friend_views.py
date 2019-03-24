@@ -17,7 +17,7 @@ class FriendView(APIView):
             author = Author.objects.get(id=id)
             if author == authenticated_author:
                 response['query'] = 'friends'
-                response['author'] = "{}/api/{}".format(DOMAIN, authenticated_author.id)
+                response['author'] = "{}/api/author/{}".format(DOMAIN, authenticated_author.id)
                 friends = authenticated_author.friends.all()
                 friend_list = list()
                 if friends:
@@ -49,7 +49,7 @@ class FriendView2(APIView):
             friend_list = list()
             if friends:
                 for friend in friends:
-                    friend_id = "{}/api/{}".format(friend.host_url, friend.id)
+                    friend_id = "{}/api/author/{}".format(friend.host_url, friend.id)
                     friend_list.append(friend_id)
             response['friends'] = friend_list
             return Response(response, status=200)
@@ -61,7 +61,7 @@ class FriendView2(APIView):
 
 class FollowingView(APIView):
     """
-    author/following
+    author/<uuid:id>/following
     """
 
     def get(self, request, id):
@@ -71,7 +71,7 @@ class FollowingView(APIView):
             author = Author.objects.get(id=id)
             if author == authenticated_author:
                 response['query'] = 'following'
-                response['author'] = "{}/api/{}".format(DOMAIN, authenticated_author.id)
+                response['author'] = "{}/api/author/{}".format(DOMAIN, authenticated_author.id)
                 following = FollowRequest.objects.all().filter(author=authenticated_author)
 
                 following_list = list()
@@ -99,16 +99,74 @@ class FollowingView2(APIView):
         try:
             authenticated_author = request.user.user
             response['query'] = 'following'
-            response['author'] = "{}/api/{}".format(DOMAIN, authenticated_author.id)
+            response['author'] = "{}/api/author/{}".format(DOMAIN, authenticated_author.id)
             following = FollowRequest.objects.all().filter(author=authenticated_author)
 
             following_list = list()
             if following:
                 for follow in following:
                     f = follow.friend
-                    following_id = "{}/api/{}".format(f.host_url, f.id)
+                    following_id = "{}/api/author/{}".format(f.host_url, f.id)
                     following_list.append(following_id)
             response['following'] = following_list
+            return Response(response, status=200)
+
+        except:
+            response['error'] = "You are not the authenticated user"
+            return Response(response, status=403)
+
+
+class FollowerView(APIView):
+    """
+    author/<uuid:id>/followers
+    """
+
+    def get(self, request, id):
+        response = dict()
+        try:
+            authenticated_author = request.user.user
+            author = Author.objects.get(id=id)
+            if author == authenticated_author:
+                response['query'] = 'following'
+                response['author'] = "{}/api/author/{}".format(DOMAIN, authenticated_author.id)
+                followers = FollowRequest.objects.all().filter(friend=authenticated_author)
+
+                followers_list = list()
+                if followers:
+                    for follow in followers:
+                        f = follow.author
+                        following_id = "{}/api/author/{}".format(f.host_url, f.id)
+                        followers_list.append(following_id)
+                response['followers'] = followers_list
+                return Response(response, status=200)
+            else:
+                raise Exception
+        except:
+            response['error'] = "You are not the authenticated user"
+            return Response(response, status=403)
+
+
+class FollowerView2(APIView):
+    """
+    author/followers
+    """
+
+    def get(self, request):
+        response = dict()
+        try:
+            authenticated_author = request.user.user
+
+            response['query'] = 'following'
+            response['author'] = "{}/api/author/{}".format(DOMAIN, authenticated_author.id)
+            followers = FollowRequest.objects.all().filter(friend=authenticated_author)
+
+            followers_list = list()
+            if followers:
+                for follow in followers:
+                    f = follow.author
+                    following_id = "{}/api/author/{}".format(f.host_url, f.id)
+                    followers_list.append(following_id)
+            response['followers'] = followers_list
             return Response(response, status=200)
 
         except:
