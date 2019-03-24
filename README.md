@@ -1,6 +1,10 @@
 # CMPUT 404 Project
 
-[![Build Status](https://travis-ci.com/olivaC/group-cmput404-project.svg?branch=development)](https://travis-ci.com/olivaC/group-cmput404-project)
+[![Build Status](https://travis-ci.com/olivaC/group-cmput404-project.svg?branch=master)](https://travis-ci.com/olivaC/group-cmput404-project)
+
+## Link to Group 10 Social Distribution
+
+https://young-plains-33934.herokuapp.com
 
 ## Contributors
 ```
@@ -10,6 +14,9 @@ Alex Li
 Carlo Oliva  
 Weichen Wang  
 ```
+
+## Webservice API Documentation
+[Link to the API Documentation](https://github.com/olivaC/group-cmput404-project/wiki/Web-Service-API-&-Documentation)
 
 ## Working in this repository
 When working on a new feature or issue please follow the following steps.

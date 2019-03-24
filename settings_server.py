@@ -3,7 +3,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
@@ -26,4 +25,10 @@ DATABASES = {
 }
 
 # This will have to change when added to production server
-DOMAIN = "http://127.0.0.1:8000"
+if 'I_AM_HEROKU' in os.environ:
+    DOMAIN = "https://young-plains-33934.herokuapp.com"
+else:
+    DOMAIN = "http://127.0.0.1:8000"
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'

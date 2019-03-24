@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.forms import model_to_dict
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 from django.http import HttpResponse
 from app.models import *
 from django.core.exceptions import ObjectDoesNotExist
@@ -16,7 +16,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 
 from SocialDistribution import settings
-from app.forms.post_forms import PostCreateForm, EditProfileForm, EditBio
+from app.forms.post_forms import EditProfileForm, EditBio
 from app.forms.registration_forms import LoginForm, UserCreateForm
 from app.models import Post, Author
 from app.utilities import unquote_redirect_url
@@ -27,28 +27,30 @@ from json import loads, dumps
 
 
 @login_required
+@requires_csrf_token
 def index(request):
     user = request.user
     request.context['user'] = user
 
-    posts = Post.objects.all().filter(author=user.user).order_by('-id')
+    posts = Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
+        visibility="FRIENDS") | Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
+        visibility="SERVERONLY") | Post.objects.all().filter(author=user.user) | Post.objects.all().filter(
+        visibility="PUBLIC")
+    posts = posts.order_by('-published')
 
     if user.user.github_url:
-        parse_result = urlparse(user.user.github_url)
-        # api_url = f'{parse_result.scheme}://api.{parse_result.netloc}/users{parse_result.path}/events'
-        events_url = (
-            parse_result.scheme +
-            '://api.' +
-            parse_result.netloc +
-            '/users' +
-            parse_result.path +
-            '/events'
-        )
-        events = loads(get(events_url).content)
-        event_type[]
-
-
-
+            parse_result = urlparse(user.user.github_url)
+            # api_url = f'{parse_result.scheme}://api.{parse_result.netloc}/users{parse_result.path}/events'
+            events_url = (
+                parse_result.scheme +
+                '://api.' +
+                parse_result.netloc +
+                '/users' +
+                parse_result.path +
+                '/events'
+            )
+            events = loads(get(events_url).content)
+            event_type[]
 
     request.context['posts'] = posts
 

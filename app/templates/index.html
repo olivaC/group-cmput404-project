@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load tz %}
 
 
 {% block page_title %}
@@ -11,25 +12,58 @@
         {% for post in posts %}
             <div class="card shadow mb-4">
                 <!-- Card Header - Accordion -->
-                <a href="#collapseCardExample{{ post.id }}" class="d-block card-header py-3" data-toggle="collapse"
-                   role="button"
-                   aria-expanded="true" aria-controls="collapseCardExample">
-                    <h6 class="m-0 font-weight-bold text-primary">{{ post.title }} by {{ post.author.username }}
-                        <br>{{ post.published }}</h6>
+                <div class="d-block card-header py-3">
+                    <div class="inline-group">
 
-                </a>
-                <!-- Card Content - Collapse -->
+                        {% if post.author.image %}
+                            <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50" height="50"
+                             src="{{ post.author.image.url }}">
+                        {% else %}
+                            <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50"
+                                 height="50"
+                                 src="https://www.betwext.com/wp-content/uploads/2018/09/blank-profile-picture-973460_640.png"/>
+                        {% endif %}
+
+                        <a href="/author/{{ post.author.id }}" class="ml-2 font-weight-bold text-primary">
+                            {{ post.author.username }}
+                        </a>
+
+                    </div>
+                </div>
                 <div class="collapse show" id="collapseCardExample{{ post.id }}">
                     <div class="card-body">
-                        {{ post.content }}
+                        <h5 class="mb-0 text-gray-800">{{ post.title }}</h5>
+                        <p class="small text-gray">{{ post.published|timezone:"America/Edmonton" }}</p>
+                        <hr>
+                        <p class="m-4">{{ post.content }}</p>
                     </div>
                 </div>
                 <div class="card-footer">
                         <span>
-                            <a href="" class="btn btn-outline-primary">Comment</a>
+                            <a href="{% url "app:post_detail" id=post.id %}" class="btn btn-outline-primary">View Comments / Comment</a>
                         </span>
                 </div>
             </div>
         {% endfor %}
     </div>
+    {#    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>#}
+    {##}
+    {#    <script>#}
+    {##}
+    {#        let csrftoken = Cookies.get('csrftoken');#}
+    {#        let url = 'http://127.0.0.1:8000/api/posts/';#}
+    {#        fetch(url, {#}
+    {#            credentials: 'include',#}
+    {#            method: 'GET',#}
+    {#            mode: 'same-origin',#}
+    {#            headers: {#}
+    {#                'Accept': 'application/json',#}
+    {#                'Content-Type': 'application/json',#}
+    {#                'X-CSRFToken': csrftoken#}
+    {#            },#}
+    {#        }).then((response) => response.json()).then((responseJson) => {#}
+    {#            console.log(responseJson)#}
+    {#        });#}
+    {##}
+    {#    </script>#}
 {% endblock %}

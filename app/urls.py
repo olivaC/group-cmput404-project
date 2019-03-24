@@ -1,5 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
+from django.conf import settings
+from django.conf.urls.static import static
 
 import app.views.post_views
 from app.views import api_views, views, post_views, user_views
@@ -10,6 +12,8 @@ router = routers.DefaultRouter()
 router.register('author', api_views.AuthorView)
 router.register('users', api_views.UserView)
 router.register('posts', api_views.PostView, base_name='posts')
+router.register('author-posts', api_views.AuthorPostView, base_name='author_posts')
+router.register('follow-request', api_views.FollowRequestView, base_name="follow_request")
 
 urlpatterns = [
     path('api/', include(router.urls)),
@@ -36,4 +40,5 @@ urlpatterns = [
     path('followers/', user_views.all_followers_view, name="followers"),
     path('following/', user_views.all_following_view, name="following"),
     path('mutual-friends/', user_views.mutual_friends_view, name="mutual_friends"),
-]
+    path('post-detail/<uuid:id>/', post_views.create_comment_view, name="post_detail"),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
