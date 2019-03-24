@@ -53,6 +53,17 @@ def postList(posts):
     return post_list
 
 
+def postCreate(post):
+    post_list = list()
+
+    post_dict = {'author': addAuthor(post.author), 'title': post.title, 'description': post.description,
+                 'contentType': post.contentType, 'content': post.content, 'published': post.published,
+                 'visibility': post.visibility, 'unlisted': post.unlisted, 'id': post.id,
+                 'comments': commentList(post)}
+    post_list.append(post_dict)
+    return post_list
+
+
 def commentList(post):
     comments = Comment.objects.all().filter(post=post).order_by('-published')
     comment_list = list()

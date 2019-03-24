@@ -1,4 +1,5 @@
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 
 from api.api_utilities import *
 from .serializers import *
@@ -13,6 +14,8 @@ class AuthorView(APIView):
     """
     /api/author/<uuid:id>
     """
+
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, id):
         """
@@ -57,6 +60,8 @@ class AuthorVisiblePostView(APIView):
     For currently authenticated user
     """
 
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request):
         user = request.user
         posts = Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
@@ -80,6 +85,8 @@ class AuthorPostView(APIView):
     If the author is the same as the authenticated, show all currently authenticated posts.
     If the author is not friends with the authenticated, show all public posts.
     """
+
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, id):
         author = get_object_or_404(Author, id=id)
@@ -116,12 +123,27 @@ class AuthorPostView(APIView):
 class SinglePostView(APIView):
 
     def get(self, request, id):
+        authenticated_author = request.user.user
         response = dict()
+        response['query'] = 'posts'
 
-        try:
-            post = get_object_or_404(Post, id=id)
+        post = Post.objects.all().filter(id=id).first()
 
-
-        except:
-            response['post'] = []
+        if not post:
             return Response(response, status=404)
+
+        author = post.author
+        friends = author.friends.all()
+
+        if authenticated_author in friends:
+            response['posts'] = postCreate(post)
+            return Response(response, status=200)
+        elif post.visibility == "PUBLIC":
+            response['posts'] = postCreate(post)
+            return Response(response, status=200)
+        elif post.author == authenticated_author:
+            response['posts'] = postCreate(post)
+            return Response(response, status=200)
+        else:
+            response['Error'] = 'Not authorized to see this post'
+            return Response(response, status=403)
