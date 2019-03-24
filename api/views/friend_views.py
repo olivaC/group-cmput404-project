@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.models import Author
+from app.models import Author, FollowRequest
 from settings_server import DOMAIN
 
 
@@ -52,6 +52,63 @@ class FriendView2(APIView):
                     friend_id = "{}/api/{}".format(friend.host_url, friend.id)
                     friend_list.append(friend_id)
             response['friends'] = friend_list
+            return Response(response, status=200)
+
+        except:
+            response['error'] = "You are not the authenticated user"
+            return Response(response, status=403)
+
+
+class FollowingView(APIView):
+    """
+    author/following
+    """
+
+    def get(self, request, id):
+        response = dict()
+        try:
+            authenticated_author = request.user.user
+            author = Author.objects.get(id=id)
+            if author == authenticated_author:
+                response['query'] = 'following'
+                response['author'] = "{}/api/{}".format(DOMAIN, authenticated_author.id)
+                following = FollowRequest.objects.all().filter(author=authenticated_author)
+
+                following_list = list()
+                if following:
+                    for follow in following:
+                        f = follow.friend
+                        following_id = "{}/api/{}".format(f.host_url, f.id)
+                        following_list.append(following_id)
+                response['following'] = following_list
+                return Response(response, status=200)
+            else:
+                raise Exception
+        except:
+            response['error'] = "You are not the authenticated user"
+            return Response(response, status=403)
+
+
+class FollowingView2(APIView):
+    """
+    author/following
+    """
+
+    def get(self, request):
+        response = dict()
+        try:
+            authenticated_author = request.user.user
+            response['query'] = 'following'
+            response['author'] = "{}/api/{}".format(DOMAIN, authenticated_author.id)
+            following = FollowRequest.objects.all().filter(author=authenticated_author)
+
+            following_list = list()
+            if following:
+                for follow in following:
+                    f = follow.friend
+                    following_id = "{}/api/{}".format(f.host_url, f.id)
+                    following_list.append(following_id)
+            response['following'] = following_list
             return Response(response, status=200)
 
         except:
