@@ -197,7 +197,6 @@ def get_image(request, username, filename, encoding=""):
 
 
 def search_view(request, username=None):
-    print('hi')
     queryset_list = Author.objects.all()
     query = request.GET.get("q")
     if query:

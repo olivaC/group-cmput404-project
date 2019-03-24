@@ -41,4 +41,5 @@ urlpatterns = [
     path('following/', user_views.all_following_view, name="following"),
     path('mutual-friends/', user_views.mutual_friends_view, name="mutual_friends"),
     path('post-detail/<uuid:id>/', post_views.create_comment_view, name="post_detail"),
+    path('post/<uuid:id>/', post_views.unlisted_post_view, name="unlisted_post"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

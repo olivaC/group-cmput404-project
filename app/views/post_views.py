@@ -1,13 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.forms import model_to_dict
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
+from django.core import serializers
 
 from SocialDistribution import settings
 from app.forms.post_forms import PostCreateForm, CommentCreateForm
 from app.models import Post, Comment
+from app.serializers import PostSerializer
 
 
 @login_required
@@ -151,3 +153,13 @@ def create_comment_view(request, id=None):
     request.context['comments'] = comments
 
     return render(request, 'posts/post_detail.html', request.context)
+
+
+def unlisted_post_view(request, id=None):
+    post = get_object_or_404(Post, id=id)
+
+    if post.unlisted:
+        serializer = PostSerializer(post)
+        return JsonResponse(serializer.data, safe=False)
+    else:
+        return HttpResponse({}, content_type='application/json', status=404)
