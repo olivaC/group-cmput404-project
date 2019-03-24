@@ -209,3 +209,10 @@ def search_view(request, username=None):
     request.context['authors'] = queryset_list
 
     return render(request, 'search_author.html', request.context)
+
+
+@login_required
+@requires_csrf_token
+def api_test(request):
+    request.context['domain'] = DOMAIN
+    return render(request, 'api_test.html', request.context)

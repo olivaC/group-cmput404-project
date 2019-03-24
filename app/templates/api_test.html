@@ -1,0 +1,31 @@
+<pre id="json"></pre>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+
+<script>
+
+    /*
+    * author/<uuid:id>
+    * posts
+    * author/posts
+    * author/<uuid:id>/posts
+    * posts/<uuid:id>
+    *
+    * */
+
+    let csrftoken = Cookies.get('csrftoken');
+    let url = '{{ domain }}/api/posts';
+    fetch(url, {
+        credentials: 'include',
+        method: 'GET',
+        mode: 'same-origin',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+    }).then((response) => response.json()).then((responseJson) => {
+        console.log(responseJson);
+        document.getElementById("json").innerHTML = JSON.stringify(responseJson, undefined, 2);
+    });
+
+</script>

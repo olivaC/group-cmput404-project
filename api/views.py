@@ -121,6 +121,10 @@ class AuthorPostView(APIView):
 
 
 class SinglePostView(APIView):
+    """
+    posts/<uuid:id>
+
+    """
 
     def get(self, request, id):
         authenticated_author = request.user.user

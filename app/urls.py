@@ -16,7 +16,7 @@ app_name = 'app'
 # router.register('follow-request', api_views.FollowRequestView, base_name="follow_request")
 
 urlpatterns = [
-    # path('api/', include()),
+    path('api_test', views.api_test, name='api_test'),
     path('', views.index),
     path('index', views.index, name="index"),
     path('accounts/login/', views.login_view, name='login'),
