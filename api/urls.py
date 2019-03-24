@@ -1,15 +1,27 @@
 from django.urls import path
 
 import api.views as views
+import api.views.author_views
+import api.views.comment_views
+import api.views.friend_views
+import api.views.post_views
 
 app_name = 'api'
 
 urlpatterns = [
-    path('author/<uuid:id>', views.AuthorView.as_view(), name='author'),
-    path('posts', views.PublicPostView.as_view(), name='public'),
-    path('author/posts', views.AuthorVisiblePostView.as_view(), name='author_visible'),
-    path('author/<uuid:id>/posts', views.AuthorPostView.as_view(), name='author_posts'),
-    path('posts/<uuid:id>', views.SinglePostView.as_view(), name='single_post'),
-    path('posts/<uuid:id>/comments', views.CommentsView.as_view(), name='comments'),
-    path('author/<uuid:id>/friends', views.FriendView.as_view(), name='friends'),
+    # Author
+    path('author/<uuid:id>', api.views.author_views.AuthorView.as_view(), name='author'),
+
+    # Posts
+    path('posts', api.views.post_views.PublicPostView.as_view(), name='public'),
+    path('author/posts', api.views.post_views.AuthorVisiblePostView.as_view(), name='author_visible'),
+    path('author/<uuid:id>/posts', api.views.post_views.AuthorPostView.as_view(), name='author_posts'),
+    path('posts/<uuid:id>', api.views.post_views.SinglePostView.as_view(), name='single_post'),
+
+    # Comments
+    path('posts/<uuid:id>/comments', api.views.comment_views.CommentsView.as_view(), name='comments'),
+
+    # Friends
+    path('author/<uuid:id>/friends', api.views.friend_views.FriendView.as_view(), name='friends'),
+    path('author/friends', api.views.friend_views.FriendView2.as_view(), name='friends2'),
 ]

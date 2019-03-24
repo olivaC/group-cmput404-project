@@ -1,45 +1,12 @@
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
-
-from api.api_utilities import *
-from .serializers import *
-
-# Create your views here.
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-
-# AUTHOR API ENDPOINTS
-class AuthorView(APIView):
-    """
-    /api/author/<uuid:id>
-    """
-
-    permission_classes = (IsAuthenticated,)
-
-    def get(self, request, id):
-        """
-        Get an author
-
-        :param request:
-        :param format:
-        :return:
-        """
-        response = dict()
-
-        try:
-            author = get_object_or_404(Author, id=id)
-            response = addAuthor(author)
-            response['friends'] = addFriends(author)
-
-            if response:
-                return Response(response, status=200)
-        except:
-            response['author'] = []
-            return Response(response, status=404)
+from api.api_utilities import postList, postCreate
+from app.models import Post, Author
 
 
-# POSTS API ENDPOINTS
 class PublicPostView(APIView):
     """
     /api/posts
@@ -150,62 +117,4 @@ class SinglePostView(APIView):
             return Response(response, status=200)
         else:
             response['Error'] = 'Not authorized to see this post'
-            return Response(response, status=403)
-
-
-class CommentsView(APIView):
-    """
-    /posts/<uuid:id>/comments
-    """
-
-    def get(self, request, id):
-        authenticated_author = request.user.user
-        response = dict()
-        response['query'] = 'comments'
-
-        post = Post.objects.all().filter(id=id).first()
-
-        if not post:
-            response['Error'] = 'Post does not exist'
-            return Response(response, status=404)
-
-        author = post.author
-        friends = author.friends.all()
-
-        if authenticated_author in friends:
-            response['comments'] = commentList(post)
-            return Response(response, status=200)
-        elif post.visibility == "PUBLIC":
-            response['comments'] = commentList(post)
-            return Response(response, status=200)
-        elif post.author == authenticated_author:
-            response['comments'] = commentList(post)
-            return Response(response, status=200)
-        else:
-            response['Error'] = 'Not authorized to see comments of this post'
-            return Response(response, status=403)
-
-
-class FriendView(APIView):
-    """
-    author/<uuid:id>/friends
-    """
-
-    def get(self, request, id):
-        response = dict()
-
-        try:
-            authenticated_author = request.user.user
-            response['query'] = 'friends'
-            response['author'] = "{}/api/{}".format(DOMAIN, authenticated_author.id)
-            friends = authenticated_author.friends.all()
-            friend_list = list()
-            if friends:
-                for friend in friends:
-                    friend_id = "{}/api/{}".format(friend.host_url, friend.id)
-                    friend_list.append(friend_id)
-            response['friends'] = friend_list
-            return Response(response, status=200)
-        except:
-            response['error'] = "You are not the authenticated user"
             return Response(response, status=403)
