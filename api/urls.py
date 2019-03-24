@@ -11,4 +11,5 @@ urlpatterns = [
     path('author/<uuid:id>/posts', views.AuthorPostView.as_view(), name='author_posts'),
     path('posts/<uuid:id>', views.SinglePostView.as_view(), name='single_post'),
     path('posts/<uuid:id>/comments', views.CommentsView.as_view(), name='comments'),
+    path('author/<uuid:id>/friends', views.FriendView.as_view(), name='friends'),
 ]
