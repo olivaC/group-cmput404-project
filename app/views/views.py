@@ -27,10 +27,20 @@ def index(request):
     user = request.user
     request.context['user'] = user
 
+    friends = request.user.user.friends.all()
+    foaf_friends = set()
+    if friends:
+        for i in friends:
+            foaf = i.friends.all()
+            for j in foaf:
+                foaf_friends.add(j.id)
+
     posts = Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
         visibility="FRIENDS") | Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
-        visibility="SERVERONLY") | Post.objects.all().filter(author=user.user) | Post.objects.all().filter(
-        visibility="PUBLIC")
+        visibility="SERVERONLY") | Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
+        visibility="FOAF") | Post.objects.all().filter(author=user.user) | Post.objects.all().filter(
+        visibility="PUBLIC") | Post.objects.all().filter(author__id__in=foaf_friends).filter(visibility="FOAF")
+
     posts = posts.order_by('-published')
     request.context['posts'] = posts
 
