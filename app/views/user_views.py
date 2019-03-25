@@ -4,13 +4,14 @@ from django.shortcuts import render
 from django.urls import reverse
 
 from app.models import Author, FollowRequest, Post
+from django.db.models.functions import Lower
 
 
 @login_required
 def all_author_view(request):
     user = request.user
     current_author = request.user.user
-    authors = Author.objects.all().order_by('username')
+    authors = Author.objects.all().order_by(Lower('username')).exclude(id=current_author.id)
     request.context['user'] = user
     request.context['authors'] = authors
     following = FollowRequest.objects.all().filter(author=current_author).values('friend')

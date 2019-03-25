@@ -6,6 +6,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from settings_server import *
 from django.forms import ModelForm
+from django.utils.html import mark_safe
+from markdown import markdown
 
 
 class Author(models.Model):
@@ -82,6 +84,12 @@ class Post(models.Model):
     def __repr__(self):
         return "{} - {} - {}".format(self.author, self.published, self.visibility)
 
+    def get_content(self):
+        if self.contentType == "text/markdown":
+            return mark_safe(markdown(self.content, safe_mode='escape'))
+        else:
+            return self.content
+
 
 class Image(models.Model):
     def get_image_dir(instance, filename):
@@ -115,6 +123,12 @@ class Comment(models.Model):
 
     def __repr__(self):
         return "{} - {} - {} ".format(self.author, self.published, self.id)
+
+    def get_comment(self):
+        if self.contentType == "text/markdown":
+            return mark_safe(markdown(self.comment, safe_mode='escape'))
+        else:
+            return self.comment
 
 
 class Server(models.Model):

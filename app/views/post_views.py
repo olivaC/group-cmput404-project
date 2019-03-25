@@ -151,3 +151,43 @@ def create_comment_view(request, id=None):
     request.context['comments'] = comments
 
     return render(request, 'posts/post_detail.html', request.context)
+
+
+@login_required
+def foaf_posts_view(request):
+    user = request.user
+    request.context['user'] = user
+
+    friends = request.user.user.friends.all()
+    foaf_friends = set()
+    if friends:
+        for i in friends:
+            foaf = i.friends.all()
+            for j in foaf:
+                if i != j:
+                    foaf_friends.add(j.id)
+
+    posts = Post.objects.all().filter(author__id__in=foaf_friends).filter(visibility="FOAF").order_by(
+        '-published').exclude(author=user.user)
+
+    posts = posts
+    request.context['posts'] = posts
+
+    return render(request, 'posts/foaf_posts.html', request.context)
+
+
+@login_required
+def mutual_friends_posts_view(request):
+    user = request.user
+    request.context['user'] = user
+
+    posts = Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
+        visibility="FRIENDS") | Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
+        visibility="SERVERONLY") | Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
+        visibility="FOAF") | Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
+        visibility="PUBLIC")
+
+    posts = posts.order_by('-published')
+    request.context['posts'] = posts
+
+    return render(request, 'posts/mutual_friend_posts.html', request.context)

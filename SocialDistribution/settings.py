@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 from settings_server import *
 import django_heroku
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -25,6 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'markdown',
 ]
 
 MIDDLEWARE = [
@@ -118,5 +118,3 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 if 'I_AM_HEROKU' in os.environ:
     # Configure Django App for Heroku.
     django_heroku.settings(locals())
-
-

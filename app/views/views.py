@@ -32,10 +32,20 @@ def index(request):
     user = request.user
     request.context['user'] = user
 
+    friends = request.user.user.friends.all()
+    foaf_friends = set()
+    if friends:
+        for i in friends:
+            foaf = i.friends.all()
+            for j in foaf:
+                foaf_friends.add(j.id)
+
     posts = Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
         visibility="FRIENDS") | Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
-        visibility="SERVERONLY") | Post.objects.all().filter(author=user.user) | Post.objects.all().filter(
-        visibility="PUBLIC")
+        visibility="SERVERONLY") | Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
+        visibility="FOAF") | Post.objects.all().filter(author=user.user) | Post.objects.all().filter(
+        visibility="PUBLIC") | Post.objects.all().filter(author__id__in=foaf_friends).filter(visibility="FOAF")
+
     posts = posts.order_by('-published')
 
     if user.user.github_url:
@@ -120,10 +130,22 @@ def register_view(request):
                 )
                 user.first_name = form.cleaned_data['first_name']
                 user.last_name = form.cleaned_data['last_name']
+                user.is_active = False
                 user.save()
+<<<<<<< HEAD
                 user = authenticate(username=user.username, password=user.password)
                 login(request, user)
+=======
+                messages.success(request,
+                                 'You have signed up successfully! Please wait for the admin to approved your account')
+                # user = authenticate(username=user.username, password=form.cleaned_data.get('password1'))
+                # login(request, user)
+>>>>>>> development
                 return HttpResponseRedirect(reverse('app:index'))
+            else:
+                messages.success(request,
+                                 'Sign up error')
+
             request.context['next'] = next
         except:
             request.context['next'] = request.GET.get('next', reverse("app:index"))
@@ -219,7 +241,6 @@ def get_image(request, username, filename, encoding=""):
 
 
 def search_view(request, username=None):
-    print('hi')
     queryset_list = Author.objects.all()
     query = request.GET.get("q")
     if query:
