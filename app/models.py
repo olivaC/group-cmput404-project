@@ -124,6 +124,12 @@ class Comment(models.Model):
     def __repr__(self):
         return "{} - {} - {} ".format(self.author, self.published, self.id)
 
+    def get_comment(self):
+        if self.contentType == "text/markdown":
+            return mark_safe(markdown(self.comment, safe_mode='escape'))
+        else:
+            return self.comment
+
 
 class Server(models.Model):
     # TODO: Finish this class
