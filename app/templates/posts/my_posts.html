@@ -35,7 +35,7 @@
                         <h5 class="mb-0 text-gray-800">{{ post.title }}</h5>
                         <p class="small text-gray">{{ post.published|timezone:"America/Edmonton" }}</p>
                         <hr>
-                        <p class="m-4">{{ post.content }}</p>
+                        {{ post.get_content }}
                     </div>
                     <div class="card-footer">
                         <span>
