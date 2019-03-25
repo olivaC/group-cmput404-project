@@ -48,19 +48,19 @@ def index(request):
 
     posts = posts.order_by('-published')
 
-    if user.user.github_url:
-            parse_result = urlparse(user.user.github_url)
-            # api_url = f'{parse_result.scheme}://api.{parse_result.netloc}/users{parse_result.path}/events'
-            events_url = (
-                parse_result.scheme +
-                '://api.' +
-                parse_result.netloc +
-                '/users' +
-                parse_result.path +
-                '/events'
-            )
-            events = loads(get(events_url).content)
-            event_type[]
+    # if user.user.github_url:
+    #         parse_result = urlparse(user.user.github_url)
+    #         # api_url = f'{parse_result.scheme}://api.{parse_result.netloc}/users{parse_result.path}/events'
+    #         events_url = (
+    #             parse_result.scheme +
+    #             '://api.' +
+    #             parse_result.netloc +
+    #             '/users' +
+    #             parse_result.path +
+    #             '/events'
+    #         )
+    #         events = loads(get(events_url).content)
+    #         event_type[]
 
     request.context['posts'] = posts
 
@@ -132,15 +132,10 @@ def register_view(request):
                 user.last_name = form.cleaned_data['last_name']
                 user.is_active = False
                 user.save()
-<<<<<<< HEAD
-                user = authenticate(username=user.username, password=user.password)
-                login(request, user)
-=======
                 messages.success(request,
                                  'You have signed up successfully! Please wait for the admin to approved your account')
                 # user = authenticate(username=user.username, password=form.cleaned_data.get('password1'))
                 # login(request, user)
->>>>>>> development
                 return HttpResponseRedirect(reverse('app:index'))
             else:
                 messages.success(request,
