@@ -100,14 +100,13 @@ class Image(models.Model):
             return Image.get_image_dir(authorName, filename)
 
     author = models.ForeignKey(Author, related_name='authorImage', on_delete=models.CASCADE)
-    private = models.IntegerField(default=0)
     file = models.FileField(upload_to=get_image_dir)
 
 
 class ImageForm(ModelForm):
     class Meta:
         model = Image
-        fields = ["file", "private"]
+        fields = ["file"]
 
 
 class Comment(models.Model):

@@ -19,6 +19,7 @@ from app.forms.post_forms import EditProfileForm, EditBio
 from app.forms.registration_forms import LoginForm, UserCreateForm
 from app.models import Post, Author
 from app.utilities import unquote_redirect_url
+from app.views.post_views import create_post_view
 
 
 @login_required
@@ -177,10 +178,22 @@ def upload_image_view(request):
         if imageForm.is_valid():
             image = Image()
             image.author = Author.objects.get(user=request.user)
-            image.private = int(request.POST.get("private", "0"))
             image.file = request.FILES["file"]
-            image.save()
-            return HttpResponse(str(image.file))
+            image.save() # Saved before reading, since there is a soft limit on django in memory file size
+            imageFilePath = str(image.file) # Can be different from the uploaded filename
+
+            # Read saved image file
+            mimeType = mimetypes.guess_type(imageFilePath)[0]
+            with open(imageFilePath, "rb") as file:
+                data = "data:" + mimeType + ";base64," + str(base64.b64encode(file.read()))
+
+            # Create a Post associated with the image
+            request.POST = request.POST.copy()
+            request.POST["contentType"] = mimeType + ";base64"
+            request.POST["content"] = data
+            create_post_view(request)
+
+            return create_post_view(request)
         else:
             return HttpResponse("Not Valid: " + str(imageForm.errors), status=500)
     else:
@@ -200,9 +213,6 @@ def get_image(request, username, filename, encoding=""):
 
     try:
         image = Image.objects.get(file=path)
-        if image.private:
-            # TODO Check is Friend
-            return HttpResponse(status=403)
         with open(path, "rb") as file:
             if encoding == "base64":
                 return HttpResponse("data:" + mimeType + ";base64," + str(base64.b64encode(file.read())),
