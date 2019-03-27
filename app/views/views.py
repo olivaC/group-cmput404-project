@@ -8,6 +8,7 @@ from app.models import *
 from django.core.exceptions import ObjectDoesNotExist
 import base64
 import mimetypes
+from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 
@@ -176,11 +177,15 @@ def upload_image_view(request):
     if request.method == 'POST':
         imageForm = ImageForm(request.POST, request.FILES)
         if imageForm.is_valid():
+            file = request.FILES["file"]
             image = Image()
             image.author = Author.objects.get(user=request.user)
-            image.file = request.FILES["file"]
+            image.file = file
             image.save() # Saved before reading, since there is a soft limit on django in memory file size
             imageFilePath = str(image.file) # Can be different from the uploaded filename
+
+            fs = FileSystemStorage()
+            imageFilePath = fs.location + "/" + fs.save(imageFilePath, file)
 
             # Read saved image file
             mimeType = mimetypes.guess_type(imageFilePath)[0]
@@ -191,9 +196,9 @@ def upload_image_view(request):
             request.POST = request.POST.copy()
             request.POST["contentType"] = mimeType + ";base64"
             request.POST["content"] = data
-            create_post_view(request)
-
+            print(request.POST)
             return create_post_view(request)
+
         else:
             return HttpResponse("Not Valid: " + str(imageForm.errors), status=500)
     else:
@@ -213,7 +218,8 @@ def get_image(request, username, filename, encoding=""):
 
     try:
         image = Image.objects.get(file=path)
-        with open(path, "rb") as file:
+        fs = FileSystemStorage()
+        with open(fs.location + "/" + path, "rb") as file:
             if encoding == "base64":
                 return HttpResponse("data:" + mimeType + ";base64," + str(base64.b64encode(file.read())),
                                     content_type="text/plain")
