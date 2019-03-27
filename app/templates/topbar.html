@@ -79,8 +79,8 @@
                             </div>
                         </div>
                         <div>
-                            <div class="small text-gray-500"></div>
-                            <span class="font-weight-bold">{{ req.author.username }} - {{ req.date_created }}</span>
+                            <a class="font-weight-bold" href="{% url 'app:new_followers' %}">{{ req.author.username }} - {{ req.date_created }}</a>
+{#                            <span class="font-weight-bold">{{ req.author.username }} - {{ req.date_created }}</span>#}
                         </div>
                     </div>
                 {% endfor %}
