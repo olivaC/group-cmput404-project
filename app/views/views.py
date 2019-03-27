@@ -29,7 +29,6 @@ from app.views import gh_stream
 def index(request):
     user = request.user
     request.context['user'] = user
-    print(user.user.id)
     friends = request.user.user.friends.all()
     foaf_friends = set()
     if friends:
@@ -46,7 +45,6 @@ def index(request):
 
     gh_activities = []
     if user.user.github_url:
-        print("STREAM!!!!!!!!!!!!!!!!!!!")
         author = Author.objects.get(id=user.user.id)
         gh_activities = gh_stream.get_activities(author, 10)
         stream = list(posts) + gh_activities
