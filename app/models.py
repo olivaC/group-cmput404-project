@@ -97,15 +97,15 @@ class Post(models.Model):
 
 
 class Image(models.Model):
-    def get_image_dir(instance, filename):
-        if isinstance(instance, str):
-            return "images/{filename}".format(username=instance, filename=filename)
-        else:
-            authorName = instance.author.username
-            return Image.get_image_dir(authorName, filename)
+    def get_image_dir(filename):
+        return "images/{filename}".format(filename=filename)
+
+    def get_image_dir_instance(instance, filename):
+        authorName = instance.author.username
+        return Image.get_image_dir(filename)
 
     author = models.ForeignKey(Author, related_name='authorImage', on_delete=models.CASCADE)
-    file = models.FileField(upload_to=get_image_dir)
+    file = models.FileField(upload_to=get_image_dir_instance)
 
 
 class ImageForm(ModelForm):

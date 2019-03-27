@@ -165,14 +165,14 @@ def logout_view(request):
     return HttpResponseRedirect(request.GET.get(next, reverse("app:index")))
 
 @csrf_exempt
-def get_image(request, username, filename, encoding=""):
+def get_image(request, filename, encoding=""):
     """
         View for getting an image
 
         :param request
         :return: 404 if image does not exist, 403 if no permission and image file if success
     """
-    path = Image.get_image_dir(username, filename)
+    path = Image.get_image_dir(filename)
     mimeType = mimetypes.guess_type(path)[0]
 
     try:
