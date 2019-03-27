@@ -62,7 +62,9 @@ POST_PRIVACY = (
 
 POST_CONTENT_TYPE = (
     ('text/plain', 'Plain Text'),
-    ('text/markdown', 'Markdown')
+    ('text/markdown', 'Markdown'),
+    ('image/png;base64', 'PNG Base64'),
+    ('image/jpeg;base64', 'JPEG Base64')
 )
 
 
