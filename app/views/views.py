@@ -164,47 +164,6 @@ def logout_view(request):
     logout(request)
     return HttpResponseRedirect(request.GET.get(next, reverse("app:index")))
 
-
-@login_required
-@csrf_exempt
-def upload_image_view(request):
-    """
-    View for uploading an image
-
-    :param request
-    :return: Image File Path if Success, 500 otherwise.
-    """
-    if request.method == 'POST':
-        imageForm = ImageForm(request.POST, request.FILES)
-        if imageForm.is_valid():
-            file = request.FILES["file"]
-            image = Image()
-            image.author = Author.objects.get(user=request.user)
-            image.file = file
-            image.save() # Saved before reading, since there is a soft limit on django in memory file size
-            imageFilePath = str(image.file) # Can be different from the uploaded filename
-
-            fs = FileSystemStorage()
-            imageFilePath = fs.location + "/" + fs.save(imageFilePath, file)
-
-            # Read saved image file
-            mimeType = mimetypes.guess_type(imageFilePath)[0]
-            with open(imageFilePath, "rb") as file:
-                data = "data:" + mimeType + ";base64," + str(base64.b64encode(file.read()))
-
-            # Create a Post associated with the image
-            request.POST = request.POST.copy()
-            request.POST["contentType"] = mimeType + ";base64"
-            request.POST["content"] = data
-            print(request.POST)
-            return create_post_view(request)
-
-        else:
-            return HttpResponse("Not Valid: " + str(imageForm.errors), status=500)
-    else:
-        return HttpResponse("Must be Post", status=500)
-
-
 @csrf_exempt
 def get_image(request, username, filename, encoding=""):
     """

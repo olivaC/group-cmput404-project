@@ -4,10 +4,16 @@ from django.forms import model_to_dict
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
+from django.core.files.storage import FileSystemStorage
 
 from SocialDistribution import settings
 from app.forms.post_forms import PostCreateForm, CommentCreateForm
-from app.models import Post, Comment
+from app.models import *
+
+
+import base64
+import mimetypes
 
 
 @login_required
@@ -113,6 +119,50 @@ def create_post_view(request):
     request.context['form'] = form
 
     return render(request, 'posts/create_post.html', request.context)
+
+@login_required
+def create_image_view(request):
+    """
+    View for uploading an image
+
+    :param request
+    :return: Image File Path if Success, 500 otherwise.
+    """
+    if request.method == 'POST':
+        print(request.POST)
+        imageForm = ImageForm(request.POST, request.FILES)
+        if imageForm.is_valid():
+            file = request.FILES["file"]
+            image = Image()
+            image.author = Author.objects.get(user=request.user)
+            image.file = file
+            image.save() # Saved before reading, since there is a soft limit on django in memory file size
+            imageFilePath = str(image.file) # Can be different from the uploaded filename
+
+            fs = FileSystemStorage()
+            imageFilePath = fs.location + "/" + fs.save(imageFilePath, file)
+
+            # Read saved image file
+            mimeType = mimetypes.guess_type(imageFilePath)[0]
+            with open(imageFilePath, "rb") as file:
+                data = "data:" + mimeType + ";base64," + str(base64.b64encode(file.read()))
+
+            # Create a Post associated with the image
+            request.POST = request.POST.copy()
+            request.POST["contentType"] = mimeType + ";base64"
+            request.POST["content"] = data
+            print(request.POST)
+            return create_post_view(request)
+        else:
+            request.context['next'] = next
+            messages.warning(request, 'Not valid image form!')
+
+    form = PostCreateForm()
+    request.context['form'] = form
+    imageForm = ImageForm()
+    request.context['imageForm'] = imageForm
+
+    return render(request, 'posts/create_image.html', request.context)
 
 
 @login_required
