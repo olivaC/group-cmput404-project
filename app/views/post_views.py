@@ -136,10 +136,10 @@ def create_image_view(request):
             image.author = Author.objects.get(user=request.user)
             image.file = file
             image.save() # Saved before reading, since there is a soft limit on django in memory file size
-            imageFilePath = str(image.file) # Can be different from the uploaded filename
+            imageFileName = str(image.file) # Can be different from the uploaded filename
 
             fs = FileSystemStorage()
-            imageFilePath = fs.location + "/" + fs.save(imageFilePath, file)
+            imageFilePath = fs.location + "/" + fs.save(imageFileName, file)
 
             # Read saved image file
             mimeType = mimetypes.guess_type(imageFilePath)[0]
@@ -148,6 +148,7 @@ def create_image_view(request):
 
             # Create a Post associated with the image
             request.POST = request.POST.copy()
+            request.POST["title"] = imageFileName
             request.POST["contentType"] = mimeType + ";base64"
             request.POST["content"] = data
             print(request.POST)
