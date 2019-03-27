@@ -20,10 +20,8 @@ from app.forms.post_forms import EditProfileForm, EditBio
 from app.forms.registration_forms import LoginForm, UserCreateForm
 from app.models import Post, Author
 from app.utilities import unquote_redirect_url
-from requests import get
 from urllib.parse import urlparse
-from json import loads, dumps
-
+from app.views import gh_stream
 
 
 @login_required
@@ -31,7 +29,7 @@ from json import loads, dumps
 def index(request):
     user = request.user
     request.context['user'] = user
-
+    print(user.user.id)
     friends = request.user.user.friends.all()
     foaf_friends = set()
     if friends:
@@ -46,24 +44,16 @@ def index(request):
         visibility="FOAF") | Post.objects.all().filter(author=user.user) | Post.objects.all().filter(
         visibility="PUBLIC") | Post.objects.all().filter(author__id__in=foaf_friends).filter(visibility="FOAF")
 
-    posts = posts.order_by('-published')
-
-    # if user.user.github_url:
-    #         parse_result = urlparse(user.user.github_url)
-    #         # api_url = f'{parse_result.scheme}://api.{parse_result.netloc}/users{parse_result.path}/events'
-    #         events_url = (
-    #             parse_result.scheme +
-    #             '://api.' +
-    #             parse_result.netloc +
-    #             '/users' +
-    #             parse_result.path +
-    #             '/events'
-    #         )
-    #         events = loads(get(events_url).content)
-    #         event_type[]
-
-    request.context['posts'] = posts
-
+    gh_activities = []
+    if user.user.github_url:
+        print("STREAM!!!!!!!!!!!!!!!!!!!")
+        author = Author.objects.get(id=user.user.id)
+        gh_activities = gh_stream.get_activities(author, 10)
+        stream = list(posts) + gh_activities
+        stream.sort(key=lambda post: post.published, reverse=True)
+        request.context['posts'] = stream
+    else:
+        request.context['posts'] = posts
     return render(request, 'index.html', request.context)
 
 
