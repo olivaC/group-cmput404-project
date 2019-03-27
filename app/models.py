@@ -51,6 +51,9 @@ class FollowRequest(models.Model):
     def __str__(self):
         return "{} {} - {}".format(self.author.username, self.friend.username, self.acknowledged)
 
+    def get_following(self):
+        return self.friend.username
+
 
 POST_PRIVACY = (
     ('PRIVATE', 'Private'),

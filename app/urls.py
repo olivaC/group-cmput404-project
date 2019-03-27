@@ -32,6 +32,7 @@ urlpatterns = [
     path('post/edit/<uuid:id>/', post_views.edit_post, name="edit_post"),
     path('authors', user_views.all_author_view, name="all_authors"),
     path('authors/follow/<uuid:id>/', user_views.follow_view, name="follow"),
+    path('followers/follow/<uuid:id>/', user_views.follow_view, name="followers_follow"),
     path('authors/unfollow/<uuid:id>/', user_views.unfollow_view, name="unfollow"),
     path('authors/unfollow-mutual/<uuid:id>/', user_views.unfollow_mutual_view, name="unfollow_mutual"),
     path('public-posts', app.views.post_views.public_post_view, name="public_posts"),
