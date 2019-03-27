@@ -8,6 +8,7 @@ from settings_server import *
 from django.forms import ModelForm
 from django.utils.html import mark_safe
 from markdown import markdown
+from app.utilities import image_content_to_html
 
 
 class Author(models.Model):
@@ -89,6 +90,8 @@ class Post(models.Model):
     def get_content(self):
         if self.contentType == "text/markdown":
             return mark_safe(markdown(self.content, safe_mode='escape'))
+        elif self.contentType.startswith("image/"):
+            return image_content_to_html(self.content)
         else:
             return self.content
 

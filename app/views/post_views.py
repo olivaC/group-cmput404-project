@@ -11,7 +11,7 @@ from SocialDistribution import settings
 from app.forms.post_forms import PostCreateForm, CommentCreateForm
 from app.models import *
 
-
+import app.utilities as util
 import base64
 import mimetypes
 
@@ -129,7 +129,6 @@ def create_image_view(request):
     :return: Image File Path if Success, 500 otherwise.
     """
     if request.method == 'POST':
-        print(request.POST)
         imageForm = ImageForm(request.POST, request.FILES)
         if imageForm.is_valid():
             file = request.FILES["file"]
@@ -145,7 +144,7 @@ def create_image_view(request):
             # Read saved image file
             mimeType = mimetypes.guess_type(imageFilePath)[0]
             with open(imageFilePath, "rb") as file:
-                data = "data:" + mimeType + ";base64," + str(base64.b64encode(file.read()))
+                data = "data:" + mimeType + ";base64," + base64.b64encode(file.read()).decode("utf-8")
 
             # Create a Post associated with the image
             request.POST = request.POST.copy()
