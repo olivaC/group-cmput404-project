@@ -10,6 +10,7 @@ from django.core.files.storage import FileSystemStorage
 from SocialDistribution import settings
 from app.forms.post_forms import PostCreateForm, CommentCreateForm
 from app.models import *
+from app.utilities import *
 
 import app.utilities as util
 import base64
@@ -120,6 +121,7 @@ def create_post_view(request):
 
     return render(request, 'posts/create_post.html', request.context)
 
+
 @login_required
 def create_image_view(request):
     """
@@ -132,25 +134,24 @@ def create_image_view(request):
         imageForm = ImageForm(request.POST, request.FILES)
         if imageForm.is_valid():
             file = request.FILES["file"]
-            image = Image()
-            image.author = Author.objects.get(user=request.user)
-            image.file = file
-            image.save() # Saved before reading, since there is a soft limit on django in memory file size
-            imageFileName = str(image.file) # Can be different from the uploaded filename
+            # image = Image.objects.create(
+            #     author=Author.objects.get(user=request.user), file=file
+            # )
+            # imageFileName = str(image.file)  # Can be different from the uploaded filename
 
-            fs = FileSystemStorage()
-            imageFilePath = fs.location + "/" + fs.save(imageFileName, file)
-
-            # Read saved image file
-            mimeType = mimetypes.guess_type(imageFilePath)[0]
-            with open(imageFilePath, "rb") as file:
-                data = "data:" + mimeType + ";base64," + base64.b64encode(file.read()).decode("utf-8")
+            # fs = FileSystemStorage()
+            # imageFilePath = fs.location + "/" + fs.save(imageFileName, file)
+            #
+            # # Read saved image file
+            # mimeType = mimetypes.guess_type(imageFilePath)[0]
+            # with open(imageFilePath, "rb") as file:
+            #     data = "data:" + mimeType + ";base64," + base64.b64encode(file.read()).decode("utf-8")
 
             # Create a Post associated with the image
             request.POST = request.POST.copy()
-            request.POST["title"] = imageFileName
-            request.POST["contentType"] = mimeType + ";base64"
-            request.POST["content"] = data
+            request.POST["title"] = str(file)
+            request.POST["contentType"] = 'image/png;base64'
+            request.POST["content"] = get_image(file)
             print(request.POST)
             return create_post_view(request)
         else:
