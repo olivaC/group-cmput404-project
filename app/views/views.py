@@ -10,8 +10,7 @@ from pytz import utc
 
 from app.models import *
 from django.core.exceptions import ObjectDoesNotExist
-import base64
-import mimetypes
+from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import user_passes_test
@@ -229,52 +228,18 @@ def logout_view(request):
 @login_required
 @user_passes_test(api_check)
 @csrf_exempt
-def upload_image_view(request):
-    """
-    View for uploading an image
-
-    :param request
-    :return: Image File Path if Success, 500 otherwise.
-    """
-    if request.method == 'POST':
-        imageForm = ImageForm(request.POST, request.FILES)
-        if imageForm.is_valid():
-            image = Image()
-            image.author = Author.objects.get(user=request.user)
-            image.private = int(request.POST.get("private", "0"))
-            image.file = request.FILES["file"]
-            image.save()
-            return HttpResponse(str(image.file))
-        else:
-            return HttpResponse("Not Valid: " + str(imageForm.errors), status=500)
-    else:
-        return HttpResponse("Must be Post", status=500)
-
-
-@csrf_exempt
-def get_image(request, username, filename, encoding=""):
+def get_image(request, filename):
     """
         View for getting an image
 
         :param request
         :return: 404 if image does not exist, 403 if no permission and image file if success
     """
-    path = Image.get_image_dir(username, filename)
-    mimeType = mimetypes.guess_type(path)[0]
-
-    try:
-        image = Image.objects.get(file=path)
-        if image.private:
-            # TODO Check is Friend
-            return HttpResponse(status=403)
-        with open(path, "rb") as file:
-            if encoding == "base64":
-                return HttpResponse("data:" + mimeType + ";base64," + str(base64.b64encode(file.read())),
-                                    content_type="text/plain")
-            else:
-                return HttpResponse(file.read(), content_type=mimeType)
-    except (FileNotFoundError, ObjectDoesNotExist) as e:
-        return HttpResponse(path, status=404)
+    post = Post.objects.get(id=filename)
+    baseIndex = post.content.find(";base64,")
+    mimeType = post.content[5:baseIndex]
+    data = get_image_from_base64(post.content[baseIndex + 8:])
+    return HttpResponse(data, content_type=mimeType)
 
 
 @login_required

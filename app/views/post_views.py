@@ -5,13 +5,14 @@ from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.core import serializers
-
+from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 from SocialDistribution import settings
 from app.forms.post_forms import PostCreateForm, CommentCreateForm
-from app.models import Post, Comment
+from app.models import *
 from app.serializers import PostSerializer
 from app.utilities import api_check
 
+import app.utilities as util
 
 @login_required
 @user_passes_test(api_check)
@@ -102,12 +103,15 @@ def create_post_view(request):
         try:
             if form.is_valid():
                 if form.cleaned_data.get('content'):
-                    Post.objects.create(author=user.user, content=form.cleaned_data.get('content'),
+                    post = Post.objects.create(author=user.user, content=form.cleaned_data.get('content'),
                                         description=form.cleaned_data.get('description'),
                                         title=form.cleaned_data.get('title'),
                                         visibility=form.cleaned_data.get('visibility'),
                                         unlisted=form.cleaned_data.get('unlisted'),
                                         contentType=form.cleaned_data.get('contentType'))
+                    if "base64" in post.contentType:
+                        post.title = post.id
+                        post.save()
                     return HttpResponseRedirect(reverse('app:index'))
             request.context['next'] = next
             messages.warning(request, 'Cannot post something empty!')
@@ -120,6 +124,36 @@ def create_post_view(request):
     request.context['form'] = form
 
     return render(request, 'posts/create_post.html', request.context)
+
+@login_required
+def create_image_view(request):
+    """
+    View for uploading an image
+
+    :param request
+    :return: Image File Path if Success, 500 otherwise.
+    """
+    if request.method == 'POST':
+        if "file" in request.FILES:
+            file = request.FILES["file"]
+            mimeType = util.get_image_type(file.name)
+            data = util.get_base64(mimeType, file)
+
+            # Create a Post associated with the image
+            request.POST = request.POST.copy()
+            request.POST["title"] = "Image"
+            request.POST["contentType"] = mimeType + ";base64"
+            request.POST["content"] = data
+            print(request.POST)
+            return create_post_view(request)
+        else:
+            request.context['next'] = next
+            messages.warning(request, 'Not valid image form!')
+
+    form = PostCreateForm()
+    request.context['form'] = form
+
+    return render(request, 'posts/create_image.html', request.context)
 
 
 @login_required
