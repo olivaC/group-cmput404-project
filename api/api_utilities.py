@@ -11,7 +11,7 @@ def addAuthor(author):
     """
     author_dict = dict()
     # author_dict['id'] = "{}/api/{}".format(DOMAIN, author.id)
-    author_dict['id'] = "{}/author/{}".format(DOMAIN, author.id)
+    author_dict['id'] = "{}/api/author/{}".format(DOMAIN, author.id)
     author_dict['host'] = author.host_url
     author_dict['displayName'] = author.username
     author_dict['github'] = author.github_url
