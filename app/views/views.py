@@ -18,12 +18,7 @@ from SocialDistribution import settings
 from app.forms.post_forms import EditProfileForm, EditBio
 from app.forms.registration_forms import LoginForm, UserCreateForm
 from app.models import Post, Author
-<<<<<<< HEAD
-from app.utilities import unquote_redirect_url
-from app.views.post_views import create_post_view
-=======
 from app.utilities import unquote_redirect_url, get_image_from_base64
->>>>>>> 547c8658e6352a686c986917eac7b94c818a0abc
 from app.views import gh_stream
 
 
