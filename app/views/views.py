@@ -45,7 +45,7 @@ def index(request):
     gh_activities = []
     if user.user.github_url:
         author = Author.objects.get(id=user.user.id)
-        gh_activities = gh_stream.get_activities(author, 10)
+        gh_activities = gh_stream.get_activities(author, 5, 10)
         stream = list(posts) + gh_activities
         stream.sort(key=lambda post: post.published, reverse=True)
         request.context['posts'] = stream

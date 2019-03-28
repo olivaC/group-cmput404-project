@@ -27,25 +27,31 @@ EVENT_TYPES = [
     'WatchEvent'
 ]
 
-def get_activities(author, max_page_number):
+# author: author set for the github activity posts
+# num_activities: number of most recent activities to be fetched
+# max_page_number: maximum number of event pages to be fetched
+def get_activities(author, num_activities, max_page_number):
     # get github events for user
     parse_result = urlparse(author.github_url)
     gh_username = parse_result.path.lstrip('/')
     events = github.Github().get_user(gh_username).get_events()
 
     # get last year's date
-    today = date.today()
-    last_year_today = datetime(today.year - 1, today.month, today.day)
-
+    # today = date.today()
+    # last_year_today = datetime(today.year - 1, today.month, today.day)
     gh_activities = []
+    count = 0
     for i in range(max_page_number):
         try:
             page = events.get_page(page=i)
             if page:
                 for e in page:
-                    if e.created_at >= last_year_today:
-                        new_post = event2post(e, author)
+                    new_post = event2post(e, author)
+                    if new_post:
                         gh_activities.append(new_post)
+                        count += 1
+                    if count >= num_activities:
+                        return gh_activities
             else:
                 # no more results
                 break
@@ -133,7 +139,6 @@ def event2post(e, user):
 
         content += '\n' + e.payload['issue']['body']
 
-
     elif e.type == 'MemberEvent':
         title = 'Github a collaborator on repository %s has been %s' % (
             e.repo.name, e.payload['action'])
@@ -153,7 +158,6 @@ def event2post(e, user):
         title = 'Github repository %s has been made public'
         description = 'github_ForkEvent'
         content = 'Github repository %s has been made public\n' % e.repo.name
-
 
     elif e.type == 'PullRequestEvent':
         title = 'Github a pull request was %s' % e.payload['action']
@@ -187,7 +191,6 @@ def event2post(e, user):
         description = 'github_PushEvent'
         content = '%d commit(s) was pushed to branch %s by %s' % (e.payload['size'], e.payload['ref'], e.actor.login)
 
-
     elif e.type == 'ReleaseEvent':
         title = 'Github a release was published'
         description = 'github_ReleaseEvent'
@@ -207,9 +210,8 @@ def event2post(e, user):
         description = 'github_WatchEvent'
         content = 'repository %s was starred by %s\n' % (e.repo.name, e.actor.login)
 
-
     else:
-        content = e.payload
+        return None
 
     # return a post
     return Post(
