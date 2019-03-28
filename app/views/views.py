@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.forms import model_to_dict
 from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 from django.http import HttpResponse
@@ -21,6 +22,7 @@ from app.forms.registration_forms import LoginForm, UserCreateForm
 from app.models import Post, Author
 from app.utilities import unquote_redirect_url
 from app.views.post_views import create_post_view
+from app.views import gh_stream
 
 
 @login_required
@@ -28,7 +30,6 @@ from app.views.post_views import create_post_view
 def index(request):
     user = request.user
     request.context['user'] = user
-
     friends = request.user.user.friends.all()
     foaf_friends = set()
     if friends:
@@ -43,9 +44,16 @@ def index(request):
         visibility="FOAF") | Post.objects.all().filter(author=user.user) | Post.objects.all().filter(
         visibility="PUBLIC") | Post.objects.all().filter(author__id__in=foaf_friends).filter(visibility="FOAF")
 
-    posts = posts.order_by('-published')
-    request.context['posts'] = posts
-
+    gh_activities = []
+    if user.user.github_url:
+        author = Author.objects.get(id=user.user.id)
+        gh_activities = gh_stream.get_activities(author, 5, 10)
+        stream = list(posts) + gh_activities
+        stream.sort(key=lambda post: post.published, reverse=True)
+        request.context['posts'] = stream
+    else:
+        posts = posts.order_by('-published')
+        request.context['posts'] = posts
     return render(request, 'index.html', request.context)
 
 
@@ -106,8 +114,10 @@ def register_view(request):
         form = UserCreateForm(request.POST)
         try:
             if form.is_valid():
-                user = form.save(request.POST)
-                user.username = form.cleaned_data['username']
+                user = User.objects.create_user(
+                    form.cleaned_data['username'],
+                    password=form.cleaned_data.get('password1')
+                )
                 user.first_name = form.cleaned_data['first_name']
                 user.last_name = form.cleaned_data['last_name']
                 user.is_active = False
