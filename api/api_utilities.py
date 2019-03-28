@@ -12,10 +12,10 @@ def addAuthor(author):
     author_dict = dict()
     # author_dict['id'] = "{}/api/{}".format(DOMAIN, author.id)
     author_dict['id'] = "{}/api/author/{}".format(DOMAIN, author.id)
-    author_dict['host'] = author.host_url
+    author_dict['host'] = "{}/api/".format(author.host_url)
     author_dict['displayName'] = author.username
     author_dict['github'] = author.github_url
-    author_dict['url'] = "{}/author/{}".format(DOMAIN, author.id)
+    author_dict['url'] = "{}/api/author/{}".format(DOMAIN, author.id)
 
     # Optional Attributes
     if author.github_url:
