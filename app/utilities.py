@@ -5,7 +5,6 @@ from PIL import Image
 from io import BytesIO
 import base64
 
-
 def unquote_redirect_url(url):
     """
     Unquotes url
@@ -33,12 +32,15 @@ def image_post_to_html(post):
 def image_content_to_html(content):
     return mark_safe("<img src=\"" + content + "\" />")
 
+def get_image_type(fileName):
+    if fileName.endswith(".jpg"):
+        return "image/jpeg"
+    elif fileName.endswith(".png"):
+        return "image/png"
 
-def get_image(file):
-    p = Image.open(file)
-    p = p.convert('RGB')
-    buffered = BytesIO()
-    p.save(buffered, format="JPEG", quality=30, optimize=True)
-    encoded_picture = str(base64.b64encode(buffered.getvalue()), 'utf-8')
-    img_str = "data:img/png;base64,"
-    return "{}{}".format(img_str, encoded_picture)
+def get_base64(mimeType, file):
+    data = "data:" + mimeType + ";base64," + base64.b64encode(file.read()).decode("utf-8")
+    return data
+
+def get_image_from_base64(base64String):
+    return base64.b64decode(base64String)

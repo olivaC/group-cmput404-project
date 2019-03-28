@@ -51,15 +51,6 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='Image',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('private', models.IntegerField(default=0)),
-                ('file', models.FileField(upload_to=app.models.Image.get_image_dir)),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='authorImage', to='app.Author')),
-            ],
-        ),
-        migrations.CreateModel(
             name='Post',
             fields=[
                 ('published', models.DateTimeField(auto_now=True)),

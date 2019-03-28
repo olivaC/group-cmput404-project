@@ -7,8 +7,6 @@ from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 from django.http import HttpResponse
 from app.models import *
 from django.core.exceptions import ObjectDoesNotExist
-import base64
-import mimetypes
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
@@ -20,8 +18,12 @@ from SocialDistribution import settings
 from app.forms.post_forms import EditProfileForm, EditBio
 from app.forms.registration_forms import LoginForm, UserCreateForm
 from app.models import Post, Author
+<<<<<<< HEAD
 from app.utilities import unquote_redirect_url
 from app.views.post_views import create_post_view
+=======
+from app.utilities import unquote_redirect_url, get_image_from_base64
+>>>>>>> 547c8658e6352a686c986917eac7b94c818a0abc
 from app.views import gh_stream
 
 
@@ -175,27 +177,18 @@ def logout_view(request):
     return HttpResponseRedirect(request.GET.get(next, reverse("app:index")))
 
 @csrf_exempt
-def get_image(request, filename, encoding=""):
+def get_image(request, filename):
     """
         View for getting an image
 
         :param request
         :return: 404 if image does not exist, 403 if no permission and image file if success
     """
-    path = Image.get_image_dir(filename)
-    mimeType = mimetypes.guess_type(path)[0]
-
-    try:
-        image = Image.objects.get(file=path)
-        fs = FileSystemStorage()
-        with open(fs.location + "/" + path, "rb") as file:
-            if encoding == "base64":
-                return HttpResponse("data:" + mimeType + ";base64," + str(base64.b64encode(file.read())),
-                                    content_type="text/plain")
-            else:
-                return HttpResponse(file.read(), content_type=mimeType)
-    except (FileNotFoundError, ObjectDoesNotExist) as e:
-        return HttpResponse(path, status=404)
+    post = Post.objects.get(id=filename)
+    baseIndex = post.content.find(";base64,")
+    mimeType = post.content[5:baseIndex]
+    data = get_image_from_base64(post.content[baseIndex + 8:])
+    return HttpResponse(data, content_type=mimeType)
 
 
 def search_view(request, username=None):
