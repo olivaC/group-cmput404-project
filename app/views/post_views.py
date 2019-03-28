@@ -155,7 +155,6 @@ def create_comment_view(request, id=None):
     return render(request, 'posts/post_detail.html', request.context)
 
 
-<<<<<<< HEAD
 @login_required
 def foaf_posts_view(request):
     user = request.user
@@ -194,6 +193,7 @@ def mutual_friends_posts_view(request):
     request.context['posts'] = posts
 
     return render(request, 'posts/mutual_friend_posts.html', request.context)
+
 
 def unlisted_post_view(request, id=None):
     post = get_object_or_404(Post, id=id)
