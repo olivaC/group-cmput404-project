@@ -1,14 +1,11 @@
 import urllib.parse
-<<<<<<< HEAD
 
 from app.models import Server
 
-=======
 from django.utils.safestring import mark_safe
 from PIL import Image
 from io import BytesIO
 import base64
->>>>>>> d6bb207b33bb19541c1adefb292618c2d4b05404
 
 def unquote_redirect_url(url):
     """
@@ -22,7 +19,6 @@ def unquote_redirect_url(url):
         return url[:-1]
     return url
 
-<<<<<<< HEAD
 
 def api_check(user):
 
@@ -30,7 +26,6 @@ def api_check(user):
         return False
     else:
         return True
-=======
 def image_posts_to_html(posts):
     for post in posts:
         image_post_to_html(post)
@@ -55,4 +50,3 @@ def get_base64(mimeType, file):
 
 def get_image_from_base64(base64String):
     return base64.b64decode(base64String)
->>>>>>> d6bb207b33bb19541c1adefb292618c2d4b05404
