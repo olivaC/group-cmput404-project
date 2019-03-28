@@ -20,7 +20,7 @@ def unquote_redirect_url(url):
 
 
 def api_check(user):
-    if 'group10api' in user.username:
+    if 'frandzone' in user.username:
         return False
     else:
         return True
