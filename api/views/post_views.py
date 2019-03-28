@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
-
 from api.api_utilities import postList, postCreate
 from app.models import Post, Author
 
@@ -16,12 +15,12 @@ class PublicPostView(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
     permission_classes = (IsAuthenticated,)
 
-
     def get(self, request):
         response = dict()
         public = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
         response['query'] = 'posts'
         response['posts'] = postList(public)
+        response['count'] = len(public)
         return Response(response, status=200)
 
 
@@ -44,6 +43,7 @@ class AuthorVisiblePostView(APIView):
         posts = posts.order_by('-published')
         response = dict()
         response['query'] = 'posts'
+        response['count'] = len(posts)
         response['posts'] = postList(posts)
         return Response(response, status=200)
 
@@ -129,17 +129,20 @@ class AuthorPostView(APIView):
             posts = posts.order_by('-published')
             response['query'] = 'posts'
             response['posts'] = postList(posts)
+            response['count'] = len(posts)
             return Response(response, status=200)
         elif author == current:
             posts = Post.objects.all().filter(author=author)
             posts = posts.order_by('-published')
             response = dict()
+            response['count'] = len(posts)
             response['query'] = 'posts'
             response['posts'] = postList(posts)
             return Response(response, status=200)
         else:
             posts = Post.objects.all().filter(visibility="PUBLIC")
             posts = posts.order_by('-published')
+            response['count'] = len(posts)
             response['query'] = 'posts'
             response['posts'] = postList(posts)
             return Response(response, status=200)
