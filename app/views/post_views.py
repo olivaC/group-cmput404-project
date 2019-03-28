@@ -5,7 +5,6 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
-from django.core.files.storage import FileSystemStorage
 
 from SocialDistribution import settings
 from app.forms.post_forms import PostCreateForm, CommentCreateForm
@@ -13,7 +12,6 @@ from app.models import *
 
 import app.utilities as util
 import base64
-import mimetypes
 
 
 @login_required
@@ -101,12 +99,15 @@ def create_post_view(request):
         try:
             if form.is_valid():
                 if form.cleaned_data.get('content'):
-                    Post.objects.create(author=user.user, content=form.cleaned_data.get('content'),
+                    post = Post.objects.create(author=user.user, content=form.cleaned_data.get('content'),
                                         description=form.cleaned_data.get('description'),
                                         title=form.cleaned_data.get('title'),
                                         visibility=form.cleaned_data.get('visibility'),
                                         unlisted=form.cleaned_data.get('unlisted'),
                                         contentType=form.cleaned_data.get('contentType'))
+                    if "base64" in post.contentType:
+                        post.title = post.id
+                        post.save()
                     return HttpResponseRedirect(reverse('app:index'))
             request.context['next'] = next
             messages.warning(request, 'Cannot post something empty!')
@@ -129,26 +130,14 @@ def create_image_view(request):
     :return: Image File Path if Success, 500 otherwise.
     """
     if request.method == 'POST':
-        imageForm = ImageForm(request.POST, request.FILES)
-        if imageForm.is_valid():
+        if "file" in request.FILES:
             file = request.FILES["file"]
-            image = Image()
-            image.author = Author.objects.get(user=request.user)
-            image.file = file
-            image.save() # Saved before reading, since there is a soft limit on django in memory file size
-            imageFileName = str(image.file) # Can be different from the uploaded filename
-
-            fs = FileSystemStorage()
-            imageFilePath = fs.location + "/" + fs.save(imageFileName, file)
-
-            # Read saved image file
-            mimeType = mimetypes.guess_type(imageFilePath)[0]
-            with open(imageFilePath, "rb") as file:
-                data = "data:" + mimeType + ";base64," + base64.b64encode(file.read()).decode("utf-8")
+            mimeType = util.get_image_type(file.name)
+            data = util.get_base64(mimeType, file)
 
             # Create a Post associated with the image
             request.POST = request.POST.copy()
-            request.POST["title"] = imageFileName
+            request.POST["title"] = "Image"
             request.POST["contentType"] = mimeType + ";base64"
             request.POST["content"] = data
             print(request.POST)
@@ -159,8 +148,6 @@ def create_image_view(request):
 
     form = PostCreateForm()
     request.context['form'] = form
-    imageForm = ImageForm()
-    request.context['imageForm'] = imageForm
 
     return render(request, 'posts/create_image.html', request.context)
 

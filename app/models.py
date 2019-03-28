@@ -96,24 +96,6 @@ class Post(models.Model):
             return self.content
 
 
-class Image(models.Model):
-    def get_image_dir(filename):
-        return "images/{filename}".format(filename=filename)
-
-    def get_image_dir_instance(instance, filename):
-        authorName = instance.author.username
-        return Image.get_image_dir(filename)
-
-    author = models.ForeignKey(Author, related_name='authorImage', on_delete=models.CASCADE)
-    file = models.FileField(upload_to=get_image_dir_instance)
-
-
-class ImageForm(ModelForm):
-    class Meta:
-        model = Image
-        fields = ["file"]
-
-
 class Comment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
     post = models.ForeignKey(Post, related_name='CommentPost', on_delete=models.CASCADE)
