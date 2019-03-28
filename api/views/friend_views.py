@@ -17,14 +17,18 @@ class FriendView(APIView):
             author = Author.objects.get(id=id)
             if author == authenticated_author:
                 response['query'] = 'friends'
-                response['author'] = "{}/api/author/{}".format(DOMAIN, authenticated_author.id)
+                #response['author'] = "{}/api/author/{}".format(DOMAIN, authenticated_author.id)
                 friends = authenticated_author.friends.all()
                 friend_list = list()
+                # if friends:
+                #     for friend in friends:
+                #         friend_id = "{}/api/{}".format(friend.host_url, friend.id)
+                #         friend_list.append(friend_id)
                 if friends:
                     for friend in friends:
-                        friend_id = "{}/api/{}".format(friend.host_url, friend.id)
+                        friend_id = "{}/author/{}".format(friend.host_url, friend.id)
                         friend_list.append(friend_id)
-                response['friends'] = friend_list
+                response['authors'] = friend_list
                 return Response(response, status=200)
             else:
                 raise Exception
