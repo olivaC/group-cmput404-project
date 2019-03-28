@@ -8,6 +8,7 @@ from settings_server import *
 from django.forms import ModelForm
 from django.utils.html import mark_safe
 from markdown import markdown
+from app.utilities import image_content_to_html
 
 
 class Author(models.Model):
@@ -65,7 +66,9 @@ POST_PRIVACY = (
 
 POST_CONTENT_TYPE = (
     ('text/plain', 'Plain Text'),
-    ('text/markdown', 'Markdown')
+    ('text/markdown', 'Markdown'),
+    ('image/png;base64', 'PNG Base64'),
+    ('image/jpeg;base64', 'JPEG Base64')
 )
 
 
@@ -90,27 +93,28 @@ class Post(models.Model):
     def get_content(self):
         if self.contentType == "text/markdown":
             return mark_safe(markdown(self.content, safe_mode='escape'))
+        elif self.contentType.startswith("image/"):
+            return image_content_to_html(self.content)
         else:
             return self.content
 
 
 class Image(models.Model):
-    def get_image_dir(instance, filename):
-        if isinstance(instance, str):
-            return "images/{username}/{filename}".format(username=instance, filename=filename)
-        else:
-            authorName = instance.author.username
-            return Image.get_image_dir(authorName, filename)
+    def get_image_dir(filename):
+        return "images/{filename}".format(filename=filename)
+
+    def get_image_dir_instance(instance, filename):
+        authorName = instance.author.username
+        return Image.get_image_dir(filename)
 
     author = models.ForeignKey(Author, related_name='authorImage', on_delete=models.CASCADE)
-    private = models.IntegerField(default=0)
-    file = models.FileField(upload_to=get_image_dir)
+    file = models.FileField(upload_to=get_image_dir_instance)
 
 
 class ImageForm(ModelForm):
     class Meta:
         model = Image
-        fields = ["file", "private"]
+        fields = ["file"]
 
 
 class Comment(models.Model):
