@@ -1,4 +1,6 @@
-from django.urls import path
+from django.contrib.auth.decorators import login_required
+from django.urls import path, include
+from rest_framework import routers
 
 import api.views as views
 import api.views.author_views
@@ -8,7 +10,13 @@ import api.views.post_views
 
 app_name = 'api'
 
+from rest_framework_swagger.views import get_swagger_view
+
+# Taken from https://django-rest-swagger.readthedocs.io/en/latest/
+schema_view = get_swagger_view(title='Group 10 Social Distribution Remote API')
+
 urlpatterns = [
+    path('', schema_view),
     # Author
     path('author/<uuid:id>', api.views.author_views.AuthorView.as_view(), name='author'),
 
