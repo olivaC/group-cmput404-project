@@ -7,6 +7,9 @@ from rest_framework.views import APIView
 from api.api_utilities import addAuthor, addFriends
 from app.models import Author
 
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
+
 
 class AuthorView(APIView):
     """

@@ -2,6 +2,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+
 
 from api.api_utilities import postList, postCreate
 from app.models import Post, Author
@@ -11,6 +13,9 @@ class PublicPostView(APIView):
     """
     /api/posts
     """
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
+
 
     def get(self, request):
         response = dict()
@@ -27,6 +32,7 @@ class AuthorVisiblePostView(APIView):
     For currently authenticated user
     """
 
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
@@ -93,6 +99,7 @@ class AuthorPostView(APIView):
     All posts made by {AUTHOR_ID} visible to the currently authenticated user
     """
 
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, id):
@@ -143,6 +150,9 @@ class SinglePostView(APIView):
     posts/<uuid:id>
 
     """
+
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, id):
         authenticated_author = request.user.user

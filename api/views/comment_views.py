@@ -4,11 +4,17 @@ from rest_framework.views import APIView
 from api.api_utilities import commentList
 from app.models import Post
 
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
+
 
 class CommentsView(APIView):
     """
     /posts/<uuid:id>/comments
     """
+
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, id):
         authenticated_author = request.user.user

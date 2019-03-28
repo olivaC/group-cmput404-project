@@ -4,11 +4,17 @@ from rest_framework.views import APIView
 from app.models import Author, FollowRequest
 from settings_server import DOMAIN
 
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
+
 
 class FriendView(APIView):
     """
     author/<uuid:id>/friends
     """
+
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, id):
         response = dict()
@@ -38,6 +44,9 @@ class FriendResponseView(APIView):
     author/<uuid:id>/friends/
     """
 
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request, id):
         response = dict()
         try:
@@ -64,6 +73,9 @@ class IsFriendView(APIView):
     """
     author/<uuid:id>/friends/<uuid:id>2/
     """
+
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, id, id2):
         response = dict()
@@ -107,6 +119,9 @@ class FriendView2(APIView):
     author/friends
     """
 
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request):
         response = dict()
         try:
@@ -132,6 +147,9 @@ class FollowingView(APIView):
     """
     author/<uuid:id>/following
     """
+
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, id):
         response = dict()
@@ -163,6 +181,9 @@ class FollowingView2(APIView):
     author/following
     """
 
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request):
         response = dict()
         try:
@@ -189,6 +210,9 @@ class FollowerView(APIView):
     """
     author/<uuid:id>/followers
     """
+
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, id):
         response = dict()
@@ -219,6 +243,9 @@ class FollowerView2(APIView):
     """
     author/followers
     """
+
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request):
         response = dict()
