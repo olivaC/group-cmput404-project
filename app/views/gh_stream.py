@@ -73,7 +73,6 @@ def event2post(e, user):
         visibility = 'PRIVATE'
 
     # date formats
-    current_tz = datetime.now().astimezone().tzinfo
     dt_utc = utc.localize(e.created_at)
     # dt_str = dt_local.strftime('%a %b %d %H:%M:%S %Y %z')
 
