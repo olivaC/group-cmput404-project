@@ -134,18 +134,6 @@ def create_image_view(request):
         imageForm = ImageForm(request.POST, request.FILES)
         if imageForm.is_valid():
             file = request.FILES["file"]
-            # image = Image.objects.create(
-            #     author=Author.objects.get(user=request.user), file=file
-            # )
-            # imageFileName = str(image.file)  # Can be different from the uploaded filename
-
-            # fs = FileSystemStorage()
-            # imageFilePath = fs.location + "/" + fs.save(imageFileName, file)
-            #
-            # # Read saved image file
-            # mimeType = mimetypes.guess_type(imageFilePath)[0]
-            # with open(imageFilePath, "rb") as file:
-            #     data = "data:" + mimeType + ";base64," + base64.b64encode(file.read()).decode("utf-8")
 
             # Create a Post associated with the image
             request.POST = request.POST.copy()
