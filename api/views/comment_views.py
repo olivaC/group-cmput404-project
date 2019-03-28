@@ -26,12 +26,15 @@ class CommentsView(APIView):
 
         if authenticated_author in friends:
             response['comments'] = commentList(post)
+            response['count'] = len(commentList(post))
             return Response(response, status=200)
         elif post.visibility == "PUBLIC":
             response['comments'] = commentList(post)
+            response['count'] = len(commentList(post))
             return Response(response, status=200)
         elif post.author == authenticated_author:
             response['comments'] = commentList(post)
+            response['count'] = len(commentList(post))
             return Response(response, status=200)
         else:
             response['Error'] = 'Not authorized to see comments of this post'
