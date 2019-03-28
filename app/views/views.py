@@ -1,3 +1,4 @@
+import requests
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -5,6 +6,8 @@ from django.contrib.auth.models import User
 from django.forms import model_to_dict
 from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 from django.http import HttpResponse
+from pytz import utc
+
 from app.models import *
 from django.core.exceptions import ObjectDoesNotExist
 import base64
@@ -12,6 +15,8 @@ import mimetypes
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import user_passes_test
+from datetime import datetime
+
 
 # Create your views here.
 from django.urls import reverse
@@ -22,6 +27,39 @@ from app.forms.registration_forms import LoginForm, UserCreateForm
 from app.models import Post, Author
 from app.utilities import *
 from app.views import gh_stream
+
+
+def create_author(author):
+    i = Author()
+    i.username = author.get('displayName')
+    i.host_url = author.get('host')
+    i.id = author.get('id')
+    i.url = author.get('url')
+    if author.get('firstName'):
+        i.first_name = author.get('firstName')
+    if author.get('lastName'):
+        i.last_name = author.get('lastName')
+    return i
+
+
+def create_posts(posts):
+    post_list = list()
+
+    for i in posts.get('posts'):
+        post = Post()
+        post.author = create_author(i.get('author'))
+        post.content = i.get('content')
+        post.contentType = i.get('contentType')
+        post.description = i.get('description')
+        post.published = utc.localize(datetime.strptime(i.get('published'), '%Y-%m-%dT%H:%M:%S.%fZ'))
+        post.unlisted = i.get('unlisted')
+        post.visibility = i.get('visibility')
+        post.title = i.get('title')
+        # post.comments = i.get('comments')
+        post.remote = 'remote'
+        post_list.append(post)
+
+    return post_list
 
 
 @login_required
@@ -49,12 +87,20 @@ def index(request):
     if user.user.github_url:
         author = Author.objects.get(id=user.user.id)
         gh_activities = gh_stream.get_activities(author, 5, 10)
-        stream = list(posts) + gh_activities
-        stream.sort(key=lambda post: post.published, reverse=True)
-        request.context['posts'] = stream
+        posts = list(posts) + gh_activities
     else:
-        posts = posts.order_by('-published')
-        request.context['posts'] = posts
+        posts = list(posts.order_by('-published'))
+
+    # r = requests.get('http://127.0.0.1:8000/api/posts', auth=('group10api', 'ualberta123'))
+    # public_posts = create_posts(r.json())
+    #
+    # posts = public_posts + list(posts)
+    posts.sort(key=lambda post: post.published, reverse=True)
+
+    request.context['posts'] = posts
+
+    # print(public_posts)
+
     return render(request, 'index.html', request.context)
 
 
