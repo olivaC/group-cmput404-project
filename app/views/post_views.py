@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.forms import model_to_dict
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -10,9 +10,12 @@ from SocialDistribution import settings
 from app.forms.post_forms import PostCreateForm, CommentCreateForm
 from app.models import *
 from app.serializers import PostSerializer
+from app.utilities import api_check
+
 import app.utilities as util
 
 @login_required
+@user_passes_test(api_check)
 def my_posts_view(request):
     user = request.user
     request.context['user'] = user
@@ -40,7 +43,8 @@ def my_posts_view(request):
 
     return render(request, 'posts/my_posts.html', request.context)
 
-
+@login_required
+@user_passes_test(api_check)
 def delete_post(request, id=None):
     post = get_object_or_404(Post, id=id)
 
@@ -61,6 +65,7 @@ def delete_post(request, id=None):
 
 
 @login_required
+@user_passes_test(api_check)
 def edit_post(request, id=None):
     post = get_object_or_404(Post, id=id)
     if request.method == 'POST':
@@ -87,6 +92,7 @@ def edit_post(request, id=None):
 
 
 @login_required
+@user_passes_test(api_check)
 def create_post_view(request):
     user = request.user
     request.context['user'] = user
@@ -151,6 +157,7 @@ def create_image_view(request):
 
 
 @login_required
+@user_passes_test(api_check)
 def public_post_view(request):
     posts = Post.objects.all().filter(visibility="PUBLIC").order_by('-id')
 
@@ -160,6 +167,7 @@ def public_post_view(request):
 
 
 @login_required
+@user_passes_test(api_check)
 def create_comment_view(request, id=None):
     post = get_object_or_404(Post, id=id)
     comments = Comment.objects.all().filter(post=post)
@@ -189,6 +197,7 @@ def create_comment_view(request, id=None):
 
 
 @login_required
+@user_passes_test(api_check)
 def foaf_posts_view(request):
     user = request.user
     request.context['user'] = user
@@ -212,6 +221,7 @@ def foaf_posts_view(request):
 
 
 @login_required
+@user_passes_test(api_check)
 def mutual_friends_posts_view(request):
     user = request.user
     request.context['user'] = user

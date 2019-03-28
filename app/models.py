@@ -122,7 +122,12 @@ class Comment(models.Model):
 
 class Server(models.Model):
     # TODO: Finish this class
-    pass
+    hostname = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    user = models.OneToOneField(User, related_name='server_user', on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return "Hostname: {}".format(self.hostname)
+
 
 
 @receiver(post_save, sender=User)

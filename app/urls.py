@@ -8,15 +8,15 @@ from app.views import api_views, views, post_views, user_views
 
 app_name = 'app'
 
-router = routers.DefaultRouter()
-router.register('author', api_views.AuthorView)
-router.register('users', api_views.UserView)
-router.register('posts', api_views.PostView, base_name='posts')
-router.register('author-posts', api_views.AuthorPostView, base_name='author_posts')
-router.register('follow-request', api_views.FollowRequestView, base_name="follow_request")
+# router = routers.DefaultRouter()
+# router.register('author', api_views.AuthorView)
+# router.register('users', api_views.UserView)
+# router.register('posts', api_views.PostView, base_name='posts')
+# router.register('author-posts', api_views.AuthorPostView, base_name='author_posts')
+# router.register('follow-request', api_views.FollowRequestView, base_name="follow_request")
 
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('api_test', views.api_test, name='api_test'),
     path('', views.index),
     path('index', views.index, name="index"),
     path('accounts/login/', views.login_view, name='login'),
