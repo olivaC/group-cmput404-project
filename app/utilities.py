@@ -1,5 +1,7 @@
 import urllib.parse
 
+from app.models import Server
+
 
 def unquote_redirect_url(url):
     """
@@ -15,6 +17,7 @@ def unquote_redirect_url(url):
 
 
 def api_check(user):
+
     if 'group10api' in user.username:
         return False
     else:
