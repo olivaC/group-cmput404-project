@@ -11,6 +11,7 @@ import base64
 import mimetypes
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import user_passes_test
 
 # Create your views here.
 from django.urls import reverse
@@ -19,11 +20,12 @@ from SocialDistribution import settings
 from app.forms.post_forms import EditProfileForm, EditBio
 from app.forms.registration_forms import LoginForm, UserCreateForm
 from app.models import Post, Author
-from app.utilities import unquote_redirect_url
+from app.utilities import *
 from app.views import gh_stream
 
 
 @login_required
+@user_passes_test(api_check)
 @requires_csrf_token
 def index(request):
     user = request.user
@@ -56,6 +58,8 @@ def index(request):
     return render(request, 'index.html', request.context)
 
 
+@login_required
+@user_passes_test(api_check)
 def profile_view(request, id=None):
     author = get_object_or_404(Author, id=id)
     request.context['author'] = author
@@ -63,6 +67,8 @@ def profile_view(request, id=None):
     return render(request, 'profile.html', request.context)
 
 
+@login_required
+@user_passes_test(api_check)
 def edit_profile(request):
     user = request.user
     author = request.user.user
@@ -175,6 +181,7 @@ def logout_view(request):
 
 
 @login_required
+@user_passes_test(api_check)
 @csrf_exempt
 def upload_image_view(request):
     """
@@ -224,6 +231,8 @@ def get_image(request, username, filename, encoding=""):
         return HttpResponse(path, status=404)
 
 
+@login_required
+@user_passes_test(api_check)
 def search_view(request, username=None):
     queryset_list = Author.objects.all()
     query = request.GET.get("q")

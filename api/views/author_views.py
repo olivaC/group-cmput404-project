@@ -1,3 +1,4 @@
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -11,7 +12,7 @@ class AuthorView(APIView):
     """
     /api/author/<uuid:id>
     """
-
+    authentication_classes = (SessionAuthentication, BasicAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, id):
