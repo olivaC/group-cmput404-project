@@ -136,8 +136,15 @@ class Comment(models.Model):
 
 class Server(models.Model):
     # TODO: Finish this class
-    pass
+    serviceAddress = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    hostname = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    port = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    prefix = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    username = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    password = models.CharField(max_length=50, unique=True, blank=True, null=True)
 
+    def __str__(self):
+        return "Hostname: {}".format(self.hostname)
 
 @receiver(post_save, sender=User)
 def create_user_author(sender, instance, created, **kwargs):
