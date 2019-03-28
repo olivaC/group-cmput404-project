@@ -42,15 +42,55 @@ class AuthorVisiblePostView(APIView):
         return Response(response, status=200)
 
 
+# class AuthorPostView(APIView):
+#     """
+#     author/<uuid:id>/posts
+#
+#     All posts of an author that are visible to the currently authenticated author
+#
+#     If the author is friends with the authenticated, show all their posts except for private.
+#     If the author is the same as the authenticated, show all currently authenticated posts.
+#     If the author is not friends with the authenticated, show all public posts.
+#     """
+#
+#     permission_classes = (IsAuthenticated,)
+#
+#     def get(self, request, id):
+#         author = get_object_or_404(Author, id=id)
+#         current = request.user.user
+#
+#         response = dict()
+#         friends = current.friends.all()
+#
+#         if author in friends:
+#             posts = Post.objects.all().filter(author=author).filter(
+#                 visibility="FRIENDS") | Post.objects.all().filter(author=author).filter(
+#                 visibility="PUBLIC") | Post.objects.all().filter(author=author).filter(
+#                 visibility="FOAF") | Post.objects.all().filter(author=author).filter(
+#                 visibility="SERVERONLY")
+#             posts = posts.order_by('-published')
+#             response['query'] = 'posts'
+#             response['posts'] = postList(posts)
+#             return Response(response, status=200)
+#         elif author == current:
+#             posts = Post.objects.all().filter(author=author)
+#             posts = posts.order_by('-published')
+#             response = dict()
+#             response['query'] = 'posts'
+#             response['posts'] = postList(posts)
+#             return Response(response, status=200)
+#         else:
+#             posts = Post.objects.all().filter(visibility="PUBLIC")
+#             posts = posts.order_by('-published')
+#             response['query'] = 'posts'
+#             response['posts'] = postList(posts)
+#             return Response(response, status=200)
+
 class AuthorPostView(APIView):
     """
     author/<uuid:id>/posts
 
-    All posts of an author that are visible to the currently authenticated author
-
-    If the author is friends with the authenticated, show all their posts except for private.
-    If the author is the same as the authenticated, show all currently authenticated posts.
-    If the author is not friends with the authenticated, show all public posts.
+    All posts made by {AUTHOR_ID} visible to the currently authenticated user
     """
 
     permission_classes = (IsAuthenticated,)
@@ -61,6 +101,17 @@ class AuthorPostView(APIView):
 
         response = dict()
         friends = current.friends.all()
+
+        # posts = Post.objects.all().filter(author=author).filter(
+        #             visibility="FRIENDS") | Post.objects.all().filter(author=author).filter(
+        #             visibility="PUBLIC") | Post.objects.all().filter(author=author).filter(
+        #             visibility="FOAF") | Post.objects.all().filter(author=author).filter(
+        #             visibility="SERVERONLY")
+        #
+        # posts = posts.order_by('-published')
+        # response['query'] = 'posts'
+        # response['posts'] = postList(posts)
+        # return Response(response, status=200)
 
         if author in friends:
             posts = Post.objects.all().filter(author=author).filter(

@@ -10,10 +10,12 @@ def addAuthor(author):
     :return: Dict
     """
     author_dict = dict()
-    author_dict['id'] = "{}/api/{}".format(DOMAIN, author.id)
+    # author_dict['id'] = "{}/api/{}".format(DOMAIN, author.id)
+    author_dict['id'] = "{}/author/{}".format(DOMAIN, author.id)
     author_dict['host'] = author.host_url
     author_dict['displayName'] = author.username
-    author_dict['url'] = "{}/api/{}".format(DOMAIN, author.id)
+    author_dict['github'] = author.github_url
+    author_dict['url'] = "{}/author/{}".format(DOMAIN, author.id)
 
     # Optional Attributes
     if author.github_url:
