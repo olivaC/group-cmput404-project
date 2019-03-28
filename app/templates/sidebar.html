@@ -9,16 +9,6 @@
     </a>
 
     <!-- Divider -->
-    <hr class="sidebar-divider my-0">
-
-    <!-- Nav Item - Dashboard -->
-    <li class="nav-item active">
-        <a class="nav-link" href="{% url 'app:index' %}">
-            <i class="fas fa-fw fa-tachometer-alt"></i>
-            <span>Stream</span></a>
-    </li>
-
-    <!-- Divider -->
     <hr class="sidebar-divider">
 
     <!-- Heading -->
@@ -26,15 +16,34 @@
         Stream
     </div>
 
+    <!-- Nav Item - Dashboard -->
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'app:index' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>My Stream</span></a>
+    </li>
+
+
     <li class="nav-item">
         <a class="nav-link" href="{% url 'app:my_posts' %}">
-            <i class="fas fa-fw fa-user"></i>
+            <i class="fas fa-fw fa-newspaper"></i>
             <span>My Posts</span></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'app:mutual_friend_posts' %}">
+            <i class="fas fa-fw fa-newspaper"></i>
+            <span>Mutual Friend Posts</span></a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'app:foaf_posts' %}">
+            <i class="fas fa-fw fa-newspaper"></i>
+            <span>Friend of Friend Posts</span></a>
     </li>
 
     <li class="nav-item">
         <a class="nav-link" href="{% url 'app:public_posts' %}">
-            <i class="fas fa-fw fa-chart-area"></i>
+            <i class="fas fa-fw fa-newspaper"></i>
             <span>Public Posts</span></a>
     </li>
 

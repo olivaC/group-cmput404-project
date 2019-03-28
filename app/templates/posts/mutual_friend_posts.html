@@ -3,11 +3,11 @@
 
 
 {% block page_title %}
-    401 Group | Dashboard
+    401 Group | Mutual Friend Posts
 {% endblock %}
 
 {% block content %}
-    <h1 class="h3 mb-4 text-gray-800">Welcome {{ user.first_name }} {{ user.last_name }}</h1>
+    <h1 class="h3 mb-4 text-gray-800">Mutual Friend Posts</h1>
     <div>
         {% for post in posts %}
             <div class="card shadow mb-4">
@@ -16,8 +16,9 @@
                     <div class="inline-group">
 
                         {% if post.author.image %}
-                            <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50" height="50"
-                             src="{{ post.author.image.url }}">
+                            <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50"
+                                 height="50"
+                                 src="{{ post.author.image.url }}">
                         {% else %}
                             <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50"
                                  height="50"

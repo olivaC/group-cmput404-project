@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.forms import model_to_dict
 from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 from django.http import HttpResponse
@@ -19,6 +20,7 @@ from app.forms.post_forms import EditProfileForm, EditBio
 from app.forms.registration_forms import LoginForm, UserCreateForm
 from app.models import Post, Author
 from app.utilities import unquote_redirect_url
+from app.views import gh_stream
 
 
 @login_required
@@ -27,14 +29,30 @@ def index(request):
     user = request.user
     print(user.user.id)
     request.context['user'] = user
+    friends = request.user.user.friends.all()
+    foaf_friends = set()
+    if friends:
+        for i in friends:
+            foaf = i.friends.all()
+            for j in foaf:
+                foaf_friends.add(j.id)
 
     posts = Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
         visibility="FRIENDS") | Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
-        visibility="SERVERONLY") | Post.objects.all().filter(author=user.user) | Post.objects.all().filter(
-        visibility="PUBLIC")
-    posts = posts.order_by('-published')
-    request.context['posts'] = posts
+        visibility="SERVERONLY") | Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
+        visibility="FOAF") | Post.objects.all().filter(author=user.user) | Post.objects.all().filter(
+        visibility="PUBLIC") | Post.objects.all().filter(author__id__in=foaf_friends).filter(visibility="FOAF")
 
+    gh_activities = []
+    if user.user.github_url:
+        author = Author.objects.get(id=user.user.id)
+        gh_activities = gh_stream.get_activities(author, 5, 10)
+        stream = list(posts) + gh_activities
+        stream.sort(key=lambda post: post.published, reverse=True)
+        request.context['posts'] = stream
+    else:
+        posts = posts.order_by('-published')
+        request.context['posts'] = posts
     return render(request, 'index.html', request.context)
 
 
@@ -95,14 +113,23 @@ def register_view(request):
         form = UserCreateForm(request.POST)
         try:
             if form.is_valid():
-                user = form.save(request.POST)
-                user.username = form.cleaned_data['username']
+                user = User.objects.create_user(
+                    form.cleaned_data['username'],
+                    password=form.cleaned_data.get('password1')
+                )
                 user.first_name = form.cleaned_data['first_name']
                 user.last_name = form.cleaned_data['last_name']
+                user.is_active = False
                 user.save()
-                user = authenticate(username=user.username, password=form.cleaned_data.get('password1'))
-                login(request, user)
+                messages.success(request,
+                                 'You have signed up successfully! Please wait for the admin to approved your account')
+                # user = authenticate(username=user.username, password=form.cleaned_data.get('password1'))
+                # login(request, user)
                 return HttpResponseRedirect(reverse('app:index'))
+            else:
+                messages.success(request,
+                                 'Sign up error')
+
             request.context['next'] = next
         except:
             request.context['next'] = request.GET.get('next', reverse("app:index"))
