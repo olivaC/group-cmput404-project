@@ -36,9 +36,6 @@ def get_activities(author, num_activities, max_page_number):
     gh_username = parse_result.path.lstrip('/')
     events = github.Github().get_user(gh_username).get_events()
 
-    # get last year's date
-    # today = date.today()
-    # last_year_today = datetime(today.year - 1, today.month, today.day)
     gh_activities = []
     count = 0
     for i in range(max_page_number):
