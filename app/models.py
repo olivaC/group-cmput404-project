@@ -74,15 +74,15 @@ POST_CONTENT_TYPE = (
 
 class Post(models.Model):
     # TODO: Finish this class
-    author = models.ForeignKey(Author, related_name='authorPost', on_delete=models.CASCADE)
-    published = models.DateTimeField(auto_now=True)
-    title = models.CharField(max_length=100, blank=True, null=True)
+    author      = models.ForeignKey(Author, related_name='authorPost', on_delete=models.CASCADE)
+    published   = models.DateTimeField(auto_now=True)
+    title       = models.CharField(max_length=100, blank=True, null=True)
     description = models.CharField(max_length=50, blank=True, null=True)  # brief description
-    visibility = models.CharField(max_length=100, choices=POST_PRIVACY, default='Private')
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
-    content = models.TextField(default="")
+    visibility  = models.CharField(max_length=100, choices=POST_PRIVACY, default='Private')
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    content     = models.TextField(default="")
     contentType = models.CharField(max_length=100, choices=POST_CONTENT_TYPE, default='Plain Text')
-    unlisted = models.BooleanField(default=False)
+    unlisted    = models.BooleanField(default=False)
 
     def __str__(self):
         return "{} - {} - {}".format(self.author, self.published, self.visibility)
@@ -97,24 +97,6 @@ class Post(models.Model):
             return image_content_to_html(self.content)
         else:
             return self.content
-
-
-class Image(models.Model):
-    def get_image_dir(filename):
-        return "images/{filename}".format(filename=filename)
-
-    def get_image_dir_instance(instance, filename):
-        authorName = instance.author.username
-        return Image.get_image_dir(filename)
-
-    author = models.ForeignKey(Author, related_name='authorImage', on_delete=models.CASCADE)
-    file = models.FileField(upload_to=get_image_dir_instance)
-
-
-class ImageForm(ModelForm):
-    class Meta:
-        model = Image
-        fields = ["file"]
 
 
 class Comment(models.Model):
