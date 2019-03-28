@@ -52,6 +52,9 @@ class FollowRequest(models.Model):
     def __str__(self):
         return "{} {} - {}".format(self.author.username, self.friend.username, self.acknowledged)
 
+    def get_following(self):
+        return self.friend.username
+
 
 POST_PRIVACY = (
     ('PRIVATE', 'Private'),
@@ -71,15 +74,15 @@ POST_CONTENT_TYPE = (
 
 class Post(models.Model):
     # TODO: Finish this class
-    author = models.ForeignKey(Author, related_name='authorPost', on_delete=models.CASCADE)
-    published = models.DateTimeField(auto_now=True)
-    title = models.CharField(max_length=100, blank=True, null=True)
+    author      = models.ForeignKey(Author, related_name='authorPost', on_delete=models.CASCADE)
+    published   = models.DateTimeField(auto_now=True)
+    title       = models.CharField(max_length=100, blank=True, null=True)
     description = models.CharField(max_length=50, blank=True, null=True)  # brief description
-    visibility = models.CharField(max_length=100, choices=POST_PRIVACY, default='Private')
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
-    content = models.TextField(default="")
+    visibility  = models.CharField(max_length=100, choices=POST_PRIVACY, default='Private')
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    content     = models.TextField(default="")
     contentType = models.CharField(max_length=100, choices=POST_CONTENT_TYPE, default='Plain Text')
-    unlisted = models.BooleanField(default=False)
+    unlisted    = models.BooleanField(default=False)
 
     def __str__(self):
         return "{} - {} - {}".format(self.author, self.published, self.visibility)

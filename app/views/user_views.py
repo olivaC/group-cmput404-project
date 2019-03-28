@@ -35,7 +35,13 @@ def follow_view(request, id):
     if auth_follow:
         current_author.friends.add(auth)
         current_author.save()
-    return HttpResponseRedirect(reverse("app:all_authors"))
+
+    app_url = request.path
+
+    if 'authors' in app_url:
+        return HttpResponseRedirect(reverse("app:all_authors"))
+    elif 'followers' in app_url:
+        return HttpResponseRedirect(reverse("app:followers"))
 
 
 @login_required
@@ -80,8 +86,11 @@ def new_followers_view(request):
 def all_followers_view(request):
     current_author = request.user.user
     followers = FollowRequest.objects.all().filter(friend=current_author)
+    following = FollowRequest.objects.all().filter(author=current_author).values('friend')
+    followings = Author.objects.all().filter(id__in=following)
 
     request.context['followers'] = followers
+    request.context['followings'] = followings
 
     return render(request, 'authors/followers.html', request.context)
 
