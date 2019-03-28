@@ -33,6 +33,16 @@
                             </div>
                         </div>
                     </div>
+
+                    {% if follower.author not in followings %}
+                        <!-- Card Content - Collapse -->
+                        <div class="card-footer">
+                            <span>
+                                <a href="{% url 'app:followers_follow' id=follower.author.id %}"
+                                       class="btn btn-warning">Follow</a>
+                            </span>
+                        </div>
+                    {% endif %}
                 </div>
             {% endfor %}
         {% else %}

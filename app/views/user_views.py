@@ -4,13 +4,14 @@ from django.shortcuts import render
 from django.urls import reverse
 
 from app.models import Author, FollowRequest, Post
+from django.db.models.functions import Lower
 
 
 @login_required
 def all_author_view(request):
     user = request.user
     current_author = request.user.user
-    authors = Author.objects.all().order_by('username')
+    authors = Author.objects.all().order_by(Lower('username')).exclude(id=current_author.id)
     request.context['user'] = user
     request.context['authors'] = authors
     following = FollowRequest.objects.all().filter(author=current_author).values('friend')
@@ -34,7 +35,13 @@ def follow_view(request, id):
     if auth_follow:
         current_author.friends.add(auth)
         current_author.save()
-    return HttpResponseRedirect(reverse("app:all_authors"))
+
+    app_url = request.path
+
+    if 'authors' in app_url:
+        return HttpResponseRedirect(reverse("app:all_authors"))
+    elif 'followers' in app_url:
+        return HttpResponseRedirect(reverse("app:followers"))
 
 
 @login_required
@@ -79,8 +86,11 @@ def new_followers_view(request):
 def all_followers_view(request):
     current_author = request.user.user
     followers = FollowRequest.objects.all().filter(friend=current_author)
+    following = FollowRequest.objects.all().filter(author=current_author).values('friend')
+    followings = Author.objects.all().filter(id__in=following)
 
     request.context['followers'] = followers
+    request.context['followings'] = followings
 
     return render(request, 'authors/followers.html', request.context)
 

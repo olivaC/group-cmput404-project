@@ -6,6 +6,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from settings_server import *
 from django.forms import ModelForm
+from django.utils.html import mark_safe
+from markdown import markdown
 
 
 class Author(models.Model):
@@ -49,6 +51,9 @@ class FollowRequest(models.Model):
     def __str__(self):
         return "{} {} - {}".format(self.author.username, self.friend.username, self.acknowledged)
 
+    def get_following(self):
+        return self.friend.username
+
 
 POST_PRIVACY = (
     ('PRIVATE', 'Private'),
@@ -66,21 +71,27 @@ POST_CONTENT_TYPE = (
 
 class Post(models.Model):
     # TODO: Finish this class
-    author = models.ForeignKey(Author, related_name='authorPost', on_delete=models.CASCADE)
-    published = models.DateTimeField(auto_now=True)
-    title = models.CharField(max_length=100, blank=True, null=True)
+    author      = models.ForeignKey(Author, related_name='authorPost', on_delete=models.CASCADE)
+    published   = models.DateTimeField(auto_now=True)
+    title       = models.CharField(max_length=100, blank=True, null=True)
     description = models.CharField(max_length=50, blank=True, null=True)  # brief description
-    visibility = models.CharField(max_length=100, choices=POST_PRIVACY, default='Private')
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
-    content = models.TextField(default="")
+    visibility  = models.CharField(max_length=100, choices=POST_PRIVACY, default='Private')
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    content     = models.TextField(default="")
     contentType = models.CharField(max_length=100, choices=POST_CONTENT_TYPE, default='Plain Text')
-    unlisted = models.BooleanField(default=False)
+    unlisted    = models.BooleanField(default=False)
 
     def __str__(self):
         return "{} - {} - {}".format(self.author, self.published, self.visibility)
 
     def __repr__(self):
         return "{} - {} - {}".format(self.author, self.published, self.visibility)
+
+    def get_content(self):
+        if self.contentType == "text/markdown":
+            return mark_safe(markdown(self.content, safe_mode='escape'))
+        else:
+            return self.content
 
 
 class Image(models.Model):
@@ -115,6 +126,12 @@ class Comment(models.Model):
 
     def __repr__(self):
         return "{} - {} - {} ".format(self.author, self.published, self.id)
+
+    def get_comment(self):
+        if self.contentType == "text/markdown":
+            return mark_safe(markdown(self.comment, safe_mode='escape'))
+        else:
+            return self.comment
 
 
 class Server(models.Model):
