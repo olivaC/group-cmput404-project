@@ -1,4 +1,4 @@
-from app.models import Comment
+from app.models import Comment, Author
 from settings_server import DOMAIN
 
 
@@ -30,6 +30,30 @@ def addAuthor(author):
         author_dict['bio'] = author.bio
 
     return author_dict
+
+
+def addAuthor2():
+    """
+    Creates an Author dictionary
+
+    :param author: Author instance
+    :return: List
+    """
+
+    author_list = list()
+
+    authors = Author.objects.all()
+
+    for author in authors:
+        author_dict = dict()
+        author_dict['id'] = "{}/api/author/{}".format(DOMAIN, author.id)
+        author_dict['host'] = "{}/api/".format(author.host_url)
+        author_dict['displayName'] = author.username
+        author_dict['url'] = "{}/api/author/{}".format(DOMAIN, author.id)
+
+        author_list.append(author_dict)
+
+    return author_list
 
 
 def addFriends(author):

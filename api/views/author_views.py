@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from api.api_utilities import addAuthor, addFriends
+from api.api_utilities import *
 from app.models import Author
 
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -38,3 +38,18 @@ class AuthorView(APIView):
         except:
             response['author'] = []
             return Response(response, status=404)
+
+
+class AuthorListView(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        authors = addAuthor2()
+
+        response = dict()
+
+        response['author'] = authors
+        response['count'] = len(authors)
+
+        return Response(response, status=200)
