@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 
 class FriendView(APIView):
     """
-    author/<uuid:id>/friends
+    author/{author_id}/friends
     """
 
     authentication_classes = (SessionAuthentication, BasicAuthentication)
@@ -31,9 +31,21 @@ class FriendView(APIView):
                         friend_id = "{}/author/{}".format(friend.host_url, friend.id)
                         friend_list.append(friend_id)
                 response['friends'] = friend_list
+                response['count'] = len(friend_list)
                 return Response(response, status=200)
             else:
-                raise Exception
+                author = Author.objects.get(id=id)
+                response['query'] = 'friends'
+                response['author'] = "{}/api/author/{}".format(DOMAIN, author.id)
+                friends = author.friends.all()
+                friend_list = list()
+                if friends:
+                    for friend in friends:
+                        friend_id = "{}/api/author/{}".format(friend.host_url, friend.id)
+                        friend_list.append(friend_id)
+                response['friends'] = friend_list
+                response['count'] = len(friend_list)
+                return Response(response, status=200)
         except:
             response['error'] = "You are not the authenticated user"
             return Response(response, status=403)
@@ -41,7 +53,7 @@ class FriendView(APIView):
 
 class FriendResponseView(APIView):
     """
-    author/<uuid:id>/friends/
+    author/{author_id}/friends/
     """
 
     authentication_classes = (SessionAuthentication, BasicAuthentication)
