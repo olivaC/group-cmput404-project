@@ -1,3 +1,4 @@
+import requests
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.forms import model_to_dict
@@ -10,9 +11,9 @@ from SocialDistribution import settings
 from app.forms.post_forms import PostCreateForm, CommentCreateForm
 from app.models import *
 from app.serializers import PostSerializer
-from app.utilities import api_check
+from app.utilities import *
 
-import app.utilities as util
+
 
 @login_required
 @user_passes_test(api_check)
@@ -42,6 +43,7 @@ def my_posts_view(request):
     request.context['posts'] = posts
 
     return render(request, 'posts/my_posts.html', request.context)
+
 
 @login_required
 @user_passes_test(api_check)
@@ -104,11 +106,11 @@ def create_post_view(request):
             if form.is_valid():
                 if form.cleaned_data.get('content'):
                     post = Post.objects.create(author=user.user, content=form.cleaned_data.get('content'),
-                                        description=form.cleaned_data.get('description'),
-                                        title=form.cleaned_data.get('title'),
-                                        visibility=form.cleaned_data.get('visibility'),
-                                        unlisted=form.cleaned_data.get('unlisted'),
-                                        contentType=form.cleaned_data.get('contentType'))
+                                               description=form.cleaned_data.get('description'),
+                                               title=form.cleaned_data.get('title'),
+                                               visibility=form.cleaned_data.get('visibility'),
+                                               unlisted=form.cleaned_data.get('unlisted'),
+                                               contentType=form.cleaned_data.get('contentType'))
                     if "base64" in post.contentType:
                         post.title = post.id
                         post.save()
@@ -124,6 +126,7 @@ def create_post_view(request):
     request.context['form'] = form
 
     return render(request, 'posts/create_post.html', request.context)
+
 
 @login_required
 def create_image_view(request):
@@ -194,6 +197,51 @@ def create_comment_view(request, id=None):
     request.context['comments'] = comments
 
     return render(request, 'posts/post_detail.html', request.context)
+
+
+@login_required
+@user_passes_test(api_check)
+def remote_post_view(request, post):
+    host = request.GET.get('host', '')
+
+    server = Server.objects.get(hostname__contains=host)
+
+    server_api = "{}posts/{}".format(server.hostname, post)
+    try:
+        if server.username and server.password:
+            r = requests.get(server_api, auth=(server.username, server.password))
+        else:
+            r = requests.get(server_api)
+    except:
+        print("Error")
+
+    if r.status_code == 200:
+        p = create_post(r.json())
+        c = create_comments(r.json())
+
+    # if request.method == 'POST':
+    #     next = request.POST.get("next", reverse("app:index"))
+    #     form = CommentCreateForm(request.POST)
+    #     try:
+    #         if form.is_valid():
+    #             if form.cleaned_data.get('comment'):
+    #                 author = request.user.user
+    #                 Comment.objects.create(post=post, author=author, comment=form.cleaned_data.get('comment'),
+    #                                        contentType=form.cleaned_data.get('contentType'))
+    #                 return HttpResponseRedirect(request.path)
+    #         request.context['next'] = next
+    #         messages.warning(request, 'Error commenting.')
+    #
+    #
+    #     except:
+    #         request.context['next'] = request.GET.get('next', request.path)
+
+    form = CommentCreateForm()
+    request.context['post'] = p
+    # request.context['form'] = form
+    request.context['comments'] = c
+
+    return render(request, 'posts/remote_post_detail.html', request.context)
 
 
 @login_required

@@ -8,7 +8,10 @@ from settings_server import *
 from django.forms import ModelForm
 from django.utils.html import mark_safe
 from markdown import markdown
-from app.utilities import image_content_to_html
+
+
+def image_content_to_html(content):
+    return mark_safe("<img src=\"" + content + "\" />")
 
 
 class Author(models.Model):
@@ -54,6 +57,10 @@ class FollowRequest(models.Model):
 
     def get_following(self):
         return self.friend.username
+
+# class FriendRemoteRequest(models.Model):
+#     author = models.ForeignKey(Author, related_name='author_request', on_delete=models.CASCADE) # Local author
+#     friend = models.URLField(blank=True, null=True)
 
 
 POST_PRIVACY = (

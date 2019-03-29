@@ -2,19 +2,14 @@ import requests
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.forms import model_to_dict
 from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 from django.http import HttpResponse
-from pytz import utc
 
 from app.models import *
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import user_passes_test
-from datetime import datetime
 
 # Create your views here.
 from django.urls import reverse
@@ -22,46 +17,8 @@ from django.urls import reverse
 from SocialDistribution import settings
 from app.forms.post_forms import EditProfileForm, EditBio
 from app.forms.registration_forms import LoginForm, UserCreateForm
-from app.models import Post, Author
 from app.utilities import *
 from app.views import gh_stream
-
-
-def create_author(author):
-    i = Author()
-    if not author.get('displayName'):
-        i.username = author.get('id')
-    else:
-        i.username = author.get('displayName')
-    i.host_url = author.get('host')
-    i.id = author.get('id')
-    i.url = author.get('url')
-    if author.get('firstName'):
-        i.first_name = author.get('firstName')
-    if author.get('lastName'):
-        i.last_name = author.get('lastName')
-    return i
-
-
-def create_posts(posts):
-    post_list = list()
-
-    for i in posts.get('posts'):
-        post = Post()
-        post.author = create_author(i.get('author'))
-        post.contentType = i.get('contentType')
-        post.description = i.get('description')
-        post.published = utc.localize(datetime.strptime(i.get('published'), '%Y-%m-%dT%H:%M:%S.%fZ'))
-        post.unlisted = i.get('unlisted')
-        post.visibility = i.get('visibility')
-        post.title = i.get('title')
-        # post.comments = i.get('comments')
-        post.remote = 'remote'
-        post.content = i.get('content')
-        post.content = post.get_content()
-        post_list.append(post)
-
-    return post_list
 
 
 @login_required

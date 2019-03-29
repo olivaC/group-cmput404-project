@@ -1,12 +1,15 @@
+import requests
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from urllib.parse import urlparse
 
-from app.models import Author, FollowRequest, Post
+
+from app.models import Author, FollowRequest, Post, Server
 from django.db.models.functions import Lower
 
-from app.utilities import api_check
+from app.utilities import api_check, create_author
 
 
 @login_required
@@ -124,3 +127,25 @@ def mutual_friends_view(request):
     request.context['friends'] = friends
     request.context['posts'] = posts
     return render(request, 'authors/mutual_friends.html', request.context)
+
+
+def profile_remote_view(request):
+    url = request.GET.get('host', '')
+    url_parse = urlparse(url)
+    req = "{}://{}".format(url_parse.scheme, url_parse.netloc)
+    server = Server.objects.get(hostname__contains=req)
+
+    try:
+        if server.username and server.password:
+            r = requests.get(url, auth=(server.username, server.password))
+        else:
+            r = requests.get(url)
+    except:
+        print("Error")
+
+    if r.status_code == 200:
+        a = create_author(r.json())
+
+    request.context['author'] = a
+
+    return render(request, 'profile.html', request.context)
