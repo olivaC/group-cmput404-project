@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 import app.views.post_views
+import app.views.user_views
 from app.views import api_views, views, post_views, user_views
 
 app_name = 'app'
@@ -46,5 +47,6 @@ urlpatterns = [
     path('foaf-posts', post_views.foaf_posts_view, name="foaf_posts"),
     path('mutual-friend-posts', post_views.mutual_friends_posts_view, name="mutual_friend_posts"),
     path('post/<uuid:id>/', post_views.unlisted_post_view, name="unlisted_post"),
-    path('author/remote/<str:post>', views.profile_remote_view, name="author_remote"),
+    path('author/remote/', app.views.user_views.profile_remote_view, name="author_remote"),
+    path('post-detail/remote/<str:post>', post_views.remote_post_view, name="remote_post"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

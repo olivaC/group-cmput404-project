@@ -8,7 +8,10 @@ from settings_server import *
 from django.forms import ModelForm
 from django.utils.html import mark_safe
 from markdown import markdown
-from app.utilities import image_content_to_html
+
+
+def image_content_to_html(content):
+    return mark_safe("<img src=\"" + content + "\" />")
 
 
 class Author(models.Model):
