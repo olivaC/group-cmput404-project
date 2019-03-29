@@ -16,7 +16,6 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import user_passes_test
 from datetime import datetime
 
-
 # Create your views here.
 from django.urls import reverse
 
@@ -30,7 +29,10 @@ from app.views import gh_stream
 
 def create_author(author):
     i = Author()
-    i.username = author.get('displayName')
+    if not author.get('displayName'):
+        i.username = author.get('id')
+    else:
+        i.username = author.get('displayName')
     i.host_url = author.get('host')
     i.id = author.get('id')
     i.url = author.get('url')
@@ -47,7 +49,6 @@ def create_posts(posts):
     for i in posts.get('posts'):
         post = Post()
         post.author = create_author(i.get('author'))
-        post.content = i.get('content')
         post.contentType = i.get('contentType')
         post.description = i.get('description')
         post.published = utc.localize(datetime.strptime(i.get('published'), '%Y-%m-%dT%H:%M:%S.%fZ'))
@@ -56,6 +57,8 @@ def create_posts(posts):
         post.title = i.get('title')
         # post.comments = i.get('comments')
         post.remote = 'remote'
+        post.content = i.get('content')
+        post.content = post.get_content()
         post_list.append(post)
 
     return post_list
@@ -90,10 +93,22 @@ def index(request):
     else:
         posts = list(posts.order_by('-published'))
 
-    # r = requests.get('http://127.0.0.1:8000/api/posts', auth=('group10api', 'ualberta123'))
-    # public_posts = create_posts(r.json())
-    #
-    # posts = public_posts + list(posts)
+    servers = Server.objects.all()
+    public_posts = list()
+
+    for server in servers:
+        server_api = "{}posts/".format(server.hostname)
+        try:
+            if server.username and server.password:
+                r = requests.get(server_api, auth=(server.username, server.password))
+            else:
+                r = requests.get(server_api)
+            p = create_posts(r.json())
+            public_posts.extend(p)
+        except:
+            print("error")
+
+    posts = public_posts + list(posts)
     posts.sort(key=lambda post: post.published, reverse=True)
 
     request.context['posts'] = posts
