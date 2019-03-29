@@ -10,6 +10,10 @@ from django.utils.html import mark_safe
 from markdown import markdown
 
 
+def image_content_to_html(content):
+    return mark_safe("<img src=\"" + content + "\" />")
+
+
 class Author(models.Model):
     """
     user: a local user using the Django User
@@ -54,6 +58,10 @@ class FollowRequest(models.Model):
     def get_following(self):
         return self.friend.username
 
+# class FriendRemoteRequest(models.Model):
+#     author = models.ForeignKey(Author, related_name='author_request', on_delete=models.CASCADE) # Local author
+#     friend = models.URLField(blank=True, null=True)
+
 
 POST_PRIVACY = (
     ('PRIVATE', 'Private'),
@@ -65,21 +73,23 @@ POST_PRIVACY = (
 
 POST_CONTENT_TYPE = (
     ('text/plain', 'Plain Text'),
-    ('text/markdown', 'Markdown')
+    ('text/markdown', 'Markdown'),
+    ('image/png;base64', 'PNG Base64'),
+    ('image/jpeg;base64', 'JPEG Base64')
 )
 
 
 class Post(models.Model):
     # TODO: Finish this class
-    author      = models.ForeignKey(Author, related_name='authorPost', on_delete=models.CASCADE)
-    published   = models.DateTimeField(auto_now=True)
-    title       = models.CharField(max_length=100, blank=True, null=True)
+    author = models.ForeignKey(Author, related_name='authorPost', on_delete=models.CASCADE)
+    published = models.DateTimeField(auto_now=True)
+    title = models.CharField(max_length=100, blank=True, null=True)
     description = models.CharField(max_length=50, blank=True, null=True)  # brief description
-    visibility  = models.CharField(max_length=100, choices=POST_PRIVACY, default='Private')
-    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
-    content     = models.TextField(default="")
+    visibility = models.CharField(max_length=100, choices=POST_PRIVACY, default='Private')
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    content = models.TextField(default="")
     contentType = models.CharField(max_length=100, choices=POST_CONTENT_TYPE, default='Plain Text')
-    unlisted    = models.BooleanField(default=False)
+    unlisted = models.BooleanField(default=False)
 
     def __str__(self):
         return "{} - {} - {}".format(self.author, self.published, self.visibility)
@@ -90,27 +100,10 @@ class Post(models.Model):
     def get_content(self):
         if self.contentType == "text/markdown":
             return mark_safe(markdown(self.content, safe_mode='escape'))
+        elif self.contentType.startswith("image/"):
+            return image_content_to_html(self.content)
         else:
             return self.content
-
-
-class Image(models.Model):
-    def get_image_dir(instance, filename):
-        if isinstance(instance, str):
-            return "images/{username}/{filename}".format(username=instance, filename=filename)
-        else:
-            authorName = instance.author.username
-            return Image.get_image_dir(authorName, filename)
-
-    author = models.ForeignKey(Author, related_name='authorImage', on_delete=models.CASCADE)
-    private = models.IntegerField(default=0)
-    file = models.FileField(upload_to=get_image_dir)
-
-
-class ImageForm(ModelForm):
-    class Meta:
-        model = Image
-        fields = ["file", "private"]
 
 
 class Comment(models.Model):
@@ -136,7 +129,13 @@ class Comment(models.Model):
 
 class Server(models.Model):
     # TODO: Finish this class
-    pass
+    hostname = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    user = models.OneToOneField(User, related_name='server_user', on_delete=models.CASCADE, blank=True, null=True)
+    username = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    password = models.CharField(max_length=50, unique=True, blank=True, null=True)
+
+    def __str__(self):
+        return "Hostname: {}".format(self.hostname)
 
 
 @receiver(post_save, sender=User)

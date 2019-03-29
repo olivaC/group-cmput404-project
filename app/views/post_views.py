@@ -1,18 +1,22 @@
+import requests
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.forms import model_to_dict
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.core import serializers
-
+from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 from SocialDistribution import settings
 from app.forms.post_forms import PostCreateForm, CommentCreateForm
-from app.models import Post, Comment
+from app.models import *
 from app.serializers import PostSerializer
+from app.utilities import *
+
 
 
 @login_required
+@user_passes_test(api_check)
 def my_posts_view(request):
     user = request.user
     request.context['user'] = user
@@ -41,6 +45,8 @@ def my_posts_view(request):
     return render(request, 'posts/my_posts.html', request.context)
 
 
+@login_required
+@user_passes_test(api_check)
 def delete_post(request, id=None):
     post = get_object_or_404(Post, id=id)
 
@@ -61,6 +67,7 @@ def delete_post(request, id=None):
 
 
 @login_required
+@user_passes_test(api_check)
 def edit_post(request, id=None):
     post = get_object_or_404(Post, id=id)
     if request.method == 'POST':
@@ -87,6 +94,7 @@ def edit_post(request, id=None):
 
 
 @login_required
+@user_passes_test(api_check)
 def create_post_view(request):
     user = request.user
     request.context['user'] = user
@@ -97,12 +105,15 @@ def create_post_view(request):
         try:
             if form.is_valid():
                 if form.cleaned_data.get('content'):
-                    Post.objects.create(author=user.user, content=form.cleaned_data.get('content'),
-                                        description=form.cleaned_data.get('description'),
-                                        title=form.cleaned_data.get('title'),
-                                        visibility=form.cleaned_data.get('visibility'),
-                                        unlisted=form.cleaned_data.get('unlisted'),
-                                        contentType=form.cleaned_data.get('contentType'))
+                    post = Post.objects.create(author=user.user, content=form.cleaned_data.get('content'),
+                                               description=form.cleaned_data.get('description'),
+                                               title=form.cleaned_data.get('title'),
+                                               visibility=form.cleaned_data.get('visibility'),
+                                               unlisted=form.cleaned_data.get('unlisted'),
+                                               contentType=form.cleaned_data.get('contentType'))
+                    if "base64" in post.contentType:
+                        post.title = post.id
+                        post.save()
                     return HttpResponseRedirect(reverse('app:index'))
             request.context['next'] = next
             messages.warning(request, 'Cannot post something empty!')
@@ -118,6 +129,38 @@ def create_post_view(request):
 
 
 @login_required
+def create_image_view(request):
+    """
+    View for uploading an image
+
+    :param request
+    :return: Image File Path if Success, 500 otherwise.
+    """
+    if request.method == 'POST':
+        if "file" in request.FILES:
+            file = request.FILES["file"]
+            mimeType = get_image_type(file.name)
+            data = get_base64(mimeType, file)
+
+            # Create a Post associated with the image
+            request.POST = request.POST.copy()
+            request.POST["title"] = "Image"
+            request.POST["contentType"] = mimeType + ";base64"
+            request.POST["content"] = data
+            print(request.POST)
+            return create_post_view(request)
+        else:
+            request.context['next'] = next
+            messages.warning(request, 'Not valid image form!')
+
+    form = PostCreateForm()
+    request.context['form'] = form
+
+    return render(request, 'posts/create_image.html', request.context)
+
+
+@login_required
+@user_passes_test(api_check)
 def public_post_view(request):
     posts = Post.objects.all().filter(visibility="PUBLIC").order_by('-id')
 
@@ -127,6 +170,7 @@ def public_post_view(request):
 
 
 @login_required
+@user_passes_test(api_check)
 def create_comment_view(request, id=None):
     post = get_object_or_404(Post, id=id)
     comments = Comment.objects.all().filter(post=post)
@@ -156,6 +200,52 @@ def create_comment_view(request, id=None):
 
 
 @login_required
+@user_passes_test(api_check)
+def remote_post_view(request, post):
+    host = request.GET.get('host', '')
+
+    server = Server.objects.get(hostname__contains=host)
+
+    server_api = "{}posts/{}".format(server.hostname, post)
+    try:
+        if server.username and server.password:
+            r = requests.get(server_api, auth=(server.username, server.password))
+        else:
+            r = requests.get(server_api)
+    except:
+        print("Error")
+
+    if r.status_code == 200:
+        p = create_post(r.json())
+        c = create_comments(r.json())
+
+    # if request.method == 'POST':
+    #     next = request.POST.get("next", reverse("app:index"))
+    #     form = CommentCreateForm(request.POST)
+    #     try:
+    #         if form.is_valid():
+    #             if form.cleaned_data.get('comment'):
+    #                 author = request.user.user
+    #                 Comment.objects.create(post=post, author=author, comment=form.cleaned_data.get('comment'),
+    #                                        contentType=form.cleaned_data.get('contentType'))
+    #                 return HttpResponseRedirect(request.path)
+    #         request.context['next'] = next
+    #         messages.warning(request, 'Error commenting.')
+    #
+    #
+    #     except:
+    #         request.context['next'] = request.GET.get('next', request.path)
+
+    form = CommentCreateForm()
+    request.context['post'] = p
+    # request.context['form'] = form
+    request.context['comments'] = c
+
+    return render(request, 'posts/remote_post_detail.html', request.context)
+
+
+@login_required
+@user_passes_test(api_check)
 def foaf_posts_view(request):
     user = request.user
     request.context['user'] = user
@@ -179,6 +269,7 @@ def foaf_posts_view(request):
 
 
 @login_required
+@user_passes_test(api_check)
 def mutual_friends_posts_view(request):
     user = request.user
     request.context['user'] = user
