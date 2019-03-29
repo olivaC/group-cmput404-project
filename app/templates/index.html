@@ -39,9 +39,15 @@
                     </div>
                 </div>
                 <div class="card-footer">
+                    {% if post.remote %}
+                        <span>
+                            <a href="" class="btn btn-outline-primary">View Comments / Comment</a>
+                        </span>
+                    {% else %}
                         <span>
                             <a href="{% url "app:post_detail" id=post.id %}" class="btn btn-outline-primary">View Comments / Comment</a>
                         </span>
+                    {% endif %}
                 </div>
             </div>
         {% endfor %}
