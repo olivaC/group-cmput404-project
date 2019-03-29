@@ -19,6 +19,7 @@ urlpatterns = [
     path('', schema_view),
     # Author
     path('author/<uuid:id>', api.views.author_views.AuthorView.as_view(), name='author'),
+    path('author/', api.views.author_views.AuthorListView.as_view(), name='author_list'),
 
     # Posts
     path('posts', api.views.post_views.PublicPostView.as_view(), name='public'),
