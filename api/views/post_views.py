@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
 from api.api_utilities import postList, postCreate
-from app.models import Post, Author
+from app.models import Post, Author, Server
 
 
 class PublicPostView(APIView):
@@ -35,12 +35,19 @@ class AuthorVisiblePostView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        user = request.user
-        posts = Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
-            visibility="FRIENDS") | Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
-            visibility="SERVERONLY") | Post.objects.all().filter(author=user.user) | Post.objects.all().filter(
-            visibility="PUBLIC")
-        posts = posts.order_by('-published')
+        remote_id = request.META.get('HTTP_X_AUTHOR_ID')
+        if remote_id:
+            server = Server.objects.get(user=request.user)
+            if server:
+                # TODO: Filter more posts based on friends
+                posts = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
+        else:
+            user = request.user
+            posts = Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
+                visibility="FRIENDS") | Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
+                visibility="SERVERONLY") | Post.objects.all().filter(author=user.user) | Post.objects.all().filter(
+                visibility="PUBLIC")
+            posts = posts.order_by('-published')
         response = dict()
         response['query'] = 'posts'
         response['count'] = len(posts)
