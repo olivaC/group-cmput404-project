@@ -139,8 +139,8 @@ def create_image_view(request):
     if request.method == 'POST':
         if "file" in request.FILES:
             file = request.FILES["file"]
-            mimeType = util.get_image_type(file.name)
-            data = util.get_base64(mimeType, file)
+            mimeType = get_image_type(file.name)
+            data = get_base64(mimeType, file)
 
             # Create a Post associated with the image
             request.POST = request.POST.copy()
