@@ -21,7 +21,7 @@ def my_posts_view(request):
     user = request.user
     request.context['user'] = user
 
-    posts = Post.objects.all().filter(author=user.user).order_by('-id')
+    posts = Post.objects.all().filter(author=user.user).order_by('-published')
 
     if request.method == 'POST':
         next = request.POST.get("next", reverse("app:index"))
@@ -162,7 +162,7 @@ def create_image_view(request):
 @login_required
 @user_passes_test(api_check)
 def public_post_view(request):
-    posts = Post.objects.all().filter(visibility="PUBLIC").order_by('-id')
+    posts = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
 
     request.context['posts'] = posts
 
