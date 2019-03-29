@@ -55,6 +55,10 @@ class FollowRequest(models.Model):
     def get_following(self):
         return self.friend.username
 
+# class FriendRemoteRequest(models.Model):
+#     author = models.ForeignKey(Author, related_name='author_request', on_delete=models.CASCADE) # Local author
+#     friend = models.URLField(blank=True, null=True)
+
 
 POST_PRIVACY = (
     ('PRIVATE', 'Private'),

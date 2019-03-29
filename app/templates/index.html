@@ -16,17 +16,25 @@
                     <div class="inline-group">
 
                         {% if post.author.image %}
-                            <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50" height="50"
-                             src="{{ post.author.image.url }}">
+                            <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50"
+                                 height="50"
+                                 src="{{ post.author.image.url }}">
                         {% else %}
                             <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50"
                                  height="50"
                                  src="https://www.betwext.com/wp-content/uploads/2018/09/blank-profile-picture-973460_640.png"/>
                         {% endif %}
 
-                        <a href="/author/{{ post.author.id }}" class="ml-2 font-weight-bold text-primary">
-                            {{ post.author.username }}
-                        </a>
+                        {% if post.remote %}
+                            <a href="{% url "app:author_remote" post=post.id %}?host={{ post.author.id }}" class="ml-2 font-weight-bold text-primary">
+                                {{ post.author.id }}
+                            </a>
+                        {% else %}
+                            <a href="/author/{{ post.author.id }}" class="ml-2 font-weight-bold text-primary">
+                                {{ post.author.username }}
+                            </a>
+
+                        {% endif %}
 
                     </div>
                 </div>

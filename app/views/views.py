@@ -127,6 +127,22 @@ def profile_view(request, id=None):
     return render(request, 'profile.html', request.context)
 
 
+def profile_remote_view(request, post=None):
+    host = request.GET.get('host', '')
+    print(host)
+    host_name = host.split("author")[0]
+    author = host.split("api/")
+    server = Server.objects.get(hostname__contains=host_name)
+    print("HI", author)
+    #print(server)
+
+    # author = get_object_or_404(Author, id=id)
+    # request.context['author'] = author
+
+    #return render(request, 'profile.html', request.context)
+    return
+
+
 @login_required
 @user_passes_test(api_check)
 def edit_profile(request):

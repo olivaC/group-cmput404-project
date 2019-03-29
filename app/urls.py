@@ -46,4 +46,5 @@ urlpatterns = [
     path('foaf-posts', post_views.foaf_posts_view, name="foaf_posts"),
     path('mutual-friend-posts', post_views.mutual_friends_posts_view, name="mutual_friend_posts"),
     path('post/<uuid:id>/', post_views.unlisted_post_view, name="unlisted_post"),
+    path('author/remote/<str:post>', views.profile_remote_view, name="author_remote"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
