@@ -7,6 +7,8 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from api.api_utilities import postList, postCreate
 from app.models import Post, Author, Server
 
+import datetime
+
 
 # https://stackoverflow.com/questions/715417/converting-from-a-string-to-boolean-in-python
 def str2bool(v):
@@ -70,8 +72,12 @@ class PublicPostView(APIView):
                     response['message'] = 'Post failed to create'
 
                     return Response(response, status=500)
+            else:
+                response['query'] = 'addPost'
+                response['success'] = False
+                response['message'] = 'Missing fields'
 
-        print('yar')
+                return Response(response, status=500)
 
 
 class AuthorVisiblePostView(APIView):
@@ -266,3 +272,84 @@ class SinglePostView(APIView):
                 response['query'] = 'posts'
                 response['Error'] = 'Not authorized to see this post'
                 return Response(response, status=403)
+
+    def put(self, request, id):
+
+        response = dict()
+        response['query'] = 'putPost'
+
+        try:
+            post = Post.objects.get(id=id)
+            try:
+                server = Server.objects.get(user=request.user)
+                if server:
+                    response['success'] = False
+                    response['message'] = "Not authorized to edit this post"
+                    return Response(response, status=403)
+            except:
+                authenticated_author = request.user.user
+                if authenticated_author != post.author:
+                    response['success'] = False
+                    response['message'] = "Not authorized to edit this post"
+                    return Response(response, status=403)
+                else:
+                    r = request.POST
+                    title = r.get('title')
+                    description = r.get('description')
+                    visibility = r.get('visibility')
+                    content = r.get('content')
+                    contentType = r.get('contentType')
+                    unlisted = str2bool(r.get('unlisted'))
+
+                    if title and description and visibility and content and contentType and (unlisted in [True, False]):
+                        post.published = datetime.datetime.now()
+                        post.title = title
+                        post.description = description
+                        post.visibility = visibility
+                        post.content = content
+                        post.contentType = contentType
+                        post.unlisted = unlisted
+                        post.save()
+
+                        response['success'] = True
+                        response['message'] = 'Post edited'
+
+                        return Response(response, status=200)
+                    else:
+                        response['success'] = False
+                        response['message'] = "Failed to edit post"
+                        return Response(response, status=500)
+
+        except:
+            try:
+                server = Server.objects.get(user=request.user)
+                if server:
+                    response['success'] = False
+                    response['message'] = "Not authorized to add posts"
+                    return Response(response, status=403)
+            except:
+                authenticated_author = request.user.user
+
+                r = request.POST
+                title = r.get('title')
+                description = r.get('description')
+                visibility = r.get('visibility')
+                content = r.get('content')
+                contentType = r.get('contentType')
+                unlisted = str2bool(r.get('unlisted'))
+
+                if title and description and visibility and content and contentType and (unlisted in [True, False]):
+                    post = Post.objects.create(id=id,
+                                               author=authenticated_author, title=title, description=description,
+                                               visibility=visibility,
+                                               content=content, contentType=contentType, unlisted=bool(unlisted)
+                                               )
+                    if post:
+                        response['success'] = True
+                        response['message'] = 'Post added'
+                        return Response(response, status=200)
+                    else:
+                        response['query'] = 'addPost'
+                        response['success'] = False
+                        response['message'] = 'Post failed to put'
+                        return Response(response, status=500)
