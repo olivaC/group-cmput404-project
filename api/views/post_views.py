@@ -8,6 +8,11 @@ from api.api_utilities import postList, postCreate
 from app.models import Post, Author, Server
 
 
+# https://stackoverflow.com/questions/715417/converting-from-a-string-to-boolean-in-python
+def str2bool(v):
+    return v.lower() in ("yes", "true", "t", "1")
+
+
 class PublicPostView(APIView):
     """
     /api/posts
@@ -22,6 +27,51 @@ class PublicPostView(APIView):
         response['posts'] = postList(public)
         response['count'] = len(public)
         return Response(response, status=200)
+
+    def post(self, request):
+        user = request.user
+        response = dict()
+        try:
+            remote = Server.objects.get(user=user)
+            if remote:
+                response['query'] = 'addPost'
+                response['success'] = False
+                response['message'] = 'Not authorized to create posts'
+                return Response(response, status=403)
+            else:
+                response['query'] = 'addPost'
+                response['success'] = False
+                response['message'] = 'Not authorized to create posts'
+                return Response(response, status=403)
+        except:
+            author = user.user
+            r = request.POST
+            title = r.get('title')
+            description = r.get('description')
+            visibility = r.get('visibility')
+            content = r.get('content')
+            contentType = r.get('contentType')
+            unlisted = str2bool(r.get('unlisted'))
+
+            if title and description and visibility and content and contentType and (unlisted in [True, False]):
+                post = Post.objects.create(
+                    author=author, title=title, description=description, visibility=visibility, content=content,
+                    contentType=contentType, unlisted=bool(unlisted)
+                )
+                if post:
+                    response['query'] = 'addPost'
+                    response['success'] = True
+                    response['message'] = 'Post added'
+
+                    return Response(response, status=200)
+                else:
+                    response['query'] = 'addPost'
+                    response['success'] = False
+                    response['message'] = 'Post failed to create'
+
+                    return Response(response, status=500)
+
+        print('yar')
 
 
 class AuthorVisiblePostView(APIView):
@@ -44,7 +94,8 @@ class AuthorVisiblePostView(APIView):
         else:
             user = request.user
             posts = Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
-                visibility="FRIENDS") | Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
+                visibility="FRIENDS") | Post.objects.all().filter(
+                author__id__in=request.user.user.friends.all()).filter(
                 visibility="SERVERONLY") | Post.objects.all().filter(author=user.user) | Post.objects.all().filter(
                 visibility="PUBLIC")
             posts = posts.order_by('-published')
