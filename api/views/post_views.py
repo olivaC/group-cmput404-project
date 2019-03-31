@@ -162,48 +162,59 @@ class AuthorPostView(APIView):
 
     def get(self, request, id):
         author = get_object_or_404(Author, id=id)
-        current = request.user.user
+        try:
+            server = Server.objects.get(user=request.user)
+            if server:
+                response = dict()
+                posts = Post.objects.all().filter(author=author).filter(visibility="PUBLIC")
+                post_list = postList(posts)
+                response['posts'] = post_list
+                response['count'] = len(post_list)
+                response['query'] = 'posts'
+                return Response(response, status=200)
+        except:
+            current = request.user.user
 
-        response = dict()
-        friends = current.friends.all()
-
-        # posts = Post.objects.all().filter(author=author).filter(
-        #             visibility="FRIENDS") | Post.objects.all().filter(author=author).filter(
-        #             visibility="PUBLIC") | Post.objects.all().filter(author=author).filter(
-        #             visibility="FOAF") | Post.objects.all().filter(author=author).filter(
-        #             visibility="SERVERONLY")
-        #
-        # posts = posts.order_by('-published')
-        # response['query'] = 'posts'
-        # response['posts'] = postList(posts)
-        # return Response(response, status=200)
-
-        if author in friends:
-            posts = Post.objects.all().filter(author=author).filter(
-                visibility="FRIENDS") | Post.objects.all().filter(author=author).filter(
-                visibility="PUBLIC") | Post.objects.all().filter(author=author).filter(
-                visibility="FOAF") | Post.objects.all().filter(author=author).filter(
-                visibility="SERVERONLY")
-            posts = posts.order_by('-published')
-            response['query'] = 'posts'
-            response['posts'] = postList(posts)
-            response['count'] = len(posts)
-            return Response(response, status=200)
-        elif author == current:
-            posts = Post.objects.all().filter(author=author)
-            posts = posts.order_by('-published')
             response = dict()
-            response['count'] = len(posts)
-            response['query'] = 'posts'
-            response['posts'] = postList(posts)
-            return Response(response, status=200)
-        else:
-            posts = Post.objects.all().filter(visibility="PUBLIC")
-            posts = posts.order_by('-published')
-            response['count'] = len(posts)
-            response['query'] = 'posts'
-            response['posts'] = postList(posts)
-            return Response(response, status=200)
+            friends = current.friends.all()
+
+            # posts = Post.objects.all().filter(author=author).filter(
+            #             visibility="FRIENDS") | Post.objects.all().filter(author=author).filter(
+            #             visibility="PUBLIC") | Post.objects.all().filter(author=author).filter(
+            #             visibility="FOAF") | Post.objects.all().filter(author=author).filter(
+            #             visibility="SERVERONLY")
+            #
+            # posts = posts.order_by('-published')
+            # response['query'] = 'posts'
+            # response['posts'] = postList(posts)
+            # return Response(response, status=200)
+
+            if author in friends:
+                posts = Post.objects.all().filter(author=author).filter(
+                    visibility="FRIENDS") | Post.objects.all().filter(author=author).filter(
+                    visibility="PUBLIC") | Post.objects.all().filter(author=author).filter(
+                    visibility="FOAF") | Post.objects.all().filter(author=author).filter(
+                    visibility="SERVERONLY")
+                posts = posts.order_by('-published')
+                response['query'] = 'posts'
+                response['posts'] = postList(posts)
+                response['count'] = len(posts)
+                return Response(response, status=200)
+            elif author == current:
+                posts = Post.objects.all().filter(author=author)
+                posts = posts.order_by('-published')
+                response = dict()
+                response['count'] = len(posts)
+                response['query'] = 'posts'
+                response['posts'] = postList(posts)
+                return Response(response, status=200)
+            else:
+                posts = Post.objects.all().filter(visibility="PUBLIC")
+                posts = posts.order_by('-published')
+                response['count'] = len(posts)
+                response['query'] = 'posts'
+                response['posts'] = postList(posts)
+                return Response(response, status=200)
 
 
 class SinglePostView(APIView):
@@ -216,27 +227,42 @@ class SinglePostView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, id):
-        authenticated_author = request.user.user
-        response = dict()
-        response['query'] = 'posts'
+        try:
+            server = Server.objects.get(user=request.user)
+            if server:
+                response = dict()
+                post = Post.objects.all().filter(id=id).first()
+                response['posts'] = postCreate(post)
+                response['query'] = 'posts'
+                return Response(response, status=200)
+        except:
+            try:
+                authenticated_author = request.user.user
+                response = dict()
+                response['query'] = 'posts'
 
-        post = Post.objects.all().filter(id=id).first()
+                post = Post.objects.all().filter(id=id).first()
 
-        if not post:
-            return Response(response, status=404)
+                if not post:
+                    return Response(response, status=404)
 
-        author = post.author
-        friends = author.friends.all()
+                author = post.author
+                friends = author.friends.all()
 
-        if authenticated_author in friends:
-            response['posts'] = postCreate(post)
-            return Response(response, status=200)
-        elif post.visibility == "PUBLIC":
-            response['posts'] = postCreate(post)
-            return Response(response, status=200)
-        elif post.author == authenticated_author:
-            response['posts'] = postCreate(post)
-            return Response(response, status=200)
-        else:
-            response['Error'] = 'Not authorized to see this post'
-            return Response(response, status=403)
+                if authenticated_author in friends:
+                    response['posts'] = postCreate(post)
+                    return Response(response, status=200)
+                elif post.visibility == "PUBLIC":
+                    response['posts'] = postCreate(post)
+                    return Response(response, status=200)
+                elif post.author == authenticated_author:
+                    response['posts'] = postCreate(post)
+                    return Response(response, status=200)
+                else:
+                    response['Error'] = 'Not authorized to see this post'
+                    return Response(response, status=403)
+            except:
+                response = dict()
+                response['query'] = 'posts'
+                response['Error'] = 'Not authorized to see this post'
+                return Response(response, status=403)
