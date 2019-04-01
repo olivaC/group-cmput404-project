@@ -26,6 +26,6 @@ DATABASES = {
 
 # This will have to change when added to production server
 if 'I_AM_HEROKU' in os.environ:
-    DOMAIN = "https://young-plains-33934.herokuapp.com/"
+    DOMAIN = "http://g10-cmput404-project.herokuapp.com/"
 else:
     DOMAIN = "http://127.0.0.1:8000"
