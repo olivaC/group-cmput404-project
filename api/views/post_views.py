@@ -41,7 +41,7 @@ class PublicPostView(APIView):
         public = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
         response['query'] = 'posts'
         posts = postList(public)
-        posts = get_public_posts(posts)
+        # posts = get_public_posts(posts)
         posts = sorted(posts, key=lambda k: k['published'], reverse=True)
 
         page = self.paginate_queryset(posts)
