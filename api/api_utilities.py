@@ -220,6 +220,8 @@ def getRemotePost(post_id):
         if not host.endswith("/"):
             host = host + "/"
         server_api = "{}posts/{}".format(host, post_id)
+        print('Request:')
+        print(server_api)
         try:
             r = requests.get(server_api, auth=(server.username, server.password))
             if r.status_code in [200, 201]:
