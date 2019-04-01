@@ -3,16 +3,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.settings import api_settings
 
-from api.api_utilities import postList, postCreate
+from api.api_utilities import postList, postCreate, str2bool, get_public_posts
 from app.models import Post, Author, Server
 
 import datetime
-
-
-# https://stackoverflow.com/questions/715417/converting-from-a-string-to-boolean-in-python
-def str2bool(v):
-    return v.lower() in ("yes", "true", "t", "1")
 
 
 class PublicPostView(APIView):
@@ -21,13 +17,25 @@ class PublicPostView(APIView):
     """
     authentication_classes = (SessionAuthentication, BasicAuthentication)
     permission_classes = (IsAuthenticated,)
+    pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
 
     def get(self, request):
         response = dict()
         public = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
         response['query'] = 'posts'
-        response['posts'] = postList(public)
-        response['count'] = len(public)
+        posts = postList(public)
+        pub = get_public_posts()
+        posts.extend(pub)
+        posts = sorted(posts, key=lambda k: k['published'], reverse=True)
+
+        page = self.paginate_queryset(posts)
+        if page is not None:
+            page = self.get_paginated_response(page)
+        dat = page.data
+        response['posts'] = dat.get('results')
+        response['previous'] = dat.get('previous')
+        response['next'] = dat.get('next')
+        response['count'] = dat.get('count')
         return Response(response, status=200)
 
     def post(self, request):
@@ -78,6 +86,33 @@ class PublicPostView(APIView):
                 response['message'] = 'Missing fields'
 
                 return Response(response, status=500)
+
+    @property
+    def paginator(self):
+        """
+        The paginator instance associated with the view, or `None`.
+        """
+        if not hasattr(self, '_paginator'):
+            if self.pagination_class is None:
+                self._paginator = None
+            else:
+                self._paginator = self.pagination_class()
+        return self._paginator
+
+    def paginate_queryset(self, queryset):
+        """
+        Return a single page of results, or `None` if pagination is disabled.
+        """
+        if self.paginator is None:
+            return None
+        return self.paginator.paginate_queryset(queryset, self.request, view=self)
+
+    def get_paginated_response(self, data):
+        """
+        Return a paginated style `Response` object for the given output data.
+        """
+        assert self.paginator is not None
+        return self.paginator.get_paginated_response(data)
 
 
 class AuthorVisiblePostView(APIView):
