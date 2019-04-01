@@ -161,13 +161,37 @@ def remotePostList(host, posts):
     return post_list
 
 
+def remotePostCreate(host, post):
+    post = post.get('posts')[0]
+    author = remoteAddAuthor(post.get('author'))
+    title = post.get('title')
+    description = post.get('description')
+    contentType = post.get('contentType')
+    content = post.get('content')
+    published = utc.localize(datetime.strptime(post.get('published'), '%Y-%m-%dT%H:%M:%S.%fZ'))
+    visibility = post.get('visibility')
+    unlisted = post.get('unlisted')
+    id = post.get('id')
+    origin = post.get('origin')
+    comments = remoteCommentList(post)
+    source = "{}/api/posts/{}".format(DOMAIN, post.get('id'))
+
+    post_dict = {'author': author, 'title': title, 'description': description,
+                 'contentType': contentType, 'content': content, 'published': published,
+                 'visibility': visibility, 'unlisted': unlisted, 'id': id,
+                 'comments': comments, 'origin': origin,
+                 'source': source}
+    return post_dict
+
+
 def postCreate(post):
     post_list = list()
 
     post_dict = {'author': addAuthor(post.author), 'title': post.title, 'description': post.description,
                  'contentType': post.contentType, 'content': post.content, 'published': post.published,
                  'visibility': post.visibility, 'unlisted': post.unlisted, 'id': post.id,
-                 'comments': commentList(post)}
+                 'comments': commentList(post), 'source': "{}/api/posts/{}".format(DOMAIN, post.id),
+                 'origin': "{}/api/posts/{}".format(DOMAIN, post.id)}
     post_list.append(post_dict)
     return post_list
 
@@ -187,6 +211,22 @@ def commentList(post):
             comment_list.append(comment_dict)
 
     return comment_list
+
+
+def getRemotePost(post_id):
+    servers = Server.objects.all()
+    for server in servers:
+        host = server.hostname
+        if not host.endswith("/"):
+            host = host + "/"
+        server_api = "{}posts/{}".format(host, post_id)
+        try:
+            r = requests.get(server_api, auth=(server.username, server.password))
+            if r.status_code == 200:
+                return remotePostCreate(server.hostname, r.json())
+        except:
+            print("Error")
+    return None
 
 
 # https://stackoverflow.com/questions/715417/converting-from-a-string-to-boolean-in-python

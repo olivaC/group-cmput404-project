@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.settings import api_settings
 
-from api.api_utilities import postList, postCreate, str2bool, get_public_posts
+from api.api_utilities import postList, postCreate, str2bool, get_public_posts, getRemotePost
 from app.models import Post, Author, Server
 
 import datetime
@@ -272,10 +272,25 @@ class SinglePostView(APIView):
             server = Server.objects.get(user=request.user)
             if server:
                 response = dict()
-                post = Post.objects.all().filter(id=id).first()
-                response['posts'] = postCreate(post)
-                response['query'] = 'posts'
-                return Response(response, status=200)
+                try:
+                    post = Post.objects.get(id=id)
+                    response['posts'] = postCreate(post)
+                    response['query'] = 'posts'
+                    response['success'] = True
+                    return Response(response, status=200)
+                except:
+                    post = getRemotePost(id)
+                    if post:
+                        response['posts'] = [post]
+                        response['query'] = 'posts'
+                        response['success'] = True
+                        return Response(response, status=200)
+                    else:
+                        response['posts'] = []
+                        response['success'] = False
+                        response['query'] = 'posts'
+                        response['message'] = 'Cannot find post'
+                        return Response(response, status=404)
         except:
             try:
                 authenticated_author = request.user.user
@@ -292,12 +307,15 @@ class SinglePostView(APIView):
 
                 if authenticated_author in friends:
                     response['posts'] = postCreate(post)
+                    response['success'] = True
                     return Response(response, status=200)
                 elif post.visibility == "PUBLIC":
+                    response['success'] = True
                     response['posts'] = postCreate(post)
                     return Response(response, status=200)
                 elif post.author == authenticated_author:
                     response['posts'] = postCreate(post)
+                    response['success'] = True
                     return Response(response, status=200)
                 else:
                     response['Error'] = 'Not authorized to see this post'
