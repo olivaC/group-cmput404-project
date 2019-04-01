@@ -4,19 +4,20 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 import app.views.post_views
+import app.views.user_views
 from app.views import api_views, views, post_views, user_views
 
 app_name = 'app'
 
-router = routers.DefaultRouter()
-router.register('author', api_views.AuthorView)
-router.register('users', api_views.UserView)
-router.register('posts', api_views.PostView, base_name='posts')
-router.register('author-posts', api_views.AuthorPostView, base_name='author_posts')
-router.register('follow-request', api_views.FollowRequestView, base_name="follow_request")
+# router = routers.DefaultRouter()
+# router.register('author', api_views.AuthorView)
+# router.register('users', api_views.UserView)
+# router.register('posts', api_views.PostView, base_name='posts')
+# router.register('author-posts', api_views.AuthorPostView, base_name='author_posts')
+# router.register('follow-request', api_views.FollowRequestView, base_name="follow_request")
 
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('api_test', views.api_test, name='api_test'),
     path('', views.index),
     path('index', views.index, name="index"),
     path('accounts/login/', views.login_view, name='login'),
@@ -46,4 +47,6 @@ urlpatterns = [
     path('foaf-posts', post_views.foaf_posts_view, name="foaf_posts"),
     path('mutual-friend-posts', post_views.mutual_friends_posts_view, name="mutual_friend_posts"),
     path('post/<uuid:id>/', post_views.unlisted_post_view, name="unlisted_post"),
+    path('author/remote/', app.views.user_views.profile_remote_view, name="author_remote"),
+    path('post-detail/remote/<str:post>', post_views.remote_post_view, name="remote_post"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
