@@ -243,7 +243,7 @@ def str2bool(v):
 
 def get_public_posts(server_posts):
     public_list = server_posts
-    post = list()
+    posts = list()
     servers = Server.objects.all()
 
     for server in servers:
@@ -280,6 +280,7 @@ def get_public_posts(server_posts):
             print(e)
 
     public_list.extend(posts)
+    print(public_list)
     public_list = sorted(public_list, key=lambda k: k['published'], reverse=True)
     public_list = [next(v) for k, v in groupby(public_list, lambda d: d["id"])]
 
