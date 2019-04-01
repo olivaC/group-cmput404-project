@@ -1,4 +1,6 @@
 import requests
+from requests.packages.urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
 
 from app.models import Comment, Author, Server
 from settings_server import DOMAIN
@@ -249,10 +251,16 @@ def get_public_posts(server_posts):
             host = host + "/"
         server_api = "{}posts".format(host)
         try:
-            for i in range(4):
-                r = requests.get(server_api)
-                if r.status_code != 503:
-                    break
+            s = requests.Session()
+
+            retries = Retry(total=5,
+                            backoff_factor=0.1,
+                            status_forcelist=[500, 502, 503, 504])
+
+            s.mount('http://', HTTPAdapter(max_retries=retries))
+            s.mount('https://', HTTPAdapter(max_retries=retries))
+
+            r = s.get(server_api, auth=(server.username, server.password))
 
             if r.status_code == 200:
                 posts = remotePostList(server.hostname, r.json())

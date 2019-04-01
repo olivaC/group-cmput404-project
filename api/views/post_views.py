@@ -31,7 +31,7 @@ class PublicPostView(APIView):
     /api/posts
     """
 
-    permission_classes = (IsGetOrIsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
     authentication_classes = (SessionAuthentication, BasicAuthentication)
 
     pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
