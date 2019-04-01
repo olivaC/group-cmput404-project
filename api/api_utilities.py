@@ -4,6 +4,8 @@ from app.models import Comment, Author, Server
 from settings_server import DOMAIN
 from datetime import datetime
 from pytz import utc
+from itertools import groupby
+
 
 
 def addAuthor(author):
@@ -237,8 +239,8 @@ def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 
 
-def get_public_posts():
-    public_list = list()
+def get_public_posts(server_posts):
+    public_list = server_posts
     servers = Server.objects.all()
 
     for server in servers:
@@ -252,6 +254,9 @@ def get_public_posts():
             if r.status_code == 200:
                 posts = remotePostList(server.hostname, r.json())
                 public_list.extend(posts)
+                public_list = sorted(public_list, key=lambda k: k['published'], reverse=True)
+                public_list = [next(v) for k, v in groupby(public_list, lambda d: d["id"])]
+
         except:
             print('error')
     return public_list
