@@ -249,7 +249,10 @@ def get_public_posts(server_posts):
             host = host + "/"
         server_api = "{}posts".format(host)
         try:
-            r = requests.get(server_api)
+            for i in range(4):
+                r = requests.get(server_api)
+                if r.status_code != 503:
+                    break
 
             if r.status_code == 200:
                 posts = remotePostList(server.hostname, r.json())
