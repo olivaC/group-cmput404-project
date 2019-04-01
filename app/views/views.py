@@ -1,15 +1,15 @@
+import requests
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.forms import model_to_dict
 from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 from django.http import HttpResponse
+
 from app.models import *
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import user_passes_test
 
 # Create your views here.
 from django.urls import reverse
@@ -17,15 +17,16 @@ from django.urls import reverse
 from SocialDistribution import settings
 from app.forms.post_forms import EditProfileForm, EditBio
 from app.forms.registration_forms import LoginForm, UserCreateForm
-from app.models import Post, Author
-from app.utilities import unquote_redirect_url, get_image_from_base64
+from app.utilities import *
 from app.views import gh_stream
 
 
 @login_required
+@user_passes_test(api_check)
 @requires_csrf_token
 def index(request):
     user = request.user
+    print(user.user.id)
     request.context['user'] = user
     friends = request.user.user.friends.all()
     foaf_friends = set()
@@ -45,15 +46,38 @@ def index(request):
     if user.user.github_url:
         author = Author.objects.get(id=user.user.id)
         gh_activities = gh_stream.get_activities(author, 5, 10)
-        stream = list(posts) + gh_activities
-        stream.sort(key=lambda post: post.published, reverse=True)
-        request.context['posts'] = stream
+        posts = list(posts) + gh_activities
     else:
-        posts = posts.order_by('-published')
-        request.context['posts'] = posts
+        posts = list(posts.order_by('-published'))
+
+    servers = Server.objects.all()
+    public_posts = list()
+
+    for server in servers:
+        server_api = "{}posts".format(server.hostname)
+        try:
+            if server.username and server.password:
+                r = requests.get(server_api, auth=(server.username, server.password))
+            else:
+                r = requests.get(server_api)
+
+            p = create_posts(r.json())
+            public_posts.extend(p)
+        except:
+            print("error")
+
+    posts = public_posts + list(posts)
+    posts.sort(key=lambda post: post.published, reverse=True)
+
+    request.context['posts'] = posts
+
+    # print(public_posts)
+
     return render(request, 'index.html', request.context)
 
 
+@login_required
+@user_passes_test(api_check)
 def profile_view(request, id=None):
     author = get_object_or_404(Author, id=id)
     request.context['author'] = author
@@ -61,6 +85,8 @@ def profile_view(request, id=None):
     return render(request, 'profile.html', request.context)
 
 
+@login_required
+@user_passes_test(api_check)
 def edit_profile(request):
     user = request.user
     author = request.user.user
@@ -171,6 +197,9 @@ def logout_view(request):
     logout(request)
     return HttpResponseRedirect(request.GET.get(next, reverse("app:index")))
 
+
+@login_required
+@user_passes_test(api_check)
 @csrf_exempt
 def get_image(request, filename):
     """
@@ -186,6 +215,8 @@ def get_image(request, filename):
     return HttpResponse(data, content_type=mimeType)
 
 
+@login_required
+@user_passes_test(api_check)
 def search_view(request, username=None):
     queryset_list = Author.objects.all()
     query = request.GET.get("q")
@@ -198,3 +229,10 @@ def search_view(request, username=None):
     request.context['authors'] = queryset_list
 
     return render(request, 'search_author.html', request.context)
+
+
+@login_required
+@requires_csrf_token
+def api_test(request):
+    request.context['domain'] = DOMAIN
+    return render(request, 'api_test.html', request.context)
