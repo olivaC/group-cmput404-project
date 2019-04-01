@@ -1,4 +1,6 @@
 import requests
+from requests.packages.urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
 
 from app.models import Comment, Author, Server
 from settings_server import DOMAIN
@@ -252,7 +254,16 @@ def get_public_posts(server_posts):
         print("หำพอำพ")
         print(server_api)
         try:
-            r = requests.get(server_api, auth=(server.username, server.password))
+            s = requests.Session()
+
+            retries = Retry(total=5,
+                            backoff_factor=0.1,
+                            status_forcelist=[500, 502, 503, 504])
+
+            s.mount('http://', HTTPAdapter(max_retries=retries))
+            s.mount('https://', HTTPAdapter(max_retries=retries))
+
+            r = s.get(server_api, auth=(server.username, server.password))
 
             print(r)
 
