@@ -224,6 +224,7 @@ def getRemotePost(post_id):
         print(server_api)
         try:
             r = requests.get(server_api, auth=(server.username, server.password))
+            print(r)
             if r.status_code in [200, 201]:
                 return [remotePostCreate(server.hostname, r.json())]
         except Exception as e:
