@@ -248,13 +248,14 @@ def get_public_posts(server_posts):
         if not host.endswith("/"):
             host = host + "/"
         server_api = "{}posts".format(host)
+        print(server.username, server.password)
         print("หำพอำพ")
         print(server_api)
         try:
             r = requests.get(server_api, auth=(server.username, server.password))
 
             print(r)
-            print(r.content)
+            print(r.text())
 
             if r.status_code == 200:
                 posts = remotePostList(server.hostname, r.json())
