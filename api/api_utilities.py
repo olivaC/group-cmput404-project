@@ -253,6 +253,8 @@ def get_public_posts(server_posts):
         try:
             r = requests.get(server_api, auth=(server.username, server.password))
 
+            print(r)
+
             if r.status_code == 200:
                 posts = remotePostList(server.hostname, r.json())
                 public_list.extend(posts)
