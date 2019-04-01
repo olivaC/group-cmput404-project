@@ -259,12 +259,9 @@ def get_public_posts(server_posts):
             if r.status_code == 200:
 
                 posts = remotePostList(server.hostname, r.json())
-                print(posts)
                 public_list.extend(posts)
                 public_list = sorted(public_list, key=lambda k: k['published'], reverse=True)
-                print("first",public_list)
                 public_list = [next(v) for k, v in groupby(public_list, lambda d: d["id"])]
-                print("second",public_list)
 
         except Exception as e:
             print(e)
