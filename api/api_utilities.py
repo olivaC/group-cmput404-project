@@ -248,6 +248,8 @@ def get_public_posts(server_posts):
         if not host.endswith("/"):
             host = host + "/"
         server_api = "{}posts".format(host)
+        print("หำพอำพ")
+        print(server_api)
         try:
             r = requests.get(server_api, auth=(server.username, server.password))
 
@@ -257,6 +259,6 @@ def get_public_posts(server_posts):
                 public_list = sorted(public_list, key=lambda k: k['published'], reverse=True)
                 public_list = [next(v) for k, v in groupby(public_list, lambda d: d["id"])]
 
-        except:
-            print('error')
+        except Exception as e:
+            print(e)
     return public_list
