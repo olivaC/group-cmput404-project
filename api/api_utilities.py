@@ -148,6 +148,8 @@ def remotePostList(host, posts):
         id = post.get('id')
         origin = post.get('source')
         comments = remoteCommentList(post)
+        if host.endswith("/"):
+            host = host[:-1]
         source = "{}/posts/{}".format(host, post.get('id'))
 
         post_dict = {'author': author, 'title': title, 'description': description,
