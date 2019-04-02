@@ -41,9 +41,13 @@ class PublicPostView(APIView):
         public = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
         response['query'] = 'posts'
         posts = postList(public)
-        # posts = get_public_posts(posts)
-        posts = sorted(posts, key=lambda k: k['published'], reverse=True)
 
+        try:
+            remote = Server.objects.get(user=request.user)
+            posts = get_public_posts(posts)
+        except:
+            print("Not a server user")
+        posts = sorted(posts, key=lambda k: k['published'], reverse=True)
         page = self.paginate_queryset(posts)
         if page is not None:
             page = self.get_paginated_response(page)

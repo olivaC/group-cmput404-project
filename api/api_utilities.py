@@ -137,31 +137,32 @@ def remoteCommentList(post):
     return comment_list
 
 
-def remotePostList(host, posts):
+def remotePostList(host, posts, public):
     post_list = list()
     posts = posts.get('posts')
     for post in posts:
-        author = remoteAddAuthor(post.get('author'))
-        title = post.get('title')
-        description = post.get('description')
-        contentType = post.get('contentType')
-        content = post.get('content')
-        published = utc.localize(datetime.strptime(post.get('published'), '%Y-%m-%dT%H:%M:%S.%fZ'))
-        visibility = post.get('visibility')
-        unlisted = post.get('unlisted')
-        id = post.get('id')
-        origin = post.get('source')
-        comments = remoteCommentList(post)
-        if host.endswith("/"):
-            host = host[:-1]
-        source = "{}/posts/{}".format(host, post.get('id'))
+        if not any(post['id'] == 'red' for post in public):
+            author = remoteAddAuthor(post.get('author'))
+            title = post.get('title')
+            description = post.get('description')
+            contentType = post.get('contentType')
+            content = post.get('content')
+            published = utc.localize(datetime.strptime(post.get('published'), '%Y-%m-%dT%H:%M:%S.%fZ'))
+            visibility = post.get('visibility')
+            unlisted = post.get('unlisted')
+            id = post.get('id')
+            origin = post.get('source')
+            comments = remoteCommentList(post)
+            if host.endswith("/"):
+                host = host[:-1]
+            source = "{}/posts/{}".format(host, post.get('id'))
 
-        post_dict = {'author': author, 'title': title, 'description': description,
-                     'contentType': contentType, 'content': content, 'published': published,
-                     'visibility': visibility, 'unlisted': unlisted, 'id': id,
-                     'comments': comments, 'origin': origin,
-                     'source': source}
-        post_list.append(post_dict)
+            post_dict = {'author': author, 'title': title, 'description': description,
+                         'contentType': contentType, 'content': content, 'published': published,
+                         'visibility': visibility, 'unlisted': unlisted, 'id': id,
+                         'comments': comments, 'origin': origin,
+                         'source': source}
+            post_list.append(post_dict)
     return post_list
 
 
@@ -270,18 +271,11 @@ def get_public_posts(server_posts):
 
             if r.status_code == 200:
 
-                posts = remotePostList(server.hostname, r.json())
-                print(posts)
-                # public_list.extend(posts)
-                # public_list = sorted(public_list, key=lambda k: k['published'], reverse=True)
-                # public_list = [next(v) for k, v in groupby(public_list, lambda d: d["id"])]
-
+                posts = remotePostList(server.hostname, r.json(), public_list)
+                public_list.extend(posts)
+                public_list = sorted(public_list, key=lambda k: k['published'], reverse=True)
+                public_list = [next(v) for k, v in groupby(public_list, lambda d: d["id"])]
         except Exception as e:
             print(e)
-
-    public_list.extend(posts)
-    print(public_list)
-    public_list = sorted(public_list, key=lambda k: k['published'], reverse=True)
-    public_list = [next(v) for k, v in groupby(public_list, lambda d: d["id"])]
 
     return public_list
