@@ -9,7 +9,6 @@ from pytz import utc
 from itertools import groupby
 
 
-
 def addAuthor(author):
     """
     Creates an Author dictionary
@@ -232,6 +231,26 @@ def getRemotePost(post_id):
             print(r)
             if r.status_code in [200, 201]:
                 return [remotePostCreate(server.hostname, r.json())]
+        except Exception as e:
+            print(e)
+    return None
+
+
+def getRemoteComments(post_id):
+    servers = Server.objects.all()
+    for server in servers:
+        host = server.hostname
+        if not host.endswith("/"):
+            host = host + "/"
+        server_api = "{}posts/{}/comments".format(host, post_id)
+        print('Request:')
+        print(server_api)
+        try:
+            r = requests.get(server_api, auth=(server.username, server.password))
+            print(r)
+            if r.status_code in [200, 201]:
+                comments = r.json()
+                return remoteCommentList(comments)
         except Exception as e:
             print(e)
     return None
