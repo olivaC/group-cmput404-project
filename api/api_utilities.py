@@ -107,10 +107,13 @@ def addFriends(author):
 def postList(posts):
     post_list = list()
     for post in posts:
+        comments = commentList(post)
+        comment_url = "{}/api/posts/{}/comments".format(DOMAIN, post.id)
         post_dict = {'author': addAuthor(post.author), 'title': post.title, 'description': post.description,
                      'contentType': post.contentType, 'content': post.content, 'published': post.published,
                      'visibility': post.visibility, 'unlisted': post.unlisted, 'id': post.id,
-                     'comments': commentList(post), 'origin': "{}/api/posts/{}".format(DOMAIN, post.id),
+                     'comments': comments[:5], 'next': comment_url, 'count': len(comments),
+                     'origin': "{}/api/posts/{}".format(DOMAIN, post.id),
                      'source': "{}/api/posts/{}".format(DOMAIN, post.id)}
         post_list.append(post_dict)
     return post_list
@@ -152,6 +155,8 @@ def remotePostList(host, posts, public):
             id = post.get('id')
             origin = post.get('source')
             comments = remoteCommentList(post)
+            count = post.get('count')
+            next = "{}/api/posts/{}/comments".format(DOMAIN, id)
             if host.endswith("/"):
                 host = host[:-1]
             source = "{}/posts/{}".format(host, post.get('id'))
@@ -160,7 +165,7 @@ def remotePostList(host, posts, public):
                          'contentType': contentType, 'content': content, 'published': published,
                          'visibility': visibility, 'unlisted': unlisted, 'id': id,
                          'comments': comments, 'origin': origin,
-                         'source': source}
+                         'source': source, 'count': count, 'next': next}
             post_list.append(post_dict)
     return post_list
 
@@ -190,11 +195,13 @@ def remotePostCreate(host, post):
 
 def postCreate(post):
     post_list = list()
-
+    comments = commentList(post)
+    comment_url = "{}/api/posts/{}/comments".format(DOMAIN, post.id)
     post_dict = {'author': addAuthor(post.author), 'title': post.title, 'description': post.description,
                  'contentType': post.contentType, 'content': post.content, 'published': post.published,
                  'visibility': post.visibility, 'unlisted': post.unlisted, 'id': post.id,
-                 'comments': commentList(post), 'source': "{}/api/posts/{}".format(DOMAIN, post.id),
+                 'comments': comments[:5], 'next': comment_url, 'count': len(comments),
+                 'source': "{}/api/posts/{}".format(DOMAIN, post.id),
                  'origin': "{}/api/posts/{}".format(DOMAIN, post.id)}
     post_list.append(post_dict)
     return post_list
