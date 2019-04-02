@@ -29,15 +29,20 @@ class AuthorView(APIView):
         response = dict()
 
         try:
-            author = get_object_or_404(Author, id=id)
+            author = Author.objects.get(id=id)
             response = addAuthor(author)
             response['friends'] = addFriends(author)
 
             if response:
                 return Response(response, status=200)
         except:
-            response['author'] = []
-            return Response(response, status=404)
+            author = getRemoteAuthor(id)
+            if author:
+                response = author
+                return Response(response, status=200)
+            else:
+                response['author'] = []
+                return Response(response, status=404)
 
 
 class AuthorListView(APIView):

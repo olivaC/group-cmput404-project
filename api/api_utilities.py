@@ -9,7 +9,6 @@ from pytz import utc
 from itertools import groupby
 
 
-
 def addAuthor(author):
     """
     Creates an Author dictionary
@@ -235,6 +234,48 @@ def getRemotePost(post_id):
         except Exception as e:
             print(e)
     return None
+
+
+def getRemoteAuthor(author_id):
+    servers = Server.objects.all()
+    for server in servers:
+        host = server.hostname
+        if not host.endswith("/"):
+            host = host + "/"
+        server_api = "{}author/{}".format(host, author_id)
+        print('Request:')
+        print(server_api)
+        try:
+            r = requests.get(server_api, auth=(server.username, server.password))
+            print(r)
+            if r.status_code in [200, 201]:
+                return createRemoteAuthor2(r.json(), author_id)
+        except Exception as e:
+            print(e)
+    return None
+
+
+def createRemoteAuthor2(author, author_id):
+    author_dict = dict()
+    author_dict['id'] = "{}/api/author/{}".format(DOMAIN, author_id)
+    author_dict['host'] = author.get('host')
+    author_dict['displayName'] = author.get('displayName')
+    author_dict['github'] = author.get('github')
+    author_dict['url'] = author.get('url')
+
+    # Optional Attributes
+    if author.get('github_url'):
+        author_dict['github'] = author.get('github_url')
+    if author.get('firstName'):
+        author_dict['firstName'] = author.get('firstName')
+    if author.get('lastName'):
+        author_dict['lastName'] = author.get('lastName')
+    if author.get('email'):
+        author_dict['email'] = author.get('email')
+    if author.get('bio'):
+        author_dict['bio'] = author.get('bio')
+
+    return author_dict
 
 
 # https://stackoverflow.com/questions/715417/converting-from-a-string-to-boolean-in-python
