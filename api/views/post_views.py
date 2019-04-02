@@ -10,13 +10,30 @@ from app.models import Post, Author, Server
 
 import datetime
 
+from rest_framework import permissions
+
+
+# Taken from https://stackoverflow.com/a/37649438
+class IsGetOrIsAuthenticated(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        # allow all GET requests
+        if request.method == 'GET':
+            return True
+
+        # Otherwise, only allow authenticated requests
+        # Post Django 1.10, 'is_authenticated' is a read-only attribute
+        return request.user and request.user.is_authenticated
+
 
 class PublicPostView(APIView):
     """
     /api/posts
     """
-    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
     permission_classes = (IsAuthenticated,)
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
     pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
 
     def get(self, request):
@@ -24,10 +41,12 @@ class PublicPostView(APIView):
         public = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
         response['query'] = 'posts'
         posts = postList(public)
-        pub = get_public_posts()
-        posts.extend(pub)
+        try:
+            remote = Server.objects.get(user=request.user)
+        except:
+            print("Not a server user")
+            posts = get_public_posts(posts)
         posts = sorted(posts, key=lambda k: k['published'], reverse=True)
-
         page = self.paginate_queryset(posts)
         if page is not None:
             page = self.get_paginated_response(page)
@@ -147,50 +166,6 @@ class AuthorVisiblePostView(APIView):
         return Response(response, status=200)
 
 
-# class AuthorPostView(APIView):
-#     """
-#     author/<uuid:id>/posts
-#
-#     All posts of an author that are visible to the currently authenticated author
-#
-#     If the author is friends with the authenticated, show all their posts except for private.
-#     If the author is the same as the authenticated, show all currently authenticated posts.
-#     If the author is not friends with the authenticated, show all public posts.
-#     """
-#
-#     permission_classes = (IsAuthenticated,)
-#
-#     def get(self, request, id):
-#         author = get_object_or_404(Author, id=id)
-#         current = request.user.user
-#
-#         response = dict()
-#         friends = current.friends.all()
-#
-#         if author in friends:
-#             posts = Post.objects.all().filter(author=author).filter(
-#                 visibility="FRIENDS") | Post.objects.all().filter(author=author).filter(
-#                 visibility="PUBLIC") | Post.objects.all().filter(author=author).filter(
-#                 visibility="FOAF") | Post.objects.all().filter(author=author).filter(
-#                 visibility="SERVERONLY")
-#             posts = posts.order_by('-published')
-#             response['query'] = 'posts'
-#             response['posts'] = postList(posts)
-#             return Response(response, status=200)
-#         elif author == current:
-#             posts = Post.objects.all().filter(author=author)
-#             posts = posts.order_by('-published')
-#             response = dict()
-#             response['query'] = 'posts'
-#             response['posts'] = postList(posts)
-#             return Response(response, status=200)
-#         else:
-#             posts = Post.objects.all().filter(visibility="PUBLIC")
-#             posts = posts.order_by('-published')
-#             response['query'] = 'posts'
-#             response['posts'] = postList(posts)
-#             return Response(response, status=200)
-
 class AuthorPostView(APIView):
     """
     author/<uuid:id>/posts
@@ -265,66 +240,95 @@ class SinglePostView(APIView):
     """
 
     authentication_classes = (SessionAuthentication, BasicAuthentication)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsGetOrIsAuthenticated,)
 
     def get(self, request, id):
+        response = dict()
+        response['query'] = 'posts'
+
         try:
-            server = Server.objects.get(user=request.user)
-            if server:
-                response = dict()
-                try:
-                    post = Post.objects.get(id=id)
-                    response['posts'] = postCreate(post)
-                    response['query'] = 'posts'
-                    response['success'] = True
-                    return Response(response, status=200)
-                except:
-                    post = getRemotePost(id)
-                    if post:
-                        response['posts'] = [post]
-                        response['query'] = 'posts'
-                        response['success'] = True
-                        return Response(response, status=200)
-                    else:
-                        response['posts'] = []
-                        response['success'] = False
-                        response['query'] = 'posts'
-                        response['message'] = 'Cannot find post'
-                        return Response(response, status=404)
+            post = Post.objects.get(id=id)
+            post = postCreate(post)
         except:
-            try:
-                authenticated_author = request.user.user
-                response = dict()
-                response['query'] = 'posts'
+            post = getRemotePost(id)
 
-                post = Post.objects.all().filter(id=id).first()
+        if post:
+            # First check if public
+            if post[0].get('visibility') == "PUBLIC":
+                response['posts'] = post
+                response['success'] = True
+                return Response(response, status=200)
 
-                if not post:
-                    return Response(response, status=404)
+            else:
+                # TODO: FIX THIS
+                response['success'] = True
+                response['posts'] = post
+                response['message'] = 'Need to fix this'
+                return Response(response, status=200)
 
-                author = post.author
-                friends = author.friends.all()
+        else:
+            response['posts'] = []
+            response['success'] = False
+            response['message'] = 'Cannot find post'
+            return Response(response, status=404)
 
-                if authenticated_author in friends:
-                    response['posts'] = postCreate(post)
-                    response['success'] = True
-                    return Response(response, status=200)
-                elif post.visibility == "PUBLIC":
-                    response['success'] = True
-                    response['posts'] = postCreate(post)
-                    return Response(response, status=200)
-                elif post.author == authenticated_author:
-                    response['posts'] = postCreate(post)
-                    response['success'] = True
-                    return Response(response, status=200)
-                else:
-                    response['Error'] = 'Not authorized to see this post'
-                    return Response(response, status=403)
-            except:
-                response = dict()
-                response['query'] = 'posts'
-                response['Error'] = 'Not authorized to see this post'
-                return Response(response, status=403)
+        # try:
+        #     server = Server.objects.get(user=request.user)
+        #     if server:
+        #         response = dict()
+        #         try:
+        #             post = Post.objects.get(id=id)
+        #             response['posts'] = postCreate(post)
+        #             response['query'] = 'posts'
+        #             response['success'] = True
+        #             return Response(response, status=200)
+        #         except:
+        #             post = getRemotePost(id)
+        #             if post:
+        #                 response['posts'] = [post]
+        #                 response['query'] = 'posts'
+        #                 response['success'] = True
+        #                 return Response(response, status=200)
+        #             else:
+        #                 response['posts'] = []
+        #                 response['success'] = False
+        #                 response['query'] = 'posts'
+        #                 response['message'] = 'Cannot find post'
+        #                 return Response(response, status=404)
+        # except:
+        #     try:
+        #         authenticated_author = request.user.user
+        #         response = dict()
+        #         response['query'] = 'posts'
+        #
+        #         post = Post.objects.all().filter(id=id).first()
+        #
+        #         if not post:
+        #             return Response(response, status=404)
+        #
+        #         author = post.author
+        #         friends = author.friends.all()
+        #
+        #         if authenticated_author in friends:
+        #             response['posts'] = postCreate(post)
+        #             response['success'] = True
+        #             return Response(response, status=200)
+        #         elif post.visibility == "PUBLIC":
+        #             response['success'] = True
+        #             response['posts'] = postCreate(post)
+        #             return Response(response, status=200)
+        #         elif post.author == authenticated_author:
+        #             response['posts'] = postCreate(post)
+        #             response['success'] = True
+        #             return Response(response, status=200)
+        #         else:
+        #             response['Error'] = 'Not authorized to see this post'
+        #             return Response(response, status=403)
+        #     except:
+        #         response = dict()
+        #         response['query'] = 'posts'
+        #         response['Error'] = 'Not authorized to see this post'
+        #         return Response(response, status=403)
 
     def put(self, request, id):
 

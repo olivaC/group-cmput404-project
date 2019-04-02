@@ -1,9 +1,13 @@
 import requests
+from requests.packages.urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
 
 from app.models import Comment, Author, Server
 from settings_server import DOMAIN
 from datetime import datetime
 from pytz import utc
+from itertools import groupby
+
 
 
 def addAuthor(author):
@@ -133,31 +137,32 @@ def remoteCommentList(post):
     return comment_list
 
 
-def remotePostList(host, posts):
+def remotePostList(host, posts, public):
     post_list = list()
     posts = posts.get('posts')
     for post in posts:
-        author = remoteAddAuthor(post.get('author'))
-        title = post.get('title')
-        description = post.get('description')
-        contentType = post.get('contentType')
-        content = post.get('content')
-        published = utc.localize(datetime.strptime(post.get('published'), '%Y-%m-%dT%H:%M:%S.%fZ'))
-        visibility = post.get('visibility')
-        unlisted = post.get('unlisted')
-        id = post.get('id')
-        origin = post.get('source')
-        comments = remoteCommentList(post)
-        if host.endswith("/"):
-            host = host[:-1]
-        source = "{}/posts/{}".format(host, post.get('id'))
+        if not any(post['id'] == 'red' for post in public):
+            author = remoteAddAuthor(post.get('author'))
+            title = post.get('title')
+            description = post.get('description')
+            contentType = post.get('contentType')
+            content = post.get('content')
+            published = utc.localize(datetime.strptime(post.get('published'), '%Y-%m-%dT%H:%M:%S.%fZ'))
+            visibility = post.get('visibility')
+            unlisted = post.get('unlisted')
+            id = post.get('id')
+            origin = post.get('source')
+            comments = remoteCommentList(post)
+            if host.endswith("/"):
+                host = host[:-1]
+            source = "{}/posts/{}".format(host, post.get('id'))
 
-        post_dict = {'author': author, 'title': title, 'description': description,
-                     'contentType': contentType, 'content': content, 'published': published,
-                     'visibility': visibility, 'unlisted': unlisted, 'id': id,
-                     'comments': comments, 'origin': origin,
-                     'source': source}
-        post_list.append(post_dict)
+            post_dict = {'author': author, 'title': title, 'description': description,
+                         'contentType': contentType, 'content': content, 'published': published,
+                         'visibility': visibility, 'unlisted': unlisted, 'id': id,
+                         'comments': comments, 'origin': origin,
+                         'source': source}
+            post_list.append(post_dict)
     return post_list
 
 
@@ -220,12 +225,15 @@ def getRemotePost(post_id):
         if not host.endswith("/"):
             host = host + "/"
         server_api = "{}posts/{}".format(host, post_id)
+        print('Request:')
+        print(server_api)
         try:
             r = requests.get(server_api, auth=(server.username, server.password))
-            if r.status_code == 200:
-                return remotePostCreate(server.hostname, r.json())
-        except:
-            print("Error")
+            print(r)
+            if r.status_code in [200, 201]:
+                return [remotePostCreate(server.hostname, r.json())]
+        except Exception as e:
+            print(e)
     return None
 
 
@@ -234,8 +242,8 @@ def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 
 
-def get_public_posts():
-    public_list = list()
+def get_public_posts(server_posts):
+    public_list = server_posts
     servers = Server.objects.all()
 
     for server in servers:
@@ -244,11 +252,23 @@ def get_public_posts():
             host = host + "/"
         server_api = "{}posts".format(host)
         try:
-            r = requests.get(server_api, auth=(server.username, server.password))
+            s = requests.Session()
+
+            retries = Retry(total=5,
+                            backoff_factor=0.1,
+                            status_forcelist=[500, 502, 503, 504])
+
+            s.mount('http://', HTTPAdapter(max_retries=retries))
+            s.mount('https://', HTTPAdapter(max_retries=retries))
+
+            r = s.get(server_api, auth=(server.username, server.password))
 
             if r.status_code == 200:
-                posts = remotePostList(server.hostname, r.json())
+                posts = remotePostList(server.hostname, r.json(), public_list)
                 public_list.extend(posts)
+                public_list = sorted(public_list, key=lambda k: k['published'], reverse=True)
+                public_list = [next(v) for k, v in groupby(public_list, lambda d: d["id"])]
+
         except:
             print('error')
     return public_list
