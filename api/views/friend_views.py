@@ -304,11 +304,6 @@ class FollowerView2(APIView):
             return Response(response, status=403)
 
 
-# https://stackoverflow.com/questions/715417/converting-from-a-string-to-boolean-in-python
-def str2bool(v):
-    return v.lower() in ("yes", "true", "t", "1")
-
-
 class FriendRequestView(APIView):
     """
     friendrequest
@@ -392,5 +387,3 @@ class FriendRequestView(APIView):
                 response['message'] = 'Missing friend'
 
                 return Response(response, status=500)
-
-
