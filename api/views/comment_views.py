@@ -32,7 +32,7 @@ class CommentsView(APIView):
         except:
             comments = getRemoteComments(id)
 
-        if not post_check:
+        if not post_check and not comments:
             response['Error'] = 'Post does not exist'
             return Response(response, status=404)
         elif comments:
