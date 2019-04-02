@@ -63,6 +63,16 @@ class CommentsView(APIView):
             response['Error'] = 'Not authorized to see comments of this post'
             return Response(response, status=403)
 
+    def post(self, request, id):
+        # Try local posts first
+        x = request
+        try:
+            post = Post.objects.get(id=id)
+            post_check = True
+        except:
+            comments = getRemoteComments(id)
+
+
     @property
     def paginator(self):
         """

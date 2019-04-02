@@ -58,6 +58,7 @@ class FollowRequest(models.Model):
     def get_following(self):
         return self.friend.username
 
+
 # class FriendRemoteRequest(models.Model):
 #     author = models.ForeignKey(Author, related_name='author_request', on_delete=models.CASCADE) # Local author
 #     friend = models.URLField(blank=True, null=True)
@@ -113,6 +114,27 @@ class Comment(models.Model):
     comment = models.TextField(default="")
     contentType = models.CharField(max_length=100, choices=POST_CONTENT_TYPE, default='Plain Text')
     published = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "{} - {} - {}".format(self.author, self.published, self.id)
+
+    def __repr__(self):
+        return "{} - {} - {} ".format(self.author, self.published, self.id)
+
+    def get_comment(self):
+        if self.contentType == "text/markdown":
+            return mark_safe(markdown(self.comment, safe_mode='escape'))
+        else:
+            return self.comment
+
+
+class RemoteComment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    post = models.ForeignKey(Post, related_name='RemoteCommentPost', on_delete=models.CASCADE)
+    author = models.URLField(blank=True, null=True)
+    comment = models.TextField(default="")
+    contentType = models.CharField(max_length=100, choices=POST_CONTENT_TYPE, default='Plain Text')
+    published = models.DateTimeField()
 
     def __str__(self):
         return "{} - {} - {}".format(self.author, self.published, self.id)
