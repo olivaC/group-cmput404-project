@@ -3,10 +3,12 @@ from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 
 from api.api_utilities import commentList, getRemotePost, getRemoteComments
-from app.models import Post
+from app.models import Post, Server
 
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
+
+from settings_server import DOMAIN
 
 
 class CommentsView(APIView):
@@ -64,14 +66,30 @@ class CommentsView(APIView):
             return Response(response, status=403)
 
     def post(self, request, id):
-        # Try local posts first
-        x = request
-        try:
-            post = Post.objects.get(id=id)
-            post_check = True
-        except:
-            comments = getRemoteComments(id)
+        req = request.data
+        post_url = req.get('post')
+        response = dict()
+        response['query'] = 'addComment'
+        s = None
+        if DOMAIN in post_url:
+            # Local post, do crap
+            pass
+        else:
+            try:
+                servers = Server.objects.all()
+                for server in servers:
+                    if server.hostname in post_url:
+                        s = server
+            except:
+                print("server not found")
 
+            if s:
+                print("Create remote commenttttt")
+                
+            else:
+                response['success'] = False
+                response['message'] = "Comment not allowed"
+                return Response(response, status=403)
 
     @property
     def paginator(self):
