@@ -20,7 +20,7 @@ def all_author_view(request):
     request.context['user'] = user
     request.context['authors'] = authors
 
-    f_request = FriendRequest.objects.all().filter(friend=current_author).values('author')
+    f_request = FriendRequest.objects.all().filter(author=current_author).values('friend')
     pending = Author.objects.all().filter(id__in=f_request)
 
     request.context['pending'] = pending
@@ -114,7 +114,7 @@ def all_followers_view(request):
 @user_passes_test(api_check)
 def all_requests_view(request):
     current_author = request.user.user
-    f_requests = FriendRequest.objects.all().filter(author=current_author)
+    f_requests = FriendRequest.objects.all().filter(friend=current_author)
 
     request.context['requests'] = f_requests
 
@@ -161,8 +161,8 @@ def send_friend_request(request, id):
 
     if auth:
         FriendRequest.objects.create(
-            friend=current_author,
-            author=auth
+            author=current_author,
+            friend=auth
         )
 
     return HttpResponseRedirect(reverse("app:all_authors"))
@@ -171,7 +171,7 @@ def send_friend_request(request, id):
 def cancel_friend_request(request, id):
     current_author = request.user.user
     auth = Author.objects.filter(id=id).first()
-    f_request = FriendRequest.objects.filter(friend=auth, author=current_author).first()
+    f_request = FriendRequest.objects.filter(friend=current_author, author=auth).first()
     f_request.delete()
     return HttpResponseRedirect(reverse("app:all_authors"))
 
@@ -179,7 +179,7 @@ def cancel_friend_request(request, id):
 def accept_friend_request(request, id):
     current_author = request.user.user
     auth = Author.objects.filter(id=id).first()
-    f_request = FriendRequest.objects.filter(friend=auth, author=current_author).first()
+    f_request = FriendRequest.objects.filter(friend=current_author, author=auth).first()
 
     current_author.friends.add(auth)
     current_author.save()

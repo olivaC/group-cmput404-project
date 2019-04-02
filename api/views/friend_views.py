@@ -322,6 +322,7 @@ class FriendRequestView(APIView):
         response = dict()
 
         f_request = FriendRequest.objects.all()
+        print(f_request)
         response['query'] = 'friendrequest'
 
         for re in f_request:
@@ -364,15 +365,10 @@ class FriendRequestView(APIView):
             author = data.get('author')
             author_username = author.get('displayName')
             friend_username = friend.get('displayName')
-            print(author)
-            print(author_username)
-            print()
-            print()
-            print()
-            # test = Author.objects.all().filter()
+
             auth = Author.objects.filter(username=author_username).first()
             friend_model = Author.objects.filter(username=friend_username).first()
-            print(auth)
+
             if friend:
                 f_request = FriendRequest.objects.create(
                     friend=friend_model,

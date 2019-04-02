@@ -66,12 +66,21 @@ class FriendRequest(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "From {}, to {}".format(self.friend.username, self.author.username)
+        return "From {}, to {}".format(self.author.username, self.friend.username)
 
 
-# class FriendRemoteRequest(models.Model):
-#     author = models.ForeignKey(Author, related_name='author_request', on_delete=models.CASCADE) # Local author
-#     friend = models.URLField(blank=True, null=True)
+class RemoteFriendRequest(models.Model):
+    author = models.URLField(blank=True, null=True)
+    friend = models.ForeignKey(Author, related_name='remote', on_delete=models.CASCADE)  # Always a local author
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "From {}, to {}".format(self.author, self.friend.username)
+
+
+class RemoteFriend(models.Model):
+    author = models.ForeignKey(Author, related_name='remote_author', on_delete=models.CASCADE)
+    friend = models.URLField(blank=True, null=True)
 
 
 POST_PRIVACY = (
