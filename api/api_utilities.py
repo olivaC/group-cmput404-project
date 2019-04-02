@@ -262,7 +262,7 @@ def createRemoteAuthor2(author, author_id):
     author_dict['displayName'] = author.get('displayName')
     author_dict['github'] = author.get('github')
     author_dict['url'] = author.get('url')
-
+    author_dict['friends'] = author.get('friends')
     # Optional Attributes
     if author.get('github_url'):
         author_dict['github'] = author.get('github_url')
