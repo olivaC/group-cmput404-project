@@ -182,13 +182,14 @@ def remotePostCreate(host, post):
     unlisted = post.get('unlisted')
     id = post.get('id')
     origin = post.get('origin')
+    count = post.get('count')
     comments = remoteCommentList(post)
     source = "{}/api/posts/{}".format(DOMAIN, post.get('id'))
 
     post_dict = {'author': author, 'title': title, 'description': description,
                  'contentType': contentType, 'content': content, 'published': published,
                  'visibility': visibility, 'unlisted': unlisted, 'id': id,
-                 'comments': comments, 'origin': origin,
+                 'comments': comments, 'origin': origin, 'count': count,
                  'source': source}
     return post_dict
 
