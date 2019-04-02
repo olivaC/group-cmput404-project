@@ -34,14 +34,14 @@ urlpatterns = [
     path('post/edit/<uuid:id>/', post_views.edit_post, name="edit_post"),
     path('authors', user_views.all_author_view, name="all_authors"),
     path('authors/follow/<uuid:id>/', user_views.follow_view, name="follow"),
-    path('followers/follow/<uuid:id>/', user_views.follow_view, name="followers_follow"),
+    # path('followers/follow/<uuid:id>/', user_views.follow_view, name="followers_follow"),
     path('authors/unfollow/<uuid:id>/', user_views.unfollow_view, name="unfollow"),
     path('authors/unfollow-mutual/<uuid:id>/', user_views.unfollow_mutual_view, name="unfollow_mutual"),
     path('public-posts', app.views.post_views.public_post_view, name="public_posts"),
     path('search/', views.search_view, name="search_author"),
     path('new_followers/', user_views.new_followers_view, name="new_followers"),
     path('followers/', user_views.all_followers_view, name="followers"),
-    path('following/', user_views.all_following_view, name="following"),
+
     path('mutual-friends/', user_views.mutual_friends_view, name="mutual_friends"),
     path('post-detail/<uuid:id>/', post_views.create_comment_view, name="post_detail"),
     path('foaf-posts', post_views.foaf_posts_view, name="foaf_posts"),
@@ -49,4 +49,9 @@ urlpatterns = [
     path('post/<uuid:id>/', post_views.unlisted_post_view, name="unlisted_post"),
     path('author/remote/', app.views.user_views.profile_remote_view, name="author_remote"),
     path('post-detail/remote/<str:post>', post_views.remote_post_view, name="remote_post"),
+
+    path('friend-request/send/<uuid:id>',user_views.send_friend_request, name='add_friend'),
+    path('friend-request/cancel/<uuid:id>',user_views.cancel_friend_request, name='cancel_friend'),
+    path('friend-request/accept/<uuid:id>',user_views.accept_friend_request, name='accept_friend'),
+    path('following/', user_views.all_requests_view, name="requests"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -105,3 +105,13 @@ def commentList(post):
             comment_list.append(comment_dict)
 
     return comment_list
+
+def authorList(posts):
+    author = list()
+    for post in posts:
+        post_dict = {'author': addAuthor(post.author), 'title': post.title, 'description': post.description,
+                     'contentType': post.contentType, 'content': post.content, 'published': post.published,
+                     'visibility': post.visibility, 'unlisted': post.unlisted, 'id': post.id,
+                     'comments': commentList(post)}
+        post_list.append(post_dict)
+    return post_list

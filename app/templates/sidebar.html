@@ -56,15 +56,15 @@
     </div>
 
     <li class="nav-item">
-        <a class="nav-link" href="{% url 'app:following' %}">
+        <a class="nav-link" href="{% url 'app:requests' %}">
             <i class="fas fa-fw fa-users"></i>
-            <span>Following</span></a>
+            <span>Friend Requests</span></a>
     </li>
-    <li class="nav-item">
-        <a class="nav-link" href="{% url 'app:followers' %}">
-            <i class="fas fa-fw fa-users"></i>
-            <span>Followers</span></a>
-    </li>
+{#    <li class="nav-item">#}
+{#        <a class="nav-link" href="{% url 'app:followers' %}">#}
+{#            <i class="fas fa-fw fa-users"></i>#}
+{#            <span>Followers</span></a>#}
+{#    </li>#}
     <li class="nav-item">
         <a class="nav-link" href="{% url 'app:mutual_friends' %}">
             <i class="fas fa-fw fa-users"></i>

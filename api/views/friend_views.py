@@ -1,7 +1,8 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.models import Author, FollowRequest
+from app.models import *
+from api.api_utilities import *
 from settings_server import DOMAIN
 
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -301,3 +302,99 @@ class FollowerView2(APIView):
         except:
             response['error'] = "You are not the authenticated user"
             return Response(response, status=403)
+
+
+# https://stackoverflow.com/questions/715417/converting-from-a-string-to-boolean-in-python
+def str2bool(v):
+    return v.lower() in ("yes", "true", "t", "1")
+
+
+class FriendRequestView(APIView):
+    """
+    friendrequest
+    """
+
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+
+        response = dict()
+
+        f_request = FriendRequest.objects.all()
+        response['query'] = 'friendrequest'
+
+        for re in f_request:
+            author_dict = dict()
+            author_dict['id'] = "{}/api/author/{}".format(DOMAIN, re.author.id)
+            author_dict['host'] = "{}/api/".format(re.author.host_url)
+            author_dict['displayName'] = re.author.username
+            author_dict['url'] = "{}/api/author/{}".format(DOMAIN, re.author.id)
+
+            friend_dict = dict()
+            friend_dict['id'] = "{}/api/author/{}".format(DOMAIN, re.friend.id)
+            friend_dict['host'] = "{}/api/".format(re.friend.host_url)
+            friend_dict['displayName'] = re.friend.username
+            friend_dict['url'] = "{}/api/author/{}".format(DOMAIN, re.friend.id)
+
+            response['author'] = author_dict
+            response['friend'] = friend_dict
+
+        return Response(response, status=200)
+
+    def post(self, request):
+        data = request.data
+        user = request.user
+        response = dict()
+        try:
+            remote = Server.objects.get(user=user)
+            if remote:
+                response['query'] = 'friendrequest'
+                response['success'] = False
+                response['message'] = 'Not authorized to create posts'
+                return Response(response, status=403)
+            else:
+                response['query'] = 'friendrequest'
+                response['success'] = False
+                response['message'] = 'Not authorized to create posts'
+                return Response(response, status=403)
+        except:
+            r = request.POST
+            friend = data.get('friend')
+            author = data.get('author')
+            author_username = author.get('displayName')
+            friend_username = friend.get('displayName')
+            print(author)
+            print(author_username)
+            print()
+            print()
+            print()
+            # test = Author.objects.all().filter()
+            auth = Author.objects.filter(username=author_username).first()
+            friend_model = Author.objects.filter(username=friend_username).first()
+            print(auth)
+            if friend:
+                f_request = FriendRequest.objects.create(
+                    friend=friend_model,
+                    author=auth,
+                )
+                if f_request:
+                    response['query'] = 'friendrequest'
+                    response['success'] = True
+                    response['message'] = 'friend request successful'
+
+                    return Response(response, status=200)
+                else:
+                    response['query'] = 'friendrequest'
+                    response['success'] = False
+                    response['message'] = 'Error sending friend request'
+
+                    return Response(response, status=500)
+            else:
+                response['query'] = 'friendrequest'
+                response['success'] = False
+                response['message'] = 'Missing friend'
+
+                return Response(response, status=500)
+
+

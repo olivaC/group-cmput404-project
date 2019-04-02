@@ -58,6 +58,17 @@ class FollowRequest(models.Model):
     def get_following(self):
         return self.friend.username
 
+
+class FriendRequest(models.Model):
+    author = models.ForeignKey(Author, related_name='to_user', on_delete=models.CASCADE)
+    friend = models.ForeignKey(Author, related_name='from_user', on_delete=models.CASCADE)
+    # acknowledged = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "From {}, to {}".format(self.friend.username, self.author.username)
+
+
 # class FriendRemoteRequest(models.Model):
 #     author = models.ForeignKey(Author, related_name='author_request', on_delete=models.CASCADE) # Local author
 #     friend = models.URLField(blank=True, null=True)
