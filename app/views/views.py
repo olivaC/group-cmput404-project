@@ -61,9 +61,6 @@ def index(request):
         try:
             if server.username and server.password:
                 r = requests.get(server_api, auth=(server.username, server.password))
-            else:
-                r = requests.get(server_api)
-
             p = create_posts(r.json())
             public_posts.extend(p)
         except:
