@@ -209,7 +209,7 @@ def create_comment_view(request, id=None):
 def remote_post_view(request, post):
     host = request.GET.get('host', '')
 
-    server = Server.objects.get(hostname__contains=host)
+    server = Server.objects.get(hostname=host)
 
     server_api = server.hostname
     if server_api.endswith("/"):
