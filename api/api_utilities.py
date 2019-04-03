@@ -255,58 +255,61 @@ def commentList(post):
 def getRemotePost(post_id):
     servers = Server.objects.all()
     for server in servers:
-        host = server.hostname
-        if not host.endswith("/"):
-            host = host + "/"
-        server_api = "{}posts/{}".format(host, post_id)
-        print('Request:')
-        print(server_api)
-        try:
-            r = requests.get(server_api, auth=(server.username, server.password))
-            print(r)
-            if r.status_code in [200, 201]:
-                return [remotePostCreate(server.hostname, r.json())]
-        except Exception as e:
-            print(e)
+        if server.username and server.password:
+            host = server.hostname
+            if not host.endswith("/"):
+                host = host + "/"
+            server_api = "{}posts/{}".format(host, post_id)
+            print('Request:')
+            print(server_api)
+            try:
+                r = requests.get(server_api, auth=(server.username, server.password))
+                print(r)
+                if r.status_code in [200, 201]:
+                    return [remotePostCreate(server.hostname, r.json())]
+            except Exception as e:
+                print(e)
     return None
 
 
 def getRemoteComments(post_id):
     servers = Server.objects.all()
     for server in servers:
-        host = server.hostname
-        if not host.endswith("/"):
-            host = host + "/"
-        server_api = "{}posts/{}/comments".format(host, post_id)
-        print('Request:')
-        print(server_api)
-        try:
-            r = requests.get(server_api, auth=(server.username, server.password))
-            print(r)
-            if r.status_code in [200, 201]:
-                comments = r.json()
-                return remoteCommentList(comments)
-        except Exception as e:
-            print(e)
+        if server.username and server.password:
+            host = server.hostname
+            if not host.endswith("/"):
+                host = host + "/"
+            server_api = "{}posts/{}/comments".format(host, post_id)
+            print('Request:')
+            print(server_api)
+            try:
+                r = requests.get(server_api, auth=(server.username, server.password))
+                print(r)
+                if r.status_code in [200, 201]:
+                    comments = r.json()
+                    return remoteCommentList(comments)
+            except Exception as e:
+                print(e)
     return None
 
 
 def getRemoteAuthor(author_id):
     servers = Server.objects.all()
     for server in servers:
-        host = server.hostname
-        if not host.endswith("/"):
-            host = host + "/"
-        server_api = "{}author/{}".format(host, author_id)
-        print('Request:')
-        print(server_api)
-        try:
-            r = requests.get(server_api, auth=(server.username, server.password))
-            print(r)
-            if r.status_code in [200, 201]:
-                return createRemoteAuthor2(r.json(), author_id)
-        except Exception as e:
-            print(e)
+        if server.username and server.password:
+            host = server.hostname
+            if not host.endswith("/"):
+                host = host + "/"
+            server_api = "{}author/{}".format(host, author_id)
+            print('Request:')
+            print(server_api)
+            try:
+                r = requests.get(server_api, auth=(server.username, server.password))
+                print(r)
+                if r.status_code in [200, 201]:
+                    return createRemoteAuthor2(r.json(), author_id)
+            except Exception as e:
+                print(e)
     return None
 
 
@@ -343,28 +346,29 @@ def get_public_posts(server_posts):
     servers = Server.objects.all()
 
     for server in servers:
-        host = server.hostname
-        if not host.endswith("/"):
-            host = host + "/"
-        server_api = "{}posts".format(host)
-        try:
-            s = requests.Session()
+        if server.username and server.password:
+            host = server.hostname
+            if not host.endswith("/"):
+                host = host + "/"
+            server_api = "{}posts".format(host)
+            try:
+                s = requests.Session()
 
-            retries = Retry(total=5,
-                            backoff_factor=0.1,
-                            status_forcelist=[500, 502, 503, 504])
+                retries = Retry(total=5,
+                                backoff_factor=0.1,
+                                status_forcelist=[500, 502, 503, 504])
 
-            s.mount('http://', HTTPAdapter(max_retries=retries))
-            s.mount('https://', HTTPAdapter(max_retries=retries))
+                s.mount('http://', HTTPAdapter(max_retries=retries))
+                s.mount('https://', HTTPAdapter(max_retries=retries))
 
-            r = s.get(server_api, auth=(server.username, server.password))
+                r = s.get(server_api, auth=(server.username, server.password))
 
-            if r.status_code == 200:
-                posts = remotePostList(server.hostname, r.json(), public_list)
-                public_list.extend(posts)
-                public_list = sorted(public_list, key=lambda k: k['published'], reverse=True)
-                public_list = [next(v) for k, v in groupby(public_list, lambda d: d["id"])]
+                if r.status_code == 200:
+                    posts = remotePostList(server.hostname, r.json(), public_list)
+                    public_list.extend(posts)
+                    public_list = sorted(public_list, key=lambda k: k['published'], reverse=True)
+                    public_list = [next(v) for k, v in groupby(public_list, lambda d: d["id"])]
 
-        except:
-            print('error')
+            except:
+                print('error')
     return public_list
