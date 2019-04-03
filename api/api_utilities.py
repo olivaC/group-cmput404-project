@@ -2,7 +2,7 @@ import requests
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
-from app.models import Comment, Author, Server, RemoteComment
+from app.models import Comment, Author, Server, RemoteComment, RemoteFriend
 from settings_server import DOMAIN
 from datetime import datetime
 from pytz import utc
@@ -94,11 +94,20 @@ def addAuthor2():
 
 def addFriends(author):
     friends = author.friends.all()
+    remote_friends = RemoteFriend.objects.all().filter(author=author)
     friend_list = list()
     if friends:
         for friend in friends:
             friend_dict = {'id': "{}/api/{}".format(DOMAIN, friend.id), 'host': friend.host_url,
                            'displayName': friend.username, 'url': "{}/api/{}".format(DOMAIN, friend.id)}
+            friend_list.append(friend_dict)
+
+    if remote_friends:
+        for remote in remote_friends:
+            req = requests.get(remote.friend, auth=(remote.server.username, remote.server.password))
+            auth = req.json()
+            friend_dict = {'id': remote.friend, 'host': auth.get('host'),
+                           'displayName': auth.get('displayName'), 'url': remote.friend}
             friend_list.append(friend_dict)
 
     return friend_list

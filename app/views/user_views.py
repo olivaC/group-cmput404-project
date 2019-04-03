@@ -4,7 +4,10 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from urllib.parse import urlparse
+from datetime import datetime
+from pytz import utc
 
+from api.api_utilities import remoteAddAuthor
 from app.models import *
 from django.db.models.functions import Lower
 
@@ -115,14 +118,37 @@ def all_followers_view(request):
 def all_requests_view(request):
     current_author = request.user.user
     f_requests = FriendRequest.objects.all().filter(friend=current_author)
+    r_requests = RemoteFriendRequest.objects.all().filter(friend=current_author)
 
-    request.context['requests'] = f_requests
+    all_requests = list(f_requests)
+    remote_requests = list()
+
+    if r_requests:
+        for r in r_requests:
+            server = r.server
+            auth_url = r.author
+            req = requests.get(auth_url, auth=(server.username, server.password))
+            if req.status_code != 200:
+                continue
+            else:
+                author = create_author(req.json())
+                friend = FriendRequest()
+                friend.remote = 'remote'
+                friend.author = author
+                friend.friend = current_author
+                friend.timestamp = r.timestamp
+
+                remote_requests.append(friend)
+
+    all_requests.extend(remote_requests)
+    all_requests.sort(key=lambda yar: yar.timestamp, reverse=True)
+
+    request.context['requests'] = all_requests
 
     return render(request, 'authors/following.html', request.context)
 
 
 @login_required
-@user_passes_test(api_check)
 def mutual_friends_view(request):
     friends = request.user.user.friends.all()
     posts = Post.objects.all().filter(author__id__in=friends).filter(visibility="FRIENDS") | Post.objects.all().filter(
@@ -196,5 +222,21 @@ def accept_friend_request(request, id):
     current_author.friends.add(auth)
     current_author.save()
     f_request.delete()
+
+    return HttpResponseRedirect(reverse("app:mutual_friends"))
+
+
+def accept_remote_friend_request(request):
+    url = request.GET.get('id', '')
+    url_parse = urlparse(url)
+    req = "{}://{}".format(url_parse.scheme, url_parse.netloc)
+    server = Server.objects.get(hostname__contains=req)
+
+    current_author = request.user.user
+    f_request = RemoteFriendRequest.objects.filter(friend=current_author, author=url).first()
+
+    r = RemoteFriend.objects.create(author=current_author, friend=url, server=server)
+    if r:
+        f_request.delete()
 
     return HttpResponseRedirect(reverse("app:mutual_friends"))

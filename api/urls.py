@@ -31,7 +31,7 @@ urlpatterns = [
     path('posts/<uuid:id>/comments', api.views.comment_views.CommentsView.as_view(), name='comments'),
 
     # Friends
-    path('author/<uuid:id>/friends', api.views.friend_views.FriendView.as_view(), name='friends'),
+    #path('author/<uuid:id>/friends', api.views.friend_views.FriendView.as_view(), name='friends'),
     path('author/<uuid:id>/friends/', api.views.friend_views.FriendResponseView.as_view(), name='friends'),
     path('author/<uuid:id>/friends/<uuid:id2>', api.views.friend_views.IsFriendView.as_view(), name='is_friend'),
     path('author/friends', api.views.friend_views.FriendView2.as_view(), name='friends2'),

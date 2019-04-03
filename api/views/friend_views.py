@@ -62,23 +62,30 @@ class FriendResponseView(APIView):
 
     def get(self, request, id):
         response = dict()
+
         try:
             authenticated_author = request.user.user
             author = Author.objects.get(id=id)
-            if author == authenticated_author:
-                response['query'] = 'friends'
-                friends = authenticated_author.friends.all()
-                friend_list = list()
-                if friends:
-                    for friend in friends:
-                        friend_id = "{}/author/{}".format(friend.host_url, friend.id)
-                        friend_list.append(friend_id)
-                response['authors'] = friend_list
-                return Response(response, status=200)
-            else:
-                raise Exception
+
+            response['query'] = 'friends'
+            friends = authenticated_author.friends.all()
+            friend_list = list()
+
+            remote_friends = RemoteFriend.objects.all().filter(author=author)
+            if remote_friends:
+                for remote in remote_friends:
+                    friend_list.append(remote.friend)
+
+            if friends:
+                for friend in friends:
+                    friend_id = "{}/author/{}".format(friend.host_url, friend.id)
+                    friend_list.append(friend_id)
+            response['authors'] = friend_list
+
+            return Response(response, status=200)
+
         except:
-            response['error'] = "You are not the authenticated user"
+            response['error'] = "Error"
             return Response(response, status=403)
 
 
@@ -92,60 +99,57 @@ class IsFriendView(APIView):
 
     def get(self, request, id, id2):
         response = dict()
+        response['query'] = 'friends'
+        friend_list = list()
         try:
-            authenticated_author = request.user.user
             author = Author.objects.get(id=id)
             potential_friend = Author.objects.get(id=id2)
 
-            if author == authenticated_author:
-                response['query'] = 'friends'
-                friends = authenticated_author.friends.all()
-                friend_list = list()
+            friends = author.friends.all()
 
-                if friends:
-                    for friend in friends:
-                        friend_list.append(friend.id)
+            if friends:
+                for friend in friends:
+                    friend_list.append(friend.id)
 
-                # check if friend
-                if potential_friend.id in friend_list:
+            # check if friend
+            if potential_friend.id in friend_list:
+                response['friends'] = True
+            else:
+                response['friends'] = False
+
+            authors = list()
+            author_id = "{}/author/{}".format(author.host_url, author.id)
+            authors.append(author_id)
+            friend_id = "{}/author/{}".format(potential_friend.host_url, potential_friend.id)
+            authors.append(friend_id)
+
+            response['authors'] = authors
+            return Response(response, status=200)
+
+        except:
+            remote_friends = RemoteFriend.objects.all().filter(author=author).first()
+            if remote_friends:
+                raw = remote_friends.friend
+                end_id = raw.split("/")[-1]
+
+                if end_id == str(id2):
                     response['friends'] = True
+                    friend_id = remote_friends.friend
+
                 else:
                     response['friends'] = False
+                    remote_author = getRemoteAuthor(id2)
+                    friend_id = remote_author.get('url')
 
                 authors = list()
                 author_id = "{}/author/{}".format(author.host_url, author.id)
                 authors.append(author_id)
-                friend_id = "{}/author/{}".format(potential_friend.host_url, potential_friend.id)
+
                 authors.append(friend_id)
 
                 response['authors'] = authors
-                return Response(response, status=200)
-            else:
-                response['query'] = 'friends'
-                friends = author.friends.all()
-                friend_list = list()
 
-                if friends:
-                    for friend in friends:
-                        friend_list.append(friend.id)
-
-                # check if friend
-                if potential_friend.id in friend_list:
-                    response['friends'] = True
-                else:
-                    response['friends'] = False
-
-                authors = list()
-                author_id = "{}/api/author/{}".format(author.host_url, author.id)
-                authors.append(author_id)
-                friend_id = "{}/api/author/{}".format(potential_friend.host_url, potential_friend.id)
-                authors.append(friend_id)
-
-                response['authors'] = authors
-                return Response(response, status=200)
-        except:
-            response['error'] = "You are not the authenticated user"
-            return Response(response, status=403)
+            return Response(response, status=200)
 
 
 class FriendView2(APIView):

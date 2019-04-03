@@ -69,11 +69,6 @@ class FriendRequest(models.Model):
         return "From {}, to {}".format(self.author.username, self.friend.username)
 
 
-class RemoteFriend(models.Model):
-    author = models.ForeignKey(Author, related_name='remote_author', on_delete=models.CASCADE)
-    friend = models.URLField(blank=True, null=True)
-
-
 POST_PRIVACY = (
     ('PRIVATE', 'Private'),
     ('SERVERONLY', 'All friends on my host'),
@@ -190,3 +185,9 @@ class RemoteFriendRequest(models.Model):
 
     def __str__(self):
         return "From {}, to {}".format(self.author, self.friend.username)
+
+
+class RemoteFriend(models.Model):
+    author = models.ForeignKey(Author, related_name='remote_author', on_delete=models.CASCADE)
+    friend = models.URLField(blank=True, null=True)
+    server = models.ForeignKey(Server, related_name='remote_server', on_delete=models.CASCADE, null=True)

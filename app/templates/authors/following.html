@@ -34,12 +34,18 @@
                         </div>
                     </div>
                     <div class="card-footer">
+                        {% if follower.remote %}
+                            <a href="{% url 'app:accept_remote_friend' %}?id={{ follower.author_id }}"
+                               class="btn btn-warning">Accept Friend</a>
+                        {% else %}
                         <span>
                             <a href="{% url 'app:accept_friend' id=follower.author.id %}"
                                class="btn btn-warning">Accept Friend</a>
                             <a href="{% url 'app:cancel_friend' id=follower.author.id %}"
                              class="btn btn-warning">Cancel Friend</a>
                         </span>
+                        {% endif %}
+
                     </div>
                 </div>
             {% endfor %}

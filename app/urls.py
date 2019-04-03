@@ -57,6 +57,8 @@ urlpatterns = [
     path('friend-request/accept/<uuid:id>',user_views.accept_friend_request, name='accept_friend'),
     path('following/', user_views.all_requests_view, name="requests"),
 
+    path('remote-friend-request/accept/',user_views.accept_remote_friend_request, name='accept_remote_friend'),
+
     path('friendrequest', api_views.friendrequest, name="friendrequest"),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
