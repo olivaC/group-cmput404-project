@@ -49,3 +49,11 @@ class FollowRequestSerializer(serializers.ModelSerializer):
             if auth_follow:
                 author.friends.add(friend)
                 author.save()
+
+
+class FriendRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FriendRequest
+        fields = ('id',
+                  'author',
+                  'friend')

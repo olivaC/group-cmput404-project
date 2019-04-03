@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+
+{% block page_title %}
+    401 Group 10 | Create Post
+{% endblock %}
+
+{% block content %}
+    <h1 class="h3 mb-4 text-gray-800">Friend Request</h1>
+    <div>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <div class="col-lg-8">
+                <!-- /.panel-heading -->
+                <div class="form-group row">
+                    <label for="id_title" class="col-form-label">Author Id<span class="text-danger">*</span></label>
+                    {{ form.post.errors }}
+                    <input type="text" id="id_author_id" name="author_id" class="form-control"
+                           placeholder="Author id"
+                           value="{{ form.title.value|default:"" }}" autofocus required>
+
+                </div>
+                <div class="form-group row">
+                    <label for="id_host_name" class="col-form-label">Hostname<span
+                            class="text-danger">*</span></label>
+
+                    <input type="text" id="id_host_name" name="host" class="form-control"
+                           placeholder="Host name"
+                           value="{{ form.description.value|default:"" }}" autofocus required>
+
+                </div>
+                
+                <div class="form-group row">
+                    <label for="id_display_name" class="col-form-label">Display name<span
+                            class="text-danger">*</span></label>
+
+                    <input type="text" id="id_display_name" name="displayName" class="form-control"
+                           placeholder="Display name"
+                           value="{{ form.description.value|default:"" }}" autofocus required>
+
+                </div>
+
+                <div class="form-group row">
+                    <label for="id_url" class="col-form-label">URL<span
+                            class="text-danger">*</span></label>
+
+                    <input type="text" id="id_url" name="url" class="form-control"
+                           placeholder="url"
+                           value="{{ form.description.value|default:"" }}" autofocus required>
+
+                </div>
+
+            </div>
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            <button class="btn btn-primary" type="submit">Submit</button>
+        </form>
+    </div>
+{% endblock %}

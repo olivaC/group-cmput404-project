@@ -248,6 +248,7 @@ class SinglePostView(APIView):
         response['query'] = 'posts'
 
         try:
+            yar = Post.objects.all()
             post = Post.objects.get(id=id)
             post = postCreate(post)
         except:
@@ -257,6 +258,7 @@ class SinglePostView(APIView):
             # First check if public
             if post[0].get('visibility') == "PUBLIC":
                 response['posts'] = post
+                response['count'] = 1
                 response['success'] = True
                 return Response(response, status=200)
 
@@ -264,11 +266,13 @@ class SinglePostView(APIView):
                 # TODO: FIX THIS
                 response['success'] = True
                 response['posts'] = post
+                response['count'] = 1
                 response['message'] = 'Need to fix this'
                 return Response(response, status=200)
 
         else:
             response['posts'] = []
+            response['count'] = 0
             response['success'] = False
             response['message'] = 'Cannot find post'
             return Response(response, status=404)
