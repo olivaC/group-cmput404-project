@@ -82,6 +82,18 @@ def profile_view(request, id=None):
     author = get_object_or_404(Author, id=id)
     request.context['author'] = author
 
+    try:
+        f_request = FriendRequest.objects.all().filter(author=author).values('friend')
+        pending = Author.objects.all().filter(id__in=f_request)
+
+        request.context['pending'] = pending
+
+        friends = request.user.user.friends.all()
+        request.context['friends'] = friends
+    except:
+        print('error remote user')
+        return HttpResponseRedirect('index.html')
+
     return render(request, 'profile.html', request.context)
 
 

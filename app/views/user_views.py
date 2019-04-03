@@ -150,6 +150,18 @@ def profile_remote_view(request):
     if r.status_code == 200:
         a = create_author(r.json())
 
+        try:
+            f_request = FriendRequest.objects.all().filter(author=a).values('friend')
+            pending = Author.objects.all().filter(id__in=f_request)
+
+            request.context['pending'] = pending
+
+            friends = request.user.user.friends.all()
+            request.context['friends'] = friends
+        except:
+            print('error remote user')
+            return HttpResponseRedirect('index.html')
+
     request.context['author'] = a
 
     return render(request, 'profile.html', request.context)

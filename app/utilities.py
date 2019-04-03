@@ -73,6 +73,7 @@ def create_author(author):
         i.username = author.get('displayName')
     i.host_url = author.get('host')
     i.id = author.get('id')
+    i.uuid = i.id.split("/")[-1]
     i.url = author.get('url')
     if author.get('firstName'):
         i.first_name = author.get('firstName')
