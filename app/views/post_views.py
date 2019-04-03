@@ -10,6 +10,8 @@ from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 from SocialDistribution import settings
 from app.forms.post_forms import PostCreateForm, CommentCreateForm
 from app.models import *
+from app.utilities import *
+
 from app.serializers import PostSerializer
 from app.utilities import *
 
