@@ -208,7 +208,7 @@ def create_comment_view(request, id=None):
 @user_passes_test(api_check)
 def remote_post_view(request, post):
     host = request.GET.get('host', '')
-
+    print(host)
     server = Server.objects.get(hostname=host)
 
     server_api = server.hostname
