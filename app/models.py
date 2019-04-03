@@ -149,10 +149,10 @@ class RemoteComment(models.Model):
     published = models.DateTimeField()
 
     def __str__(self):
-        return "{} - {} - {}".format(self.author, self.published, self.id)
+        return "{} - {}".format(self.post.title, self.published)
 
     def __repr__(self):
-        return "{} - {} - {} ".format(self.author, self.published, self.id)
+        return "{} - {}".format(self.post.title, self.published)
 
     def get_comment(self):
         if self.contentType == "text/markdown":

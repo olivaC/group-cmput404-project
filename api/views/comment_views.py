@@ -8,6 +8,8 @@ from app.models import Post, Server, RemoteComment
 
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
+from datetime import datetime
+from pytz import utc
 
 from settings_server import DOMAIN
 
@@ -74,7 +76,12 @@ class CommentsView(APIView):
         response = dict()
         response['query'] = 'addComment'
         s = None
-        if DOMAIN in post_url:
+        local = False
+        try:
+            serv = Server.objects.get(user=request.user)
+        except:
+            local = True
+        if local:
             # Local post, do crap
             pass
         else:
@@ -87,34 +94,23 @@ class CommentsView(APIView):
                 print("server not found")
 
             if s:
-                post = requests.get(post_url, auth=(s.username, s.password))
-                if post.status_code == 200:
-                    p = post.json()
-                    p = p.get('posts')
-                    p_id = p[0].get('id')
-
-                    try:
-                        local_post = Post.objects.get(id=p_id)
-                        RemoteComment.objects.create(
-                            id=p_id,
-                            post=local_post,
-                            server=s,
-                            author=author.get('id'),
-                            comment=comment.get('comment'),
-                            contentType=comment.get('contentType'),
-                            published=comment.get('published')
-                        )
-                        response['success'] = True
-                        response['message'] = 'Comment Added'
-                        return Response(response, status=200)
-                    except:
-                        response['success'] = False
-                        response['message'] = 'Post could not be found'
-                        return Response(response, status=404)
-
-                else:
+                try:
+                    local_post = Post.objects.get(id=id)
+                    RemoteComment.objects.create(
+                        id=comment.get('id'),
+                        post=local_post,
+                        server=s,
+                        author=author.get('id'),
+                        comment=comment.get('comment'),
+                        contentType=comment.get('contentType'),
+                        published=utc.localize(datetime.strptime(comment.get('published'), '%Y-%m-%dT%H:%M:%S.%fZ'))
+                    )
+                    response['success'] = True
+                    response['message'] = 'Comment Added'
+                    return Response(response, status=200)
+                except:
                     response['success'] = False
-                    response['message'] = 'Post could not be found'
+                    response['message'] = 'Post could not be found or Comment could not be created'
                     return Response(response, status=404)
 
             else:

@@ -2,12 +2,11 @@ import requests
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
-from app.models import Comment, Author, Server
+from app.models import Comment, Author, Server, RemoteComment
 from settings_server import DOMAIN
 from datetime import datetime
 from pytz import utc
 from itertools import groupby
-
 
 
 def addAuthor(author):
@@ -211,6 +210,7 @@ def postCreate(post):
 
 def commentList(post):
     comments = Comment.objects.all().filter(post=post).order_by('-published')
+    remote_comments = RemoteComment.objects.all().filter(post=post).order_by('published')
     comment_list = list()
 
     if comments:
@@ -222,6 +222,23 @@ def commentList(post):
             comment_dict['published'] = comment.published
             comment_dict['id'] = comment.id
             comment_list.append(comment_dict)
+    if remote_comments:
+        for remote in remote_comments:
+            remote_dict = dict()
+            server = remote.server
+            r = requests.get(remote.author, auth=(server.username, server.password))
+            if r.status_code == 200:
+                author = remoteAddAuthor(r.json())
+                remote_dict['author'] = author
+                remote_dict['comment'] = remote.comment
+                remote_dict['contentType'] = remote.contentType
+                remote_dict['published'] = remote.published
+                remote_dict['id'] = remote.id
+                comment_list.append(remote_dict)
+            else:
+                continue
+
+    comment_list = sorted(comment_list, key=lambda k: k['published'], reverse=True)
 
     return comment_list
 
