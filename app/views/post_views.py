@@ -271,7 +271,8 @@ def remote_post_view(request, post):
                                       auth=(server.username, server.password))
 
                     if r.status_code == 200:
-                        return HttpResponseRedirect(request.path)
+                        path = "{}?host={}".format(request.path, host)
+                        return HttpResponseRedirect(path)
                     else:
                         messages.warning(request, "You actually can't comment on this post...")
 
