@@ -342,18 +342,43 @@ class FriendRequestView(APIView):
         data = request.data
         user = request.user
         response = dict()
+        response['query'] = 'friendrequest'
         try:
+            friend = data.get('friend')
+            author = data.get('author')
             remote = Server.objects.get(user=user)
-            if remote:
-                response['query'] = 'friendrequest'
-                response['success'] = False
-                response['message'] = 'Not authorized to create posts'
-                return Response(response, status=403)
-            else:
-                response['query'] = 'friendrequest'
-                response['success'] = False
-                response['message'] = 'Not authorized to create posts'
-                return Response(response, status=403)
+            match = Server.objects.get(hostname__endswith=author.get('host'))
+            if remote and match:
+                raw = friend.get('id')
+                uuid = raw.split('/')[-1]
+                try:
+                    local_author = Author.objects.get(id=uuid)
+                except:
+                    response['success'] = False
+                    response['message'] = 'Local user not found'
+                    return Response(response, status=404)
+
+                try:
+                    r = RemoteFriendRequest.objects.filter(friend=local_author).filter(author=author.get('id')).first()
+                    if r:
+                        response['success'] = False
+                        response['message'] = 'Pending'
+                        return Response(response, status=404)
+                except:
+                    print('we good')
+
+                try:
+                    RemoteFriendRequest.objects.create(
+                        author=author.get('id'),
+                        friend=local_author,
+                        server=match
+                    )
+                    response['success'] = True
+                    response['message'] = 'Friend request sent'
+                    return Response(response, status=200)
+                except:
+                    print('remote friend request object could not be created')
+
         except:
             r = request.POST
             friend = data.get('friend')
@@ -364,25 +389,29 @@ class FriendRequestView(APIView):
             auth = Author.objects.filter(username=author_username).first()
             friend_model = Author.objects.filter(username=friend_username).first()
 
+            existing = FriendRequest.objects.filter(friend=friend_model).filter(author=auth).first()
+
+            if existing:
+                response['success'] = False
+                response['message'] = 'Pending'
+                return Response(response, status=400)
+
             if friend:
                 f_request = FriendRequest.objects.create(
                     friend=friend_model,
                     author=auth,
                 )
                 if f_request:
-                    response['query'] = 'friendrequest'
                     response['success'] = True
                     response['message'] = 'friend request successful'
 
                     return Response(response, status=200)
                 else:
-                    response['query'] = 'friendrequest'
                     response['success'] = False
                     response['message'] = 'Error sending friend request'
 
                     return Response(response, status=500)
             else:
-                response['query'] = 'friendrequest'
                 response['success'] = False
                 response['message'] = 'Missing friend'
 

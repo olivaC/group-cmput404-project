@@ -69,15 +69,6 @@ class FriendRequest(models.Model):
         return "From {}, to {}".format(self.author.username, self.friend.username)
 
 
-class RemoteFriendRequest(models.Model):
-    author = models.URLField(blank=True, null=True)
-    friend = models.ForeignKey(Author, related_name='remote', on_delete=models.CASCADE)  # Always a local author
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return "From {}, to {}".format(self.author, self.friend.username)
-
-
 class RemoteFriend(models.Model):
     author = models.ForeignKey(Author, related_name='remote_author', on_delete=models.CASCADE)
     friend = models.URLField(blank=True, null=True)
@@ -188,3 +179,14 @@ def create_user_author(sender, instance, created, **kwargs):
         instance.user.url = "{}/api/author/{}".format(instance.user.host_url, instance.user.author_id)
         instance.user.username = instance.username
         instance.user.save()
+
+
+class RemoteFriendRequest(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    author = models.URLField(blank=True, null=True)
+    friend = models.ForeignKey(Author, related_name='RemoteFriend', on_delete=models.CASCADE)  # Always a local author
+    timestamp = models.DateTimeField(auto_now_add=True)
+    server = models.ForeignKey(Server, related_name="RemoteFriendServer", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "From {}, to {}".format(self.author, self.friend.username)
