@@ -352,8 +352,7 @@ class FriendRequestView(APIView):
             author = data.get('author')
             try:
                 remote = Server.objects.get(user=user)
-                match = Server.objects.get(hostname=author.get('host'))
-                if remote and match:
+                if remote:
                     raw = friend.get('id')
                     uuid = raw.split('/')[-1]
                     try:
@@ -377,7 +376,7 @@ class FriendRequestView(APIView):
                         RemoteFriendRequest.objects.create(
                             author=author.get('id'),
                             friend=local_author,
-                            server=match
+                            server=remote
                         )
                         response['success'] = True
                         response['message'] = 'Friend request sent'
