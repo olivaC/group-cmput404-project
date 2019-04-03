@@ -104,6 +104,7 @@ def create_posts(posts):
 
 
 def create_post(i):
+    i = i.get('posts')[0]
     post = Post()
     post.id = i.get('id')
     post.author = create_author(i.get('author'))
@@ -122,6 +123,7 @@ def create_post(i):
 
 def create_comments(post):
     comment_list = list()
+    post = post.get('posts')[0]
     for c in post.get('comments'):
         comment = Comment()
         comment.author = create_author(c.get('author'))

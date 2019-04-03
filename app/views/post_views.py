@@ -14,7 +14,10 @@ from app.utilities import *
 
 from app.serializers import PostSerializer
 from app.utilities import *
+import json
+from datetime import datetime
 
+from pytz import utc
 
 
 @login_required
@@ -208,7 +211,12 @@ def remote_post_view(request, post):
 
     server = Server.objects.get(hostname__contains=host)
 
-    server_api = "{}posts/{}".format(server.hostname, post)
+    server_api = server.hostname
+    if server_api.endswith("/"):
+        server_api = "{}posts/{}".format(server.hostname, post)
+    else:
+        server_api = "{}/posts/{}".format(server.hostname, post)
+
     try:
         if server.username and server.password:
             r = requests.get(server_api, auth=(server.username, server.password))
@@ -221,26 +229,59 @@ def remote_post_view(request, post):
         p = create_post(r.json())
         c = create_comments(r.json())
 
-    # if request.method == 'POST':
-    #     next = request.POST.get("next", reverse("app:index"))
-    #     form = CommentCreateForm(request.POST)
-    #     try:
-    #         if form.is_valid():
-    #             if form.cleaned_data.get('comment'):
-    #                 author = request.user.user
-    #                 Comment.objects.create(post=post, author=author, comment=form.cleaned_data.get('comment'),
-    #                                        contentType=form.cleaned_data.get('contentType'))
-    #                 return HttpResponseRedirect(request.path)
-    #         request.context['next'] = next
-    #         messages.warning(request, 'Error commenting.')
-    #
-    #
-    #     except:
-    #         request.context['next'] = request.GET.get('next', request.path)
+    if request.method == 'POST':
+        form = CommentCreateForm(request.POST)
+        try:
+            if form.is_valid():
+                if form.cleaned_data.get('comment') and form.cleaned_data.get('contentType'):
+                    local_author = request.user.user
+                    author = dict()
+                    url = "{}/api/posts/{}".format(DOMAIN, post)
+                    author['id'] = "{}/api/author/{}".format(DOMAIN, local_author.id)
+                    author['url'] = "{}/api/author/{}".format(DOMAIN, local_author.id)
+                    author['host'] = "{}/api/".format(local_author.host_url)
+                    author['displayName'] = local_author.username
+                    if local_author.github_url:
+                        author['github'] = local_author.github_url
+
+                    comment_id = str(uuid.uuid1())
+                    published = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                    commment_data = form.cleaned_data.get('comment')
+                    contentType = form.cleaned_data.get('contentType')
+
+                    comment = {
+                        'author': author,
+                        'comment': commment_data,
+                        'contentType': contentType,
+                        'published': published,
+                        'id': comment_id
+
+                    }
+
+                    data = {
+                        'query': 'addComment',
+                        'post': url,
+                        'comment': comment
+
+                    }
+
+                    req_url = "{}/comments".format(server_api)
+                    headers = {'Content-type': 'application/json'}
+                    r = requests.post(req_url, data=json.dumps(data), headers=headers,
+                                      auth=(server.username, server.password))
+
+                    if r.status_code == 200:
+                        return HttpResponseRedirect(request.path)
+                    else:
+                        messages.warning(request, "You actually can't comment on this post...")
+
+        except Exception as e:
+            print(e)
+            request.context['next'] = request.GET.get('next', request.path)
 
     form = CommentCreateForm()
     request.context['post'] = p
-    # request.context['form'] = form
+    request.context['form'] = form
     request.context['comments'] = c
 
     return render(request, 'posts/remote_post_detail.html', request.context)
