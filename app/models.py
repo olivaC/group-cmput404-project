@@ -58,9 +58,15 @@ class FollowRequest(models.Model):
     def get_following(self):
         return self.friend.username
 
-# class FriendRemoteRequest(models.Model):
-#     author = models.ForeignKey(Author, related_name='author_request', on_delete=models.CASCADE) # Local author
-#     friend = models.URLField(blank=True, null=True)
+
+class FriendRequest(models.Model):
+    author = models.ForeignKey(Author, related_name='to_user', on_delete=models.CASCADE)
+    friend = models.ForeignKey(Author, related_name='from_user', on_delete=models.CASCADE)
+    # acknowledged = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "From {}, to {}".format(self.author.username, self.friend.username)
 
 
 POST_PRIVACY = (
@@ -138,6 +144,28 @@ class Server(models.Model):
         return "Hostname: {}".format(self.hostname)
 
 
+class RemoteComment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    post = models.ForeignKey(Post, related_name='RemoteCommentPost', on_delete=models.CASCADE)
+    server = models.ForeignKey(Server, related_name="RemoteServer", on_delete=models.CASCADE)
+    author = models.URLField(blank=True, null=True)
+    comment = models.TextField(default="")
+    contentType = models.CharField(max_length=100, choices=POST_CONTENT_TYPE, default='Plain Text')
+    published = models.DateTimeField()
+
+    def __str__(self):
+        return "{} - {}".format(self.post.title, self.published)
+
+    def __repr__(self):
+        return "{} - {}".format(self.post.title, self.published)
+
+    def get_comment(self):
+        if self.contentType == "text/markdown":
+            return mark_safe(markdown(self.comment, safe_mode='escape'))
+        else:
+            return self.comment
+
+
 @receiver(post_save, sender=User)
 def create_user_author(sender, instance, created, **kwargs):
     if created:
@@ -146,3 +174,20 @@ def create_user_author(sender, instance, created, **kwargs):
         instance.user.url = "{}/api/author/{}".format(instance.user.host_url, instance.user.author_id)
         instance.user.username = instance.username
         instance.user.save()
+
+
+class RemoteFriendRequest(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    author = models.URLField(blank=True, null=True)
+    friend = models.ForeignKey(Author, related_name='RemoteFriend', on_delete=models.CASCADE)  # Always a local author
+    timestamp = models.DateTimeField(auto_now_add=True)
+    server = models.ForeignKey(Server, related_name="RemoteFriendServer", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "From {}, to {}".format(self.author, self.friend.username)
+
+
+class RemoteFriend(models.Model):
+    author = models.ForeignKey(Author, related_name='remote_author', on_delete=models.CASCADE)
+    friend = models.URLField(blank=True, null=True)
+    server = models.ForeignKey(Server, related_name='remote_server', on_delete=models.CASCADE, null=True)

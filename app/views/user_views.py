@@ -1,12 +1,14 @@
 import requests
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from urllib.parse import urlparse
+from datetime import datetime
+from pytz import utc
 
-
-from app.models import Author, FollowRequest, Post, Server
+from api.api_utilities import remoteAddAuthor
+from app.models import *
 from django.db.models.functions import Lower
 
 from app.utilities import api_check, create_author
@@ -20,9 +22,14 @@ def all_author_view(request):
     authors = Author.objects.all().order_by(Lower('username')).exclude(id=current_author.id)
     request.context['user'] = user
     request.context['authors'] = authors
-    following = FollowRequest.objects.all().filter(author=current_author).values('friend')
-    following = Author.objects.all().filter(id__in=following)
-    request.context['following'] = following
+
+    f_request = FriendRequest.objects.all().filter(author=current_author).values('friend')
+    pending = Author.objects.all().filter(id__in=f_request)
+
+    request.context['pending'] = pending
+
+    friends = request.user.user.friends.all()
+    request.context['friends'] = friends
 
     return render(request, 'authors/all_authors.html', request.context)
 
@@ -69,11 +76,11 @@ def unfollow_view(request, id):
 def unfollow_mutual_view(request, id):
     current_author = request.user.user
     auth = Author.objects.filter(id=id).first()
-    unfollow = FollowRequest.objects.all().filter(author=current_author).filter(friend=auth)
-    if unfollow:
-        unfollow.delete()
-        current_author.friends.remove(auth)
-        current_author.save()
+    # unfollow = FollowRequest.objects.all().filter(author=current_author).filter(friend=auth)
+    # if unfollow:
+    #     unfollow.delete()
+    current_author.friends.remove(auth)
+    current_author.save()
     return HttpResponseRedirect(reverse("app:mutual_friends"))
 
 
@@ -108,17 +115,40 @@ def all_followers_view(request):
 
 @login_required
 @user_passes_test(api_check)
-def all_following_view(request):
+def all_requests_view(request):
     current_author = request.user.user
-    following = FollowRequest.objects.all().filter(author=current_author)
+    f_requests = FriendRequest.objects.all().filter(friend=current_author)
+    r_requests = RemoteFriendRequest.objects.all().filter(friend=current_author)
 
-    request.context['following'] = following
+    all_requests = list(f_requests)
+    remote_requests = list()
+
+    if r_requests:
+        for r in r_requests:
+            server = r.server
+            auth_url = r.author
+            req = requests.get(auth_url, auth=(server.username, server.password))
+            if req.status_code != 200:
+                continue
+            else:
+                author = create_author(req.json())
+                friend = FriendRequest()
+                friend.remote = 'remote'
+                friend.author = author
+                friend.friend = current_author
+                friend.timestamp = r.timestamp
+
+                remote_requests.append(friend)
+
+    all_requests.extend(remote_requests)
+    all_requests.sort(key=lambda yar: yar.timestamp, reverse=True)
+
+    request.context['requests'] = all_requests
 
     return render(request, 'authors/following.html', request.context)
 
 
 @login_required
-@user_passes_test(api_check)
 def mutual_friends_view(request):
     friends = request.user.user.friends.all()
     posts = Post.objects.all().filter(author__id__in=friends).filter(visibility="FRIENDS") | Post.objects.all().filter(
@@ -146,6 +176,67 @@ def profile_remote_view(request):
     if r.status_code == 200:
         a = create_author(r.json())
 
+        try:
+            f_request = FriendRequest.objects.all().filter(author=a).values('friend')
+            pending = Author.objects.all().filter(id__in=f_request)
+
+            request.context['pending'] = pending
+
+            friends = request.user.user.friends.all()
+            request.context['friends'] = friends
+        except:
+            print('error remote user')
+            return HttpResponseRedirect('index.html')
+
     request.context['author'] = a
 
     return render(request, 'profile.html', request.context)
+
+
+def send_friend_request(request, id):
+    current_author = request.user.user
+    auth = Author.objects.filter(id=id).first()
+
+    if auth:
+        FriendRequest.objects.create(
+            author=current_author,
+            friend=auth
+        )
+
+    return HttpResponseRedirect(reverse("app:all_authors"))
+
+
+def cancel_friend_request(request, id):
+    current_author = request.user.user
+    auth = Author.objects.filter(id=id).first()
+    f_request = FriendRequest.objects.filter(friend=current_author, author=auth).first()
+    f_request.delete()
+    return HttpResponseRedirect(reverse("app:all_authors"))
+
+
+def accept_friend_request(request, id):
+    current_author = request.user.user
+    auth = Author.objects.filter(id=id).first()
+    f_request = FriendRequest.objects.filter(friend=current_author, author=auth).first()
+
+    current_author.friends.add(auth)
+    current_author.save()
+    f_request.delete()
+
+    return HttpResponseRedirect(reverse("app:mutual_friends"))
+
+
+def accept_remote_friend_request(request):
+    url = request.GET.get('id', '')
+    url_parse = urlparse(url)
+    req = "{}://{}".format(url_parse.scheme, url_parse.netloc)
+    server = Server.objects.get(hostname__contains=req)
+
+    current_author = request.user.user
+    f_request = RemoteFriendRequest.objects.filter(friend=current_author, author=url).first()
+
+    r = RemoteFriend.objects.create(author=current_author, friend=url, server=server)
+    if r:
+        f_request.delete()
+
+    return HttpResponseRedirect(reverse("app:mutual_friends"))

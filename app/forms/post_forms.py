@@ -5,6 +5,20 @@ from django.contrib.auth.forms import UserChangeForm
 
 from app.models import Post, Author, Comment
 
+class AuthorForm(ModelForm):
+    author_id = forms.CharField()
+    host = forms.CharField(label="hello")
+    displayName = forms.CharField()
+    url = forms.CharField()
+
+    class Meta:
+        model = Author
+        fields = (
+            'author_id',
+            'host',
+            'displayName',
+            'url',
+            )
 
 class PostCreateForm(ModelForm):
     content = forms.Textarea()
