@@ -16,6 +16,9 @@ router.register('author-posts', api_views.AuthorPostView, base_name='author_post
 router.register('follow-request', api_views.FollowRequestView, base_name="follow_request")
 
 urlpatterns = [
+
+    
+
     path('api/', include(router.urls)),
     path('', views.index),
     path('index', views.index, name="index"),
@@ -45,4 +48,5 @@ urlpatterns = [
     path('foaf-posts', post_views.foaf_posts_view, name="foaf_posts"),
     path('mutual-friend-posts', post_views.mutual_friends_posts_view, name="mutual_friend_posts"),
     path('post/<uuid:id>/', post_views.unlisted_post_view, name="unlisted_post"),
+    path('friendrequest', api_views.friendrequest, name="friendrequest"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
