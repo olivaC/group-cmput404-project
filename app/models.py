@@ -158,6 +158,28 @@ class Server(models.Model):
         return "Hostname: {}".format(self.hostname)
 
 
+class RemoteComment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    post = models.ForeignKey(Post, related_name='RemoteCommentPost', on_delete=models.CASCADE)
+    server = models.ForeignKey(Server, related_name="RemoteServer", on_delete=models.CASCADE)
+    author = models.URLField(blank=True, null=True)
+    comment = models.TextField(default="")
+    contentType = models.CharField(max_length=100, choices=POST_CONTENT_TYPE, default='Plain Text')
+    published = models.DateTimeField()
+
+    def __str__(self):
+        return "{} - {}".format(self.post.title, self.published)
+
+    def __repr__(self):
+        return "{} - {}".format(self.post.title, self.published)
+
+    def get_comment(self):
+        if self.contentType == "text/markdown":
+            return mark_safe(markdown(self.comment, safe_mode='escape'))
+        else:
+            return self.comment
+
+
 @receiver(post_save, sender=User)
 def create_user_author(sender, instance, created, **kwargs):
     if created:

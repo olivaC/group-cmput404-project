@@ -2,7 +2,7 @@ import requests
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
-from app.models import Comment, Author, Server
+from app.models import Comment, Author, Server, RemoteComment
 from settings_server import DOMAIN
 from datetime import datetime
 from pytz import utc
@@ -107,10 +107,13 @@ def addFriends(author):
 def postList(posts):
     post_list = list()
     for post in posts:
+        comments = commentList(post)
+        comment_url = "{}/api/posts/{}/comments".format(DOMAIN, post.id)
         post_dict = {'author': addAuthor(post.author), 'title': post.title, 'description': post.description,
                      'contentType': post.contentType, 'content': post.content, 'published': post.published,
                      'visibility': post.visibility, 'unlisted': post.unlisted, 'id': post.id,
-                     'comments': commentList(post), 'origin': "{}/api/posts/{}".format(DOMAIN, post.id),
+                     'comments': comments[:5], 'next': comment_url, 'count': len(comments),
+                     'origin': "{}/api/posts/{}".format(DOMAIN, post.id),
                      'source': "{}/api/posts/{}".format(DOMAIN, post.id)}
         post_list.append(post_dict)
     return post_list
@@ -152,6 +155,8 @@ def remotePostList(host, posts, public):
             id = post.get('id')
             origin = post.get('source')
             comments = remoteCommentList(post)
+            count = post.get('count')
+            next = "{}/api/posts/{}/comments".format(DOMAIN, id)
             if host.endswith("/"):
                 host = host[:-1]
             source = "{}/posts/{}".format(host, post.get('id'))
@@ -160,7 +165,7 @@ def remotePostList(host, posts, public):
                          'contentType': contentType, 'content': content, 'published': published,
                          'visibility': visibility, 'unlisted': unlisted, 'id': id,
                          'comments': comments, 'origin': origin,
-                         'source': source}
+                         'source': source, 'count': count, 'next': next}
             post_list.append(post_dict)
     return post_list
 
@@ -177,24 +182,27 @@ def remotePostCreate(host, post):
     unlisted = post.get('unlisted')
     id = post.get('id')
     origin = post.get('origin')
+    count = post.get('count')
     comments = remoteCommentList(post)
     source = "{}/api/posts/{}".format(DOMAIN, post.get('id'))
 
     post_dict = {'author': author, 'title': title, 'description': description,
                  'contentType': contentType, 'content': content, 'published': published,
                  'visibility': visibility, 'unlisted': unlisted, 'id': id,
-                 'comments': comments, 'origin': origin,
+                 'comments': comments, 'origin': origin, 'count': count,
                  'source': source}
     return post_dict
 
 
 def postCreate(post):
     post_list = list()
-
+    comments = commentList(post)
+    comment_url = "{}/api/posts/{}/comments".format(DOMAIN, post.id)
     post_dict = {'author': addAuthor(post.author), 'title': post.title, 'description': post.description,
                  'contentType': post.contentType, 'content': post.content, 'published': post.published,
                  'visibility': post.visibility, 'unlisted': post.unlisted, 'id': post.id,
-                 'comments': commentList(post), 'source': "{}/api/posts/{}".format(DOMAIN, post.id),
+                 'comments': comments[:5], 'next': comment_url, 'count': len(comments),
+                 'source': "{}/api/posts/{}".format(DOMAIN, post.id),
                  'origin': "{}/api/posts/{}".format(DOMAIN, post.id)}
     post_list.append(post_dict)
     return post_list
@@ -202,6 +210,7 @@ def postCreate(post):
 
 def commentList(post):
     comments = Comment.objects.all().filter(post=post).order_by('-published')
+    remote_comments = RemoteComment.objects.all().filter(post=post).order_by('published')
     comment_list = list()
 
     if comments:
@@ -213,6 +222,23 @@ def commentList(post):
             comment_dict['published'] = comment.published
             comment_dict['id'] = comment.id
             comment_list.append(comment_dict)
+    if remote_comments:
+        for remote in remote_comments:
+            remote_dict = dict()
+            server = remote.server
+            r = requests.get(remote.author, auth=(server.username, server.password))
+            if r.status_code == 200:
+                author = remoteAddAuthor(r.json())
+                remote_dict['author'] = author
+                remote_dict['comment'] = remote.comment
+                remote_dict['contentType'] = remote.contentType
+                remote_dict['published'] = remote.published
+                remote_dict['id'] = remote.id
+                comment_list.append(remote_dict)
+            else:
+                continue
+
+    comment_list = sorted(comment_list, key=lambda k: k['published'], reverse=True)
 
     return comment_list
 
@@ -231,6 +257,26 @@ def getRemotePost(post_id):
             print(r)
             if r.status_code in [200, 201]:
                 return [remotePostCreate(server.hostname, r.json())]
+        except Exception as e:
+            print(e)
+    return None
+
+
+def getRemoteComments(post_id):
+    servers = Server.objects.all()
+    for server in servers:
+        host = server.hostname
+        if not host.endswith("/"):
+            host = host + "/"
+        server_api = "{}posts/{}/comments".format(host, post_id)
+        print('Request:')
+        print(server_api)
+        try:
+            r = requests.get(server_api, auth=(server.username, server.password))
+            print(r)
+            if r.status_code in [200, 201]:
+                comments = r.json()
+                return remoteCommentList(comments)
         except Exception as e:
             print(e)
     return None
