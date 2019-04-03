@@ -175,6 +175,7 @@ def profile_remote_view(request):
 
     if r.status_code == 200:
         a = create_author(r.json())
+        a.remote = "remote"
 
         try:
             f_request = FriendRequest.objects.all().filter(author=a).values('friend')

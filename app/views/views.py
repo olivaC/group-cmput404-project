@@ -84,9 +84,10 @@ def index(request):
 def profile_view(request, id=None):
     author = get_object_or_404(Author, id=id)
     request.context['author'] = author
-
+    current_user = get_object_or_404(Author, username=request.user)
+    request.context['self'] = current_user
     try:
-        f_request = FriendRequest.objects.all().filter(author=author).values('friend')
+        f_request = FriendRequest.objects.all().filter(author=current_user).values('friend')
         pending = Author.objects.all().filter(id__in=f_request)
 
         request.context['pending'] = pending

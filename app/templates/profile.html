@@ -29,13 +29,24 @@
             <p>{{ author.bio }}</p>
         {% endif %}
 
-        {% if author in friends %}
-            <a href="{% url 'app:unfollow_mutual' id=author.uuid %}"
-               class="btn btn-danger">Unfriend</a>
-        {% elif author in pending %}
-            <a href="" class="btn btn-warning">Pending</a>
+
+        {% if author.remote %}
+            {% if author in friends %}#}
+                <a href="{% url 'app:unfollow_mutual' id=author.uuid %}"
+                   class="btn btn-danger">Unfriend</a>
+            {% elif author in pending %}
+                <a href="" class="btn btn-warning">Pending</a>
+            {% else %}
+                <a href="{% url 'app:add_friend' id=author.uuid %}" class="btn btn-warning">Add Friend</a>
+            {% endif %}
         {% else %}
-            <a href="{% url 'app:add_friend' id=author.uuid %}" class="btn btn-warning">Add Friend</a>
+            {% if author in friends %}
+                <a href="{% url 'app:unfollow_mutual' id=author.id %}" class="btn btn-danger">Unfriend</a>
+            {% elif author in pending %}
+                <a href="" class="btn btn-warning">Pending</a>
+            {% elif author != self %}
+                <a href="{% url 'app:add_friend' id=author.id %}" class="btn btn-warning">Add Friend</a>
+            {% endif %}
         {% endif %}
 
     </div>
