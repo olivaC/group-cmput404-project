@@ -4,6 +4,18 @@ from rest_framework import permissions
 from app.serializers import *
 from django.http import HttpResponse, JsonResponse
 
+from django.shortcuts import render
+from django.urls import reverse
+from app.forms.post_forms import AuthorForm
+import json
+import requests
+from django.http import HttpResponseRedirect
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
+from app.models import Author
+from rest_framework.response import Response
+
+
 class AuthorView(viewsets.ModelViewSet):
     """
     The api view to retrieve author.
@@ -67,3 +79,54 @@ class FollowRequestView(viewsets.ModelViewSet):
         else:
             queryset = FollowRequest.objects.all().filter(author=self.request.user.user).order_by('-date_created')
             return queryset
+
+
+@csrf_exempt
+def friendrequest(request):
+    user = request.user
+    request.context['user'] = user
+
+    if request.method == 'POST':
+        if (user.is_authenticated):
+            user = Author.objects.get(user=user)
+
+            processed_hostname = request.POST['host']
+            if (processed_hostname[-1] == '/'):
+                processed_hostname = processed_hostname[:-1]
+
+            author = {'id': str(user.id),
+                      'host': user.host_url,
+                      'displayName': user.username,
+                      'url': user.url}
+            friend = {'id': request.POST['author_id'],
+                      'host': processed_hostname,
+                      'displayName': request.POST['displayName'],
+                      'url': request.POST['url']}
+            data = {'query': 'friendrequest', 'author': json.dumps(author), 'friend': json.dumps(friend)}
+
+            requests.post(processed_hostname + '/friendrequest', data=data)
+
+            return HttpResponseRedirect(reverse('app:index'))
+        else:
+            data = request.POST
+
+            auth = json.loads(data['author'])
+            fri = json.loads(data['friend'])
+
+            author = Author.objects.create(id=auth['id'],
+                                           username=auth['displayName'],
+                                           url=auth['url'],
+                                           host_url=auth['host']
+                                           )
+            friend = Author.objects.create(id=fri['id'],
+                                           username=fri['displayName'],
+                                           url=fri['url'],
+                                           host_url=fri['host']
+                                           )
+
+            FollowRequest.objects.create(author=author, friend=friend)
+
+    form = AuthorForm()
+    request.context['form'] = form
+
+    return render(request, 'authors/friendrequest.html', request.context)

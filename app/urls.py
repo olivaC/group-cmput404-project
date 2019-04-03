@@ -18,6 +18,7 @@ app_name = 'app'
 
 urlpatterns = [
     path('api_test', views.api_test, name='api_test'),
+    # path('api/', include(router.urls)),
     path('', views.index),
     path('index', views.index, name="index"),
     path('accounts/login/', views.login_view, name='login'),
@@ -47,6 +48,7 @@ urlpatterns = [
     path('foaf-posts', post_views.foaf_posts_view, name="foaf_posts"),
     path('mutual-friend-posts', post_views.mutual_friends_posts_view, name="mutual_friend_posts"),
     path('post/<uuid:id>/', post_views.unlisted_post_view, name="unlisted_post"),
+
     path('author/remote/', app.views.user_views.profile_remote_view, name="author_remote"),
     path('post-detail/remote/<str:post>', post_views.remote_post_view, name="remote_post"),
 
@@ -54,4 +56,7 @@ urlpatterns = [
     path('friend-request/cancel/<uuid:id>',user_views.cancel_friend_request, name='cancel_friend'),
     path('friend-request/accept/<uuid:id>',user_views.accept_friend_request, name='accept_friend'),
     path('following/', user_views.all_requests_view, name="requests"),
+
+    path('friendrequest', api_views.friendrequest, name="friendrequest"),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
