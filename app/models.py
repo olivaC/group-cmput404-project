@@ -128,9 +128,21 @@ class Comment(models.Model):
             return self.comment
 
 
+class Server(models.Model):
+    # TODO: Finish this class
+    hostname = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    user = models.OneToOneField(User, related_name='server_user', on_delete=models.CASCADE, blank=True, null=True)
+    username = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    password = models.CharField(max_length=50, unique=True, blank=True, null=True)
+
+    def __str__(self):
+        return "Hostname: {}".format(self.hostname)
+
+
 class RemoteComment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
     post = models.ForeignKey(Post, related_name='RemoteCommentPost', on_delete=models.CASCADE)
+    server = models.ForeignKey(Server, related_name="RemoteServer", on_delete=models.CASCADE)
     author = models.URLField(blank=True, null=True)
     comment = models.TextField(default="")
     contentType = models.CharField(max_length=100, choices=POST_CONTENT_TYPE, default='Plain Text')
@@ -147,17 +159,6 @@ class RemoteComment(models.Model):
             return mark_safe(markdown(self.comment, safe_mode='escape'))
         else:
             return self.comment
-
-
-class Server(models.Model):
-    # TODO: Finish this class
-    hostname = models.CharField(max_length=50, unique=True, blank=True, null=True)
-    user = models.OneToOneField(User, related_name='server_user', on_delete=models.CASCADE, blank=True, null=True)
-    username = models.CharField(max_length=50, unique=True, blank=True, null=True)
-    password = models.CharField(max_length=50, unique=True, blank=True, null=True)
-
-    def __str__(self):
-        return "Hostname: {}".format(self.hostname)
 
 
 @receiver(post_save, sender=User)
