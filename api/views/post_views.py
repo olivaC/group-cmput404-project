@@ -247,6 +247,7 @@ class SinglePostView(APIView):
         response['query'] = 'posts'
 
         try:
+            yar = Post.objects.all()
             post = Post.objects.get(id=id)
             post = postCreate(post)
         except:

@@ -1,9 +1,10 @@
+import requests
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 
 from api.api_utilities import commentList, getRemotePost, getRemoteComments
-from app.models import Post, Server
+from app.models import Post, Server, RemoteComment
 
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -68,6 +69,8 @@ class CommentsView(APIView):
     def post(self, request, id):
         req = request.data
         post_url = req.get('post')
+        comment = req.get('comment')
+        author = comment.get('author')
         response = dict()
         response['query'] = 'addComment'
         s = None
@@ -84,8 +87,36 @@ class CommentsView(APIView):
                 print("server not found")
 
             if s:
-                print("Create remote commenttttt")
-                
+                post = requests.get(post_url, auth=(s.username, s.password))
+                if post.status_code == 200:
+                    p = post.json()
+                    p = p.get('posts')
+                    p_id = p[0].get('id')
+
+                    try:
+                        local_post = Post.objects.get(id=p_id)
+                        RemoteComment.objects.create(
+                            id=p_id,
+                            post=local_post,
+                            server=s,
+                            author=author.get('id'),
+                            comment=comment.get('comment'),
+                            contentType=comment.get('contentType'),
+                            published=comment.get('published')
+                        )
+                        response['success'] = True
+                        response['message'] = 'Comment Added'
+                        return Response(response, status=200)
+                    except:
+                        response['success'] = False
+                        response['message'] = 'Post could not be found'
+                        return Response(response, status=404)
+
+                else:
+                    response['success'] = False
+                    response['message'] = 'Post could not be found'
+                    return Response(response, status=404)
+
             else:
                 response['success'] = False
                 response['message'] = "Comment not allowed"
