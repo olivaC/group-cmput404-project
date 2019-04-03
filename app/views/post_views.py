@@ -179,6 +179,34 @@ def public_post_view(request):
 def create_comment_view(request, id=None):
     post = get_object_or_404(Post, id=id)
     comments = Comment.objects.all().filter(post=post)
+    remote_comments = RemoteComment.objects.all().filter(post=post)
+
+    master_list = list(comments)
+
+    if remote_comments:
+        for i in remote_comments:
+            try:
+                server = i.server
+                auth_url = i.author
+                req = requests.get(auth_url, auth=(server.username, server.password))
+                if req.status_code != 200:
+                    continue
+                else:
+                    comment = Comment()
+                    comment.author = create_author(req.json())
+                    comment.comment = i.comment
+                    comment.contentType = i.contentType
+                    comment.content = comment.get_comment()
+                    comment.id = i.id
+                    comment.published = i.published
+                    master_list.append(comment)
+
+
+            except:
+                print("problem with getting Author")
+
+    master_list.sort(key=lambda master: master.published, reverse=True)
+
     if request.method == 'POST':
         next = request.POST.get("next", reverse("app:index"))
         form = CommentCreateForm(request.POST)
@@ -199,7 +227,7 @@ def create_comment_view(request, id=None):
     form = CommentCreateForm()
     request.context['post'] = post
     request.context['form'] = form
-    request.context['comments'] = comments
+    request.context['comments'] = master_list
 
     return render(request, 'posts/post_detail.html', request.context)
 
