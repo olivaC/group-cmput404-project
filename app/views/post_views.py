@@ -180,8 +180,8 @@ def public_post_view(request):
         try:
             if server.username and server.password:
                 r = requests.get(server_api, auth=(server.username, server.password))
-            p = create_posts(r.json())
-            public_posts.extend(p)
+                p = create_posts(r.json())
+                public_posts.extend(p)
         except:
             print("error")
 
