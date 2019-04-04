@@ -1,4 +1,7 @@
+import json
+
 import requests
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
@@ -241,3 +244,66 @@ def accept_remote_friend_request(request):
         f_request.delete()
 
     return HttpResponseRedirect(reverse("app:mutual_friends"))
+
+
+def send_remote_friend_request(request, uuid):
+    host = request.GET.get('host', '')
+    server = Server.objects.get(hostname=host)
+
+    server_api = server.hostname
+
+    if server_api.endswith("/"):
+        server_api = "{}author/{}".format(server.hostname, uuid)
+    else:
+        server_api = "{}/author/{}".format(server.hostname, uuid)
+
+    try:
+        if server.username and server.password:
+            r = requests.get(server_api, auth=(server.username, server.password))
+    except:
+        print("Error")
+
+    if r.status_code == 200:
+        friend_obj = r.json()
+
+        friend = {
+            'id': friend_obj.get('id'),
+            'host': friend_obj.get('host'),
+            'displayName': friend_obj.get('displayName'),
+            'url': friend_obj.get('url')
+        }
+
+        author_obj = request.user.user
+
+        author = {
+            'id': "{}/api/author/{}".format(DOMAIN, author_obj.id),
+            'host': "{}/api/".format(author_obj.host_url),
+            'displayName': author_obj.username,
+            'url': "{}/api/author/{}".format(DOMAIN, author_obj.id)
+        }
+
+        data = {
+            'query':'friendrequest',
+            'author': author,
+            'friend': friend,
+        }
+        friend_url = server.hostname
+        if friend_url.endswith("/"):
+            friend_url = "{}friendrequest".format(friend_url)
+        else:
+            friend_url = "{}/friendrequest".format(friend_url)
+        headers = {'Content-type': 'application/json'}
+        r = requests.post(friend_url, data=json.dumps(data), headers=headers,
+                          auth=(server.username, server.password))
+
+        if r.status_code == 200:
+            print("friend request sent")
+        else:
+            print("Errors in friend request")
+
+        return HttpResponseRedirect(request.path)
+
+    print("Errors author")
+
+    return HttpResponseRedirect(request.path)
+

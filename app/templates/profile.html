@@ -36,7 +36,7 @@
             {% elif author in pending %}
                 <a href="" class="btn btn-warning">Pending</a>
             {% else %}
-                <a href="{% url 'app:add_friend' id=author.uuid %}" class="btn btn-warning">Add Friend</a>
+                <a href="{% url 'app:add_remote_friend' uuid=author.uuid %}?host={{ author.host_url }}" class="btn btn-warning">Add Friend</a>
             {% endif %}
         {% else %}
             {% if author in friends %}

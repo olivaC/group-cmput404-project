@@ -355,6 +355,7 @@ def mutual_friends_posts_view(request):
     posts = posts.order_by('-published')
     request.context['posts'] = posts
 
+
     return render(request, 'posts/mutual_friend_posts.html', request.context)
 
 
