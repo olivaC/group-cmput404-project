@@ -105,6 +105,8 @@ def profile_view(request, id=None):
 def edit_profile(request):
     user = request.user
     author = request.user.user
+    author_id = author.id
+    author_profile = "/author/{}".format(author_id)
     try:
         if request.method == 'POST':
             edit_form = EditProfileForm(request.POST)
@@ -133,7 +135,7 @@ def edit_profile(request):
                     user.username = bio_form.data.get('username')
 
                 user.save()
-                redirect('app:index')
+                return HttpResponseRedirect(author_profile)
 
     except Exception as e:
         messages.warning(request, 'Error update')
@@ -144,6 +146,7 @@ def edit_profile(request):
             'user_form': user_form,
             'author': author
             }
+
     return render(request, 'edit_profile.html', args)
 
 
