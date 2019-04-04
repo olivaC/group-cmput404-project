@@ -44,7 +44,7 @@
         {% for comment in comments %}
             {{ comment.author.username }} on {{ comment.published|timezone:"America/Edmonton" }}<br>
 
-            {{ comment.comment }}
+            {{ comment.get_comment }}
             <hr>
         {% endfor %}
     {% endif %}

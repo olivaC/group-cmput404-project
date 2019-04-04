@@ -354,3 +354,4 @@ def send_remote_friend_request(request, uuid):
     print("Errors author")
 
     return HttpResponseRedirect(reverse("app:index"))
+
