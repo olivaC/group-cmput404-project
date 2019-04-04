@@ -51,8 +51,13 @@
                     </div>
                     <div class="card-footer">
                         <span>
+                            {% if friend.remote %}
+                                <a href="{% url 'app:unfriend_remote_mutual' uuid=friend.uuid %}?host={{ friend.host_url }}"
+                                   class="btn btn-danger">Unfriend</a>
+                            {% else %}
                                 <a href="{% url 'app:unfollow_mutual' id=friend.id %}"
                                    class="btn btn-danger">Unfriend</a>
+                            {% endif %}
                         </span>
                     </div>
                 </div>
