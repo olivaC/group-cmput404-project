@@ -1,3 +1,4 @@
+import requests
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -37,15 +38,37 @@ class PublicPostView(APIView):
     pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
 
     def get(self, request):
+        remote_id = request.META.get('HTTP_X_AUTHOR_ID')
         response = dict()
         public = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
         response['query'] = 'posts'
         posts = postList(public)
         try:
             remote = Server.objects.get(user=request.user)
+            if remote.hostname.endswith("/"):
+                url = "{}author/{}".format(remote.hostname, remote_id)
+            else:
+                url = "{}/author/{}/friends/".format(remote.hostname, remote_id)
+            req = requests.get(url, auth=(remote.username, remote.password))
+            if req.status_code == 200:
+                r = req.json()
+                friends = r.get('friends')
+                for i in friends:
+                    get_id = i.get('id')
+                    raw_id = get_id.split('/')[-1]
+                    try:
+                        auth = Author.objects.get(id=raw_id)
+                        friend_posts = Post.objects.all().filter(author=auth).filter(visibility="FRIENDS")
+                        friend_posts = postList(friend_posts)
+                        posts.extend(friend_posts)
+
+                    except:
+                        print("No authors matched")
         except:
             print("Not a server user")
             posts = get_public_posts(posts)
+            # server = Server.objects.get(hostname=request.)
+
         posts = sorted(posts, key=lambda k: k['published'], reverse=True)
         page = self.paginate_queryset(posts)
         if page is not None:
@@ -147,10 +170,36 @@ class AuthorVisiblePostView(APIView):
     def get(self, request):
         remote_id = request.META.get('HTTP_X_AUTHOR_ID')
         if remote_id:
-            server = Server.objects.get(user=request.user)
-            if server:
-                # TODO: Filter more posts based on friends
+            post_list = list()
+            remote = Server.objects.get(user=request.user)
+            if remote:
                 posts = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
+                post_list.extend(posts)
+                if remote.hostname.endswith("/"):
+                    url = "{}author/{}".format(remote.hostname, remote_id)
+                else:
+                    url = "{}/author/{}/friends/".format(remote.hostname, remote_id)
+                req = requests.get(url, auth=(remote.username, remote.password))
+                if req.status_code == 200:
+                    r = req.json()
+                    friends = r.get('friends')
+                    for i in friends:
+                        get_id = i.get('id')
+                        raw_id = get_id.split('/')[-1]
+                        try:
+                            auth = Author.objects.get(id=raw_id)
+                            friend_posts = Post.objects.all().filter(author=auth).filter(
+                                visibility="FRIENDS") | Post.objects.all().filter(author=auth).filter(
+                                visibility="PUBLIC")
+                            post_list.extend(friend_posts)
+
+                        except:
+                            print("No authors matched")
+                    response = dict()
+                    response['query'] = 'posts'
+                    response['count'] = len(post_list)
+                    response['posts'] = postList(post_list)
+                    return Response(response, status=200)
         else:
             user = request.user
             posts = Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
@@ -414,3 +463,59 @@ class SinglePostView(APIView):
                         response['success'] = False
                         response['message'] = 'Post failed to put'
                         return Response(response, status=500)
+
+
+class AuthorMutualPostView(APIView):
+    """
+    /author-mutual/posts
+
+    For currently authenticated user
+    """
+
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        remote_id = request.META.get('HTTP_X_AUTHOR_ID')
+        if remote_id:
+            post_list = list()
+            remote = Server.objects.get(user=request.user)
+            if remote:
+                if remote.hostname.endswith("/"):
+                    url = "{}author/{}".format(remote.hostname, remote_id)
+                else:
+                    url = "{}/author/{}/friends/".format(remote.hostname, remote_id)
+                req = requests.get(url, auth=(remote.username, remote.password))
+                if req.status_code == 200:
+                    r = req.json()
+                    friends = r.get('friends')
+                    for i in friends:
+                        get_id = i.get('id')
+                        raw_id = get_id.split('/')[-1]
+                        try:
+                            auth = Author.objects.get(id=raw_id)
+                            friend_posts = Post.objects.all().filter(author=auth).filter(
+                                visibility="FRIENDS") | Post.objects.all().filter(author=auth).filter(
+                                visibility="PUBLIC")
+                            post_list.extend(friend_posts)
+
+                        except:
+                            print("No authors matched")
+                    response = dict()
+                    response['query'] = 'posts'
+                    response['count'] = len(post_list)
+                    response['posts'] = postList(post_list)
+                    return Response(response, status=200)
+        else:
+            user = request.user
+            posts = Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
+                visibility="FRIENDS") | Post.objects.all().filter(
+                author__id__in=request.user.user.friends.all()).filter(
+                visibility="SERVERONLY") | Post.objects.all().filter(author=user.user) | Post.objects.all().filter(
+                visibility="PUBLIC")
+            posts = posts.order_by('-published')
+        response = dict()
+        response['query'] = 'posts'
+        response['count'] = len(posts)
+        response['posts'] = postList(posts)
+        return Response(response, status=200)
