@@ -60,7 +60,8 @@ def index(request):
         server_api = "{}posts".format(host)
         try:
             if server.username and server.password:
-                r = requests.get(server_api, auth=(server.username, server.password))
+                headers = {'X-AUTHOR-ID': str(request.user.user.id)}
+                r = requests.get(server_api, auth=(server.username, server.password), headers=headers)
                 p = create_posts(r.json())
                 public_posts.extend(p)
         except:

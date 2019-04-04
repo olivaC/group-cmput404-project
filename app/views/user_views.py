@@ -235,8 +235,7 @@ def profile_remote_view(request):
             # friends = request.user.user.friends.all()
 
         except:
-            print('error remote user')
-            return HttpResponseRedirect('index.html')
+            request.context['friends'] = False
 
     request.context['author'] = a
 

@@ -30,7 +30,7 @@
         {% endif %}
 
         {% if author.remote %}
-            {% if author.friends %}
+            {% if friends %}
                 <a href="{% url 'app:unfriend_remote_mutual' uuid=author.uuid %}?host={{ author.host_url }}"
                                    class="btn btn-danger">Unfriend</a>
 {#            {% elif author in pending %}#}
