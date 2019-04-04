@@ -167,7 +167,26 @@ def create_image_view(request):
 @login_required
 @user_passes_test(api_check)
 def public_post_view(request):
-    posts = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
+    local_posts = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
+
+    servers = Server.objects.all()
+    public_posts = list()
+
+    for server in servers:
+        host = server.hostname
+        if not server.hostname.endswith("/"):
+            host = server.hostname + "/"
+        server_api = "{}posts".format(host)
+        try:
+            if server.username and server.password:
+                r = requests.get(server_api, auth=(server.username, server.password))
+            p = create_posts(r.json())
+            public_posts.extend(p)
+        except:
+            print("error")
+
+    posts = public_posts + list(local_posts)
+    posts.sort(key=lambda post: post.published, reverse=True)
 
     request.context['posts'] = posts
 
