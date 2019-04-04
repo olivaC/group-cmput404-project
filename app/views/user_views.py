@@ -301,9 +301,9 @@ def send_remote_friend_request(request, uuid):
         else:
             print("Errors in friend request")
 
-        return HttpResponseRedirect(request.path)
+        return HttpResponseRedirect(reverse("app:index"))
 
     print("Errors author")
 
-    return HttpResponseRedirect(request.path)
+    return HttpResponseRedirect(reverse("app:index"))
 
