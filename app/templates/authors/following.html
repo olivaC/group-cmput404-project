@@ -2,47 +2,55 @@
 
 
 {% block page_title %}
-    401 Group | All Following
+    404 Group | Friend Requests
 {% endblock %}
 
 {% block content %}
-    <h1 class="h3 mb-4 text-gray-800">Following</h1>
+    <h1 class="h3 mb-4 text-gray-800">Friend Requests</h1>
     <div>
-        {% if following %}
-            {% for follower in following %}
+        {% if requests %}
+            {% for follower in requests %}
                 <div class="card shadow mb-4">
                     <!-- Card Header - Accordion -->
                     <div class="d-block card-header py-3">
                         <div class="inline-group">
-                            {% if follower.friend.image %}
+                            {% if follower.author.image %}
                                 <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50"
                                      height="50"
-                                     src="{{ follower.friend.image.url }}">
+                                     src="{{ follower.author.image.url }}">
                             {% else %}
                                 <img class="img-circle" style="border-radius: 50%; object-fit: cover;" width="50"
                                      height="50"
                                      src="https://www.betwext.com/wp-content/uploads/2018/09/blank-profile-picture-973460_640.png"/>
                             {% endif %}
 
-                            <a href="/author/{{ follower.friend.id }}" class="ml-2 font-weight-bold text-primary">
-                                {{ follower.friend.username }}
+                            <a href="/author/{{ follower.author.id }}" class="ml-2 font-weight-bold text-primary">
+                                {{ follower.author.username }}
                             </a>
                             <div style="margin-left: 4em;">
-                                <h6 style="text-transform: uppercase">{{ follower.friend.user.first_name }} {{ follower.friend.user.last_name }}</h6>
-                                <h6>URL {{ follower.friend.host_url }}</h6>
+                                <h6 style="text-transform: uppercase">{{ follower.author.user.first_name }} {{ follower.author.user.last_name }}</h6>
+                                <h6>URL {{ follower.author.host_url }}</h6>
                             </div>
                         </div>
                     </div>
                     <div class="card-footer">
+                        {% if follower.remote %}
+                            <a href="{% url 'app:accept_remote_friend' %}?id={{ follower.author_id }}"
+                               class="btn btn-warning">Accept Friend</a>
+                        {% else %}
                         <span>
-                                <a href="{% url 'app:unfollow' id=follower.friend.id %}"
-                                   class="btn btn-danger">Unfollow</a>
+                            <a href="{% url 'app:accept_friend' id=follower.author.id %}"
+                               class="btn btn-warning">Accept Friend</a>
+                            <a href="{% url 'app:cancel_friend' id=follower.author.id %}"
+                             class="btn btn-warning">Cancel Friend</a>
                         </span>
+                        {% endif %}
+
                     </div>
                 </div>
             {% endfor %}
         {% else %}
-            <h2>You currently aren't following anybody.</h2>
+            <h5>You currently have no friend request.</h5>
         {% endif %}
     </div>
 {% endblock %}

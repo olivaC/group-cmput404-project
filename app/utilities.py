@@ -1,3 +1,4 @@
+import mimetypes
 import urllib.parse
 from datetime import datetime
 
@@ -24,6 +25,7 @@ def unquote_redirect_url(url):
     return url
 
 
+
 def api_check(user):
     if 'frandzone' in user.username or 'testApi' in user.username:
         return False
@@ -42,6 +44,10 @@ def image_post_to_html(post):
         post.content = image_content_to_html(post.content)
 
 
+def image_content_to_html(content):
+    return mark_safe("<img src=\"" + content + "\" />")
+
+
 def get_image_type(fileName):
     if fileName.endswith(".jpg"):
         return "image/jpeg"
@@ -58,6 +64,7 @@ def get_image_from_base64(base64String):
     return base64.b64decode(base64String)
 
 
+
 def create_author(author):
     i = Author()
     if not author.get('displayName'):
@@ -66,6 +73,7 @@ def create_author(author):
         i.username = author.get('displayName')
     i.host_url = author.get('host')
     i.id = author.get('id')
+    i.uuid = i.id.split("/")[-1]
     i.url = author.get('url')
     if author.get('firstName'):
         i.first_name = author.get('firstName')
@@ -96,6 +104,7 @@ def create_posts(posts):
 
 
 def create_post(i):
+    i = i.get('posts')[0]
     post = Post()
     post.id = i.get('id')
     post.author = create_author(i.get('author'))
@@ -114,6 +123,7 @@ def create_post(i):
 
 def create_comments(post):
     comment_list = list()
+    post = post.get('posts')[0]
     for c in post.get('comments'):
         comment = Comment()
         comment.author = create_author(c.get('author'))

@@ -2,7 +2,7 @@
 
 
 {% block page_title %}
-    401 Group 10 | Author
+    404 Group 10 | Author
 {% endblock %}
 
 {% block content %}
@@ -37,7 +37,14 @@
                 <!-- Card Content - Collapse -->
                 <div class="card-footer">
                         <span>
-                                <a href="{% url 'app:follow' id=author.id %}" class="btn btn-warning">Follow</a>
+                            {% if author in friends %}
+                                <a href="{% url 'app:unfollow_mutual' id=author.id %}" class="btn btn-danger">Unfriend</a>
+                            {% elif author in pending %}
+                                <a href="" class="btn btn-warning">Pending</a>
+                            {% else %}
+                                <a href="{% url 'app:add_friend' id=author.id %}" class="btn btn-warning">Add Friend</a>
+                            {% endif %}
+
                         </span>
                 </div>
             </div>
