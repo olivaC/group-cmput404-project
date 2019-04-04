@@ -222,18 +222,25 @@ def profile_remote_view(request):
         a.remote = "remote"
 
         try:
-            f_request = FriendRequest.objects.all().filter(author=a).values('friend')
-            pending = Author.objects.all().filter(id__in=f_request)
+            friend = RemoteFriend.objects.get(friend=url, author=request.user.user)
+            if friend:
+                request.context['friends'] = True
+            else:
+                request.context['friends'] = False
+            #f_request = FriendRequest.objects.all().filter(author=a).values('friend')
+            # pending = Author.objects.all().filter(id__in=f_request)
+            #
+            # request.context['pending'] = pending
 
-            request.context['pending'] = pending
+            # friends = request.user.user.friends.all()
 
-            friends = request.user.user.friends.all()
-            request.context['friends'] = friends
         except:
             print('error remote user')
             return HttpResponseRedirect('index.html')
 
     request.context['author'] = a
+
+
 
     return render(request, 'profile.html', request.context)
 

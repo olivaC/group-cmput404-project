@@ -140,7 +140,8 @@ def edit_profile(request):
     user_form = EditProfileForm(initial=model_to_dict(user))
     form = EditBio(initial=model_to_dict(author))
     args = {'bio_form': form,
-            'user_form': user_form
+            'user_form': user_form,
+            'author': author
             }
     return render(request, 'edit_profile.html', args)
 
