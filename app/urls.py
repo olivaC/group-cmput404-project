@@ -59,6 +59,7 @@ urlpatterns = [
 
     path('remote-friend-request/accept/',user_views.accept_remote_friend_request, name='accept_remote_friend'),
     path('remote-friend-request/send/<str:uuid>',user_views.send_remote_friend_request, name='add_remote_friend'),
+    path('unfollow-remote-mutual/<str:uuid>', user_views.unfriend_remote_mutual_view, name="unfriend_remote_mutual"),
 
     path('friendrequest', api_views.friendrequest, name="friendrequest"),
 

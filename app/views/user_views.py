@@ -89,6 +89,26 @@ def unfollow_mutual_view(request, id):
 
 @login_required
 @user_passes_test(api_check)
+def unfriend_remote_mutual_view(request, uuid):
+    host = request.GET.get('host', '')
+    server = Server.objects.get(hostname=host)
+
+    server_api = server.hostname
+
+    if server_api.endswith("/"):
+        server_api = "{}author/{}".format(server.hostname, uuid)
+    else:
+        server_api = "{}/author/{}".format(server.hostname, uuid)
+
+    current_author = request.user.user
+    f_request = RemoteFriend.objects.filter(friend=server_api, author=current_author).first()
+    f_request.delete()
+
+    return HttpResponseRedirect(reverse("app:mutual_friends"))
+
+
+@login_required
+@user_passes_test(api_check)
 def new_followers_view(request):
     current_author = request.user.user
     followers_new = FollowRequest.objects.all().filter(friend=current_author).filter(acknowledged=False)
@@ -153,11 +173,32 @@ def all_requests_view(request):
 
 @login_required
 def mutual_friends_view(request):
+    all_friends = list()
     friends = request.user.user.friends.all()
     posts = Post.objects.all().filter(author__id__in=friends).filter(visibility="FRIENDS") | Post.objects.all().filter(
         author__id__in=friends).filter(visibility="SERVERONLY") | Post.objects.all().filter(
         author__id__in=friends).filter(visibility="PUBLIC")
-    request.context['friends'] = friends
+
+    all_friends.extend(friends)
+    current_author = request.user.user
+    remote_friends = RemoteFriend.objects.all().filter(author=current_author)
+
+    if remote_friends:
+        for remote in remote_friends:
+            try:
+                auth_url = remote.friend
+                r = requests.get(auth_url, auth=(remote.server.username, remote.server.password))
+                if r.status_code != 200:
+                    continue
+                else:
+                    author = create_author(r.json())
+                    author.remote = "remote"
+                    all_friends.append(author)
+
+            except Exception as e:
+                print(e)
+
+    request.context['friends'] = all_friends
     request.context['posts'] = posts
     return render(request, 'authors/mutual_friends.html', request.context)
 
@@ -181,18 +222,25 @@ def profile_remote_view(request):
         a.remote = "remote"
 
         try:
-            f_request = FriendRequest.objects.all().filter(author=a).values('friend')
-            pending = Author.objects.all().filter(id__in=f_request)
+            friend = RemoteFriend.objects.get(friend=url, author=request.user.user)
+            if friend:
+                request.context['friends'] = True
+            else:
+                request.context['friends'] = False
+            #f_request = FriendRequest.objects.all().filter(author=a).values('friend')
+            # pending = Author.objects.all().filter(id__in=f_request)
+            #
+            # request.context['pending'] = pending
 
-            request.context['pending'] = pending
+            # friends = request.user.user.friends.all()
 
-            friends = request.user.user.friends.all()
-            request.context['friends'] = friends
         except:
             print('error remote user')
             return HttpResponseRedirect('index.html')
 
     request.context['author'] = a
+
+
 
     return render(request, 'profile.html', request.context)
 
@@ -283,7 +331,7 @@ def send_remote_friend_request(request, uuid):
         }
 
         data = {
-            'query':'friendrequest',
+            'query': 'friendrequest',
             'author': author,
             'friend': friend,
         }

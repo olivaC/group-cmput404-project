@@ -2,7 +2,7 @@
 
 
 {% block page_title %}
-    401 Group | Profile
+    404 Group | Profile
 {% endblock %}
 
 {% block content %}
@@ -30,11 +30,11 @@
         {% endif %}
 
         {% if author.remote %}
-            {% if author in friends %}#}
-                <a href="{% url 'app:unfollow_mutual' id=author.uuid %}"
-                   class="btn btn-danger">Unfriend</a>
-            {% elif author in pending %}
-                <a href="" class="btn btn-warning">Pending</a>
+            {% if author.friends %}
+                <a href="{% url 'app:unfriend_remote_mutual' uuid=author.uuid %}?host={{ author.host_url }}"
+                                   class="btn btn-danger">Unfriend</a>
+{#            {% elif author in pending %}#}
+{#                <a href="" class="btn btn-warning">Pending</a>#}
             {% else %}
                 <a href="{% url 'app:add_remote_friend' uuid=author.uuid %}?host={{ author.host_url }}" class="btn btn-warning">Add Friend</a>
             {% endif %}
