@@ -23,10 +23,17 @@
                                  src="https://www.betwext.com/wp-content/uploads/2018/09/blank-profile-picture-973460_640.png"/>
                         {% endif %}
 
+                        {% if post.remote %}
+                            <a href="{% url "app:author_remote" %}?host={{ post.author.url }}"
+                               class="ml-2 font-weight-bold text-primary">
+                                {{ post.author.username }}
+                            </a>
+                        {% else %}
+                            <a href="/author/{{ post.author.id }}" class="ml-2 font-weight-bold text-primary">
+                                {{ post.author.username }}
+                            </a>
 
-                        <a href="/author/{{ post.author.id }}" class="ml-2 font-weight-bold text-primary">
-                            {{ post.author.username }}
-                        </a>
+                        {% endif %}
 
                     </div>
                 </div>
