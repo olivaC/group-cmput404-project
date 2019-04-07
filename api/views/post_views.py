@@ -80,6 +80,8 @@ class PublicPostView(APIView):
                         print("No authors matched")
         except:
             print("Not a server user")
+            public = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
+            posts = postList(public)
             posts = get_public_posts(posts)
             # server = Server.objects.get(hostname=request.)
 
