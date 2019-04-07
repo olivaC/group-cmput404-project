@@ -40,11 +40,22 @@ class PublicPostView(APIView):
     def get(self, request):
         remote_id = request.META.get('HTTP_X_AUTHOR_ID')
         response = dict()
-        public = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
         response['query'] = 'posts'
-        posts = postList(public)
         try:
             remote = Server.objects.get(user=request.user)
+            public = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
+
+            if remote.no_posts:
+                response['posts'] = []
+                response['success'] = True
+                response['message'] = 'Server admin restricted posts.'
+                return Response(response, status=403)
+
+            if remote.no_images:
+                public = public.exclude(contentType="image/png;base64").exclude(contentType='image/jpeg;base64')
+
+            posts = postList(public)
+
             if remote.hostname.endswith("/"):
                 url = "{}author/{}".format(remote.hostname, remote_id)
             else:
@@ -59,6 +70,9 @@ class PublicPostView(APIView):
                     try:
                         auth = Author.objects.get(id=raw_id)
                         friend_posts = Post.objects.all().filter(author=auth).filter(visibility="FRIENDS")
+                        if remote.no_images:
+                            friend_posts = friend_posts.exclude(contentType="image/png;base64").exclude(
+                                contentType='image/jpeg;base64')
                         friend_posts = postList(friend_posts)
                         posts.extend(friend_posts)
 
@@ -66,6 +80,8 @@ class PublicPostView(APIView):
                         print("No authors matched")
         except:
             print("Not a server user")
+            public = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
+            posts = postList(public)
             posts = get_public_posts(posts)
             # server = Server.objects.get(hostname=request.)
 
@@ -191,6 +207,10 @@ class AuthorVisiblePostView(APIView):
                             friend_posts = Post.objects.all().filter(author=auth).filter(
                                 visibility="FRIENDS") | Post.objects.all().filter(author=auth).filter(
                                 visibility="PUBLIC")
+                            if remote.no_images:
+                                friend_posts = friend_posts.exclude(contentType="image/png;base64").exclude(
+                                    contentType='image/jpeg;base64')
+
                             post_list.extend(friend_posts)
 
                         except:
@@ -229,9 +249,18 @@ class AuthorPostView(APIView):
         author = get_object_or_404(Author, id=id)
         try:
             server = Server.objects.get(user=request.user)
+            response = dict()
+
             if server:
-                response = dict()
+                if server.no_posts:
+                    response['posts'] = []
+                    response['success'] = True
+                    response['message'] = 'Server admin restricted posts.'
+                    return Response(response, status=403)
                 posts = Post.objects.all().filter(author=author).filter(visibility="PUBLIC")
+                if server.no_images:
+                    posts = posts.exclude(contentType="image/png;base64").exclude(
+                        contentType='image/jpeg;base64')
                 post_list = postList(posts)
                 response['posts'] = post_list
                 response['count'] = len(post_list)
@@ -242,17 +271,6 @@ class AuthorPostView(APIView):
 
             response = dict()
             friends = current.friends.all()
-
-            # posts = Post.objects.all().filter(author=author).filter(
-            #             visibility="FRIENDS") | Post.objects.all().filter(author=author).filter(
-            #             visibility="PUBLIC") | Post.objects.all().filter(author=author).filter(
-            #             visibility="FOAF") | Post.objects.all().filter(author=author).filter(
-            #             visibility="SERVERONLY")
-            #
-            # posts = posts.order_by('-published')
-            # response['query'] = 'posts'
-            # response['posts'] = postList(posts)
-            # return Response(response, status=200)
 
             if author in friends:
                 posts = Post.objects.all().filter(author=author).filter(
@@ -324,64 +342,6 @@ class SinglePostView(APIView):
             response['success'] = False
             response['message'] = 'Cannot find post'
             return Response(response, status=404)
-
-        # try:
-        #     server = Server.objects.get(user=request.user)
-        #     if server:
-        #         response = dict()
-        #         try:
-        #             post = Post.objects.get(id=id)
-        #             response['posts'] = postCreate(post)
-        #             response['query'] = 'posts'
-        #             response['success'] = True
-        #             return Response(response, status=200)
-        #         except:
-        #             post = getRemotePost(id)
-        #             if post:
-        #                 response['posts'] = [post]
-        #                 response['query'] = 'posts'
-        #                 response['success'] = True
-        #                 return Response(response, status=200)
-        #             else:
-        #                 response['posts'] = []
-        #                 response['success'] = False
-        #                 response['query'] = 'posts'
-        #                 response['message'] = 'Cannot find post'
-        #                 return Response(response, status=404)
-        # except:
-        #     try:
-        #         authenticated_author = request.user.user
-        #         response = dict()
-        #         response['query'] = 'posts'
-        #
-        #         post = Post.objects.all().filter(id=id).first()
-        #
-        #         if not post:
-        #             return Response(response, status=404)
-        #
-        #         author = post.author
-        #         friends = author.friends.all()
-        #
-        #         if authenticated_author in friends:
-        #             response['posts'] = postCreate(post)
-        #             response['success'] = True
-        #             return Response(response, status=200)
-        #         elif post.visibility == "PUBLIC":
-        #             response['success'] = True
-        #             response['posts'] = postCreate(post)
-        #             return Response(response, status=200)
-        #         elif post.author == authenticated_author:
-        #             response['posts'] = postCreate(post)
-        #             response['success'] = True
-        #             return Response(response, status=200)
-        #         else:
-        #             response['Error'] = 'Not authorized to see this post'
-        #             return Response(response, status=403)
-        #     except:
-        #         response = dict()
-        #         response['query'] = 'posts'
-        #         response['Error'] = 'Not authorized to see this post'
-        #         return Response(response, status=403)
 
     def put(self, request, id):
 
