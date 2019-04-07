@@ -41,6 +41,8 @@
                         {% if follower.remote %}
                             <a href="{% url 'app:accept_remote_friend' %}?id={{ follower.author_id }}"
                                class="btn btn-success">Accept Friend</a>
+                            <a href="{% url 'app:cancel_remote_friend' %}?id={{ follower.author_id }}"
+                               class="btn btn-danger">Cancel Friend</a>
                         {% else %}
                             <span>
                             <a href="{% url 'app:accept_friend' id=follower.author.id %}"

@@ -227,7 +227,7 @@ def profile_remote_view(request):
                 request.context['friends'] = True
             else:
                 request.context['friends'] = False
-            #f_request = FriendRequest.objects.all().filter(author=a).values('friend')
+            # f_request = FriendRequest.objects.all().filter(author=a).values('friend')
             # pending = Author.objects.all().filter(id__in=f_request)
             #
             # request.context['pending'] = pending
@@ -238,8 +238,6 @@ def profile_remote_view(request):
             request.context['friends'] = False
 
     request.context['author'] = a
-
-
 
     return render(request, 'profile.html', request.context)
 
@@ -291,6 +289,21 @@ def accept_remote_friend_request(request):
         f_request.delete()
 
     return HttpResponseRedirect(reverse("app:mutual_friends"))
+
+
+def cancel_remote_friend_request(request):
+    url = request.GET.get('id', '')
+    url_parse = urlparse(url)
+    req = "{}://{}".format(url_parse.scheme, url_parse.netloc)
+    server = Server.objects.get(hostname__contains=req)
+
+    current_author = request.user.user
+    f_request = RemoteFriendRequest.objects.filter(friend=current_author, author=url).first()
+
+    if f_request:
+        f_request.delete()
+
+    return HttpResponseRedirect(reverse("app:all_authors"))
 
 
 def send_remote_friend_request(request, uuid):
@@ -353,4 +366,3 @@ def send_remote_friend_request(request, uuid):
     print("Errors author")
 
     return HttpResponseRedirect(reverse("app:index"))
-
