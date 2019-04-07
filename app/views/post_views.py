@@ -114,6 +114,7 @@ def create_post_view(request):
                                                description=form.cleaned_data.get('description'),
                                                title=form.cleaned_data.get('title'),
                                                visibility=form.cleaned_data.get('visibility'),
+                                               visibleTo=form.cleaned_data.get('visibleTo'),
                                                unlisted=form.cleaned_data.get('unlisted'),
                                                contentType=form.cleaned_data.get('contentType'))
                     if "base64" in post.contentType:

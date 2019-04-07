@@ -4,6 +4,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
 from settings_server import *
 from django.forms import ModelForm
 from django.utils.html import mark_safe
@@ -92,6 +93,7 @@ class Post(models.Model):
     title = models.CharField(max_length=100, blank=True, null=True)
     description = models.CharField(max_length=50, blank=True, null=True)  # brief description
     visibility = models.CharField(max_length=100, choices=POST_PRIVACY, default='Private')
+    visibleTo = models.ManyToManyField(Author, blank=True, related_name='visibleTo')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
     content = models.TextField(default="")
     contentType = models.CharField(max_length=100, choices=POST_CONTENT_TYPE, default='Plain Text')
