@@ -42,7 +42,7 @@
                             {% elif author in pending %}
                                 <a href="" class="btn btn-warning">Pending</a>
                             {% else %}
-                                <a href="{% url 'app:add_friend' id=author.id %}" class="btn btn-warning">Add Friend</a>
+                                <a href="{% url 'app:add_friend' id=author.id %}" class="btn btn-primary">Add Friend</a>
                             {% endif %}
 
                         </span>
