@@ -85,6 +85,11 @@ def edit_post(request, id=None):
             post.content = form.cleaned_data.get('content')
             post.unlisted = form.cleaned_data.get('unlisted')
             post.contentType = form.cleaned_data.get('contentType')
+
+            visible_to = form.cleaned_data.get('visibleTo')
+            authors = Author.objects.filter(id__in=visible_to)
+            post.visibleTo.set(authors)
+
             post.save()
             return HttpResponseRedirect(reverse('app:my_posts'))
 
@@ -110,13 +115,19 @@ def create_post_view(request):
         try:
             if form.is_valid():
                 if form.cleaned_data.get('content'):
+                    visible_to = form.cleaned_data.get('visibleTo')
+                    authors = Author.objects.filter(id__in=visible_to)
+
                     post = Post.objects.create(author=user.user, content=form.cleaned_data.get('content'),
                                                description=form.cleaned_data.get('description'),
                                                title=form.cleaned_data.get('title'),
                                                visibility=form.cleaned_data.get('visibility'),
-                                               visibleTo=form.cleaned_data.get('visibleTo'),
                                                unlisted=form.cleaned_data.get('unlisted'),
                                                contentType=form.cleaned_data.get('contentType'))
+
+                    for author in authors:
+                        post.visibleTo.add(author)
+
                     if "base64" in post.contentType:
                         post.title = post.id
                         post.save()
@@ -125,7 +136,8 @@ def create_post_view(request):
             messages.warning(request, 'Cannot post something empty!')
 
 
-        except:
+        except Exception as e:
+            print(e)
             request.context['next'] = request.GET.get('next', reverse("app:index"))
 
     form = PostCreateForm()
