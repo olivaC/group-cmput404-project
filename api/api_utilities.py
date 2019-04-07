@@ -116,11 +116,18 @@ def addFriends(author):
 def postList(posts):
     post_list = list()
     for post in posts:
+        visible_to = list()
+        visible = post.visibleTo.all()
+        if visible:
+            for author in visible:
+                auth = "{}/api/author/{}".format(DOMAIN, author.id)
+                visible_to.append(auth)
+
         comments = commentList(post)
         comment_url = "{}/api/posts/{}/comments".format(DOMAIN, post.id)
         post_dict = {'author': addAuthor(post.author), 'title': post.title, 'description': post.description,
                      'contentType': post.contentType, 'content': post.content, 'published': post.published,
-                     'visibility': post.visibility, 'unlisted': post.unlisted, 'id': post.id,
+                     'visibility': post.visibility, 'visibleTo': visible_to, 'unlisted': post.unlisted, 'id': post.id,
                      'comments': comments[:5], 'next': comment_url, 'count': len(comments),
                      'origin': "{}/api/posts/{}".format(DOMAIN, post.id),
                      'source': "{}/api/posts/{}".format(DOMAIN, post.id)}
@@ -214,7 +221,7 @@ def postCreate(post):
             auth = "{}/api/author/{}".format(DOMAIN, author.id)
             visible_to.append(auth)
 
-    #visible_to = list(post.visibleTo)
+    # visible_to = list(post.visibleTo)
     post_dict = {'author': addAuthor(post.author), 'title': post.title, 'description': post.description,
                  'contentType': post.contentType, 'content': post.content, 'published': post.published,
                  'visibility': post.visibility, 'visibleTo': visible_to, 'unlisted': post.unlisted, 'id': post.id,
