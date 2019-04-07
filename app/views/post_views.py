@@ -167,7 +167,26 @@ def create_image_view(request):
 @login_required
 @user_passes_test(api_check)
 def public_post_view(request):
-    posts = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
+    local_posts = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
+
+    servers = Server.objects.all()
+    public_posts = list()
+
+    for server in servers:
+        host = server.hostname
+        if not server.hostname.endswith("/"):
+            host = server.hostname + "/"
+        server_api = "{}posts".format(host)
+        try:
+            if server.username and server.password:
+                r = requests.get(server_api, auth=(server.username, server.password))
+                p = create_posts(r.json())
+                public_posts.extend(p)
+        except:
+            print("error")
+
+    posts = public_posts + list(local_posts)
+    posts.sort(key=lambda post: post.published, reverse=True)
 
     request.context['posts'] = posts
 
@@ -352,7 +371,30 @@ def mutual_friends_posts_view(request):
         visibility="FOAF") | Post.objects.all().filter(author__id__in=request.user.user.friends.all()).filter(
         visibility="PUBLIC")
 
-    posts = posts.order_by('-published')
+    current_author = request.user.user
+    remote_friends = RemoteFriend.objects.all().filter(author=current_author)
+    print(remote_friends)
+    all_posts = list()
+    all_posts.extend(posts)
+    if remote_friends:
+        for remote in remote_friends:
+            try:
+                if remote.server.hostname.endswith("/"):
+                    url = "{}author-mutual/posts".format(remote.server.hostname, )
+                else:
+                    url = "{}/author-mutual/posts".format(remote.server.hostname)
+
+                headers = {'X-AUTHOR-ID': str(request.user.user.id)}
+                r = requests.get(url, auth=(remote.server.username, remote.server.password), headers=headers)
+                if r.status_code != 200:
+                    continue
+                else:
+                    p = create_posts(r.json())
+                    all_posts.extend(p)
+
+            except Exception as e:
+                print(e)
+    posts = sorted(all_posts, key=lambda k: k.published, reverse=True)
     request.context['posts'] = posts
 
     return render(request, 'posts/mutual_friend_posts.html', request.context)

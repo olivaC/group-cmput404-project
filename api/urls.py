@@ -24,6 +24,7 @@ urlpatterns = [
     # Posts
     path('posts', api.views.post_views.PublicPostView.as_view(), name='public'),
     path('author/posts', api.views.post_views.AuthorVisiblePostView.as_view(), name='author_visible'),
+    path('author-mutual/posts', api.views.post_views.AuthorMutualPostView.as_view(), name='author_mutual_visible'),
     path('author/<uuid:id>/posts', api.views.post_views.AuthorPostView.as_view(), name='author_posts'),
     path('posts/<uuid:id>', api.views.post_views.SinglePostView.as_view(), name='single_post'),
 

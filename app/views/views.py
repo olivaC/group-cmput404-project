@@ -60,9 +60,10 @@ def index(request):
         server_api = "{}posts".format(host)
         try:
             if server.username and server.password:
-                r = requests.get(server_api, auth=(server.username, server.password))
-            p = create_posts(r.json())
-            public_posts.extend(p)
+                headers = {'X-AUTHOR-ID': str(request.user.user.id)}
+                r = requests.get(server_api, auth=(server.username, server.password), headers=headers)
+                p = create_posts(r.json())
+                public_posts.extend(p)
         except:
             print("error")
 
@@ -81,9 +82,11 @@ def index(request):
 def profile_view(request, id=None):
     author = get_object_or_404(Author, id=id)
     request.context['author'] = author
+    current_user = get_object_or_404(Author, username=request.user)
+    request.context['self'] = current_user
 
     try:
-        f_request = FriendRequest.objects.all().filter(author=author).values('friend')
+        f_request = FriendRequest.objects.all().filter(author=current_user).values('friend')
         pending = Author.objects.all().filter(id__in=f_request)
 
         request.context['pending'] = pending
@@ -102,6 +105,8 @@ def profile_view(request, id=None):
 def edit_profile(request):
     user = request.user
     author = request.user.user
+    author_id = author.id
+    author_profile = "/author/{}".format(author_id)
     try:
         if request.method == 'POST':
             edit_form = EditProfileForm(request.POST)
@@ -130,7 +135,7 @@ def edit_profile(request):
                     user.username = bio_form.data.get('username')
 
                 user.save()
-                redirect('app:index')
+                return HttpResponseRedirect(author_profile)
 
     except Exception as e:
         messages.warning(request, 'Error update')
@@ -138,8 +143,10 @@ def edit_profile(request):
     user_form = EditProfileForm(initial=model_to_dict(user))
     form = EditBio(initial=model_to_dict(author))
     args = {'bio_form': form,
-            'user_form': user_form
+            'user_form': user_form,
+            'author': author
             }
+
     return render(request, 'edit_profile.html', args)
 
 
