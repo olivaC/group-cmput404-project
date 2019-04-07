@@ -24,9 +24,8 @@
                         {% endif %}
 
                         {% if post.remote %}
-                            <a href="{% url "app:author_remote" %}?host={{ post.author.url }}"
-                               class="ml-2 font-weight-bold text-primary">
-                                {{ post.author.username }}
+                            <a href="{% url "app:author_remote" %}?host={{ post.author.url }}" class="ml-2 font-weight-bold text-primary">
+                                {{ post.author.username }} | {{ post.author.host_url }}
                             </a>
                         {% else %}
                             <a href="/author/{{ post.author.id }}" class="ml-2 font-weight-bold text-primary">
