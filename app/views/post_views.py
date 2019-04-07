@@ -413,6 +413,33 @@ def mutual_friends_posts_view(request):
     return render(request, 'posts/mutual_friend_posts.html', request.context)
 
 
+@login_required
+@user_passes_test(api_check)
+def private_friends_posts_view(request):
+    private_posts = Post.objects.all().filter(visibleTo=request.user.user).order_by('-published')
+
+    # for server in servers:
+    #     host = server.hostname
+    #     if not server.hostname.endswith("/"):
+    #         host = server.hostname + "/"
+    #     server_api = "{}posts".format(host)
+    #     try:
+    #         if server.username and server.password:
+    #             r = requests.get(server_api, auth=(server.username, server.password))
+    #             p = create_posts(r.json())
+    #             public_posts.extend(p)
+    #     except:
+    #         print("error")
+    #
+    # posts = public_posts + list(local_posts)
+    posts = list(private_posts)
+    posts.sort(key=lambda post: post.published, reverse=True)
+
+    request.context['posts'] = posts
+
+    return render(request, 'posts/private_posts.html', request.context)
+
+
 def unlisted_post_view(request, id=None):
     post = get_object_or_404(Post, id=id)
 
