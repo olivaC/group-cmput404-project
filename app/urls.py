@@ -31,6 +31,7 @@ urlpatterns = [
     path('create-post', app.views.post_views.create_post_view, name='create_post'),
     path('delete/<uuid:id>/', app.views.post_views.delete_post, name="delete"),
     path('author/<uuid:id>', views.profile_view, name="profile"),
+    path('profile', views.my_profile_view, name="my_profile"),
     path('profile/edit/', views.edit_profile, name="edit_profile"),
     path('post/edit/<uuid:id>/', post_views.edit_post, name="edit_post"),
     path('authors', user_views.all_author_view, name="all_authors"),
