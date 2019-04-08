@@ -193,7 +193,7 @@ class RemoteFriendRequest(models.Model):
 
 
 class RemoteFriend(models.Model):
-    author = models.URLField(blank=True, null=True)  # id
+    author = models.ForeignKey(Author, related_name="author_re", on_delete=models.CASCADE, null=True)
     host = models.URLField(blank=True, null=True)  # host
     displayName = models.CharField(max_length=50, unique=True, blank=True, null=True)  # display name
     url = models.URLField(blank=True, null=True)
@@ -202,7 +202,7 @@ class RemoteFriend(models.Model):
 
 
 class PendingRemoteFriend(models.Model):
-    author = models.URLField(blank=True, null=True)  # id
+    author = models.ForeignKey(Author, related_name="sender", on_delete=models.CASCADE, null=True)
     host = models.URLField(blank=True, null=True)  # host
     displayName = models.CharField(max_length=50, unique=True, blank=True, null=True)  # display name
     url = models.URLField(blank=True, null=True)

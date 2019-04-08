@@ -385,7 +385,7 @@ def mutual_friends_posts_view(request):
         visibility="PUBLIC")
 
     current_author = request.user.user
-    remote_friends = RemoteFriend.objects.all().filter(author=current_author.url)
+    remote_friends = RemoteFriend.objects.all().filter(author=current_author)
     print(remote_friends)
     all_posts = list()
     all_posts.extend(posts)
@@ -395,13 +395,14 @@ def mutual_friends_posts_view(request):
                 raw_id = remote.url.split("/")[-1]
                 if remote.server.hostname.endswith("/"):
                     url = "{}author/{}/posts".format(remote.server.hostname, raw_id)
-                    # url = "{}author-mutual/posts".format(remote.server.hostname, )
+                    #url = "{}author-mutual/posts".format(remote.server.hostname, )
                 else:
-                    url = "{}author/{}/posts".format(remote.server.hostname, raw_id)
+                    url = "{}/author/posts".format(remote.server.hostname, raw_id)
                     # url = "{}/author-mutual/posts".format(remote.server.hostname)
 
                 headers = {'X-AUTHOR-ID': str(request.user.user.id)}
                 r = requests.get(url, auth=(remote.server.username, remote.server.password), headers=headers)
+                content = r.json()
                 if r.status_code != 200:
                     continue
                 else:

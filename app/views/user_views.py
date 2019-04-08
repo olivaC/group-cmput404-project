@@ -181,7 +181,7 @@ def mutual_friends_view(request):
 
     all_friends.extend(friends)
     current_author = request.user.user
-    remote_friends = RemoteFriend.objects.all().filter(author=current_author.url)
+    remote_friends = RemoteFriend.objects.all().filter(author=current_author)
 
     if remote_friends:
         for remote in remote_friends:
@@ -359,7 +359,7 @@ def send_remote_friend_request(request, uuid):
 
         if r.status_code == 200:
             print("friend request sent")
-            PendingRemoteFriend.objects.create(author=author['id'], friend=friend['id'], host=friend['host'],
+            PendingRemoteFriend.objects.create(author=author_obj, friend=friend['id'], host=friend['host'],
                                                displayName=friend['displayName'], url=friend['url'], server=server)
         else:
             print("Errors in friend request")

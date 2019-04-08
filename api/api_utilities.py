@@ -94,7 +94,7 @@ def addAuthor2():
 
 def addFriends(author):
     friends = author.friends.all()
-    remote_friends = RemoteFriend.objects.all().filter(author=author.url)
+    remote_friends = RemoteFriend.objects.all().filter(author=author)
     friend_list = list()
     if friends:
         for friend in friends:
@@ -104,7 +104,8 @@ def addFriends(author):
 
     if remote_friends:
         for remote in remote_friends:
-            friend_dict = {'id': remote.author, 'host': remote.host,
+
+            friend_dict = {'id': remote.url, 'host': remote.host,
                            'displayName': remote.displayName, 'url': remote.url}
             friend_list.append(friend_dict)
 
@@ -117,7 +118,7 @@ def check_remote_friends(author):
     auth_id = author.id
     auth_url = author.url
 
-    pending = PendingRemoteFriend.objects.all().filter(author__icontains=auth_id).first()
+    pending = PendingRemoteFriend.objects.all().filter(author=author).first()
 
     if pending:
         remote_friends = []
@@ -136,7 +137,7 @@ def check_remote_friends(author):
                 f_content = r.json()
                 is_friend = f_content['friends']
                 if is_friend:
-                    friend_dict = {'id': pending.friend, 'host': pending.host,
+                    friend_dict = {'id': pending.url, 'host': pending.host,
                                    'displayName': pending.displayName, 'url': pending.url}
                     remote_friends.append(friend_dict)
                     pending.delete()
@@ -145,7 +146,7 @@ def check_remote_friends(author):
                     if remoteF:
                         pass
                     else:
-                        RemoteFriend.objects.create(author=auth_url, friend=pending.friend, host=pending.host,
+                        RemoteFriend.objects.create(author=author, friend=pending.friend, host=pending.host,
                                                     displayName=pending.displayName, url=pending.url, server=server)
 
             return remote_friends
