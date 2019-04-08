@@ -6,17 +6,27 @@
 
 https://young-plains-33934.herokuapp.com
 
-## Contributors
-```
-Musaed Alsobaie  
-Carrol Jirakul  
-Alex Li  
-Carlo Oliva  
-Weichen Wang  
-```
+
+## Demo Video
+[Group 10 Social Distribution](https://www.youtube.com/watch?v=syoXLHJHgJg)
 
 ## Webservice API Documentation
 [Link to the API Documentation](https://github.com/olivaC/group-cmput404-project/wiki/Web-Service-API-&-Documentation)
+
+## Resources Used
+[Resources](https://github.com/olivaC/group-cmput404-project/wiki/Resources)
+
+## License
+Generally everything is LICENSED under the [MIT License](https://github.com/olivaC/group-cmput404-project/blob/master/LICENSE)
+
+## Contributors
+```
+Musaed Alsobaie
+Carrol Jirakul
+Alex Li
+Carlo Oliva  
+Weichen Wang
+```
 
 ## Working in this repository
 When working on a new feature or issue please follow the following steps.

@@ -1,14 +1,8 @@
-import mimetypes
 import urllib.parse
 from datetime import datetime
-
 from django.utils.safestring import mark_safe
-from PIL import Image
-from io import BytesIO
 import base64
-
 from pytz import utc
-
 from app.models import Author, Post, Comment
 
 
@@ -23,7 +17,6 @@ def unquote_redirect_url(url):
     if url.endswith("/") and not url == '/':
         return url[:-1]
     return url
-
 
 
 def api_check(user):
@@ -45,10 +38,22 @@ def image_post_to_html(post):
 
 
 def image_content_to_html(content):
+    """
+    Returns image in html form.
+
+    :param content:
+    :return:
+    """
     return mark_safe("<img src=\"" + content + "\" />")
 
 
 def get_image_type(fileName):
+    """
+    Get image type.
+
+    :param fileName:
+    :return:
+    """
     if fileName.endswith(".jpg"):
         return "image/jpeg"
     elif fileName.endswith(".png"):
@@ -56,16 +61,34 @@ def get_image_type(fileName):
 
 
 def get_base64(mimeType, file):
+    """
+    Convert data to base64
+
+    :param mimeType:
+    :param file:
+    :return:
+    """
     data = "data:" + mimeType + ";base64," + base64.b64encode(file.read()).decode("utf-8")
     return data
 
 
 def get_image_from_base64(base64String):
+    """
+    Get image from base64.
+
+    :param base64String:
+    :return:
+    """
     return base64.b64decode(base64String)
 
 
-
 def create_author(author):
+    """
+    Helper to create a remote author.
+
+    :param author:
+    :return:
+    """
     i = Author()
     if not author.get('displayName'):
         i.username = author.get('id')
@@ -83,6 +106,12 @@ def create_author(author):
 
 
 def create_posts(posts):
+    """
+    Helper to create remote posts.
+
+    :param posts:
+    :return:
+    """
     post_list = list()
 
     for i in posts.get('posts'):
@@ -97,13 +126,20 @@ def create_posts(posts):
         post.title = i.get('title')
         post.remote = 'remote'
         post.content = i.get('content')
-        post.content = post.get_content()
+        if post.contentType not in ['image/png;base64', 'image/jpeg;base64']:
+            post.content = post.get_content()
         post_list.append(post)
 
     return post_list
 
 
 def create_post(i):
+    """
+    Helper to create one remote post.
+
+    :param i:
+    :return:
+    """
     i = i.get('posts')[0]
     post = Post()
     post.id = i.get('id')
@@ -116,12 +152,19 @@ def create_post(i):
     post.title = i.get('title')
     post.remote = 'remote'
     post.content = i.get('content')
-    post.content = post.get_content()
+    if post.contentType not in ['image/png;base64', 'image/jpeg;base64']:
+        post.content = post.get_content()
 
     return post
 
 
 def create_comments(post):
+    """
+    Helper to create remote comments.
+
+    :param post:
+    :return:
+    """
     comment_list = list()
     post = post.get('posts')[0]
     for c in post.get('comments'):

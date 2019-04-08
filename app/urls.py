@@ -1,20 +1,12 @@
-from django.urls import path, include
-from rest_framework import routers
+from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
 import app.views.post_views
 import app.views.user_views
-from app.views import api_views, views, post_views, user_views
+from app.views import views, post_views, user_views
 
 app_name = 'app'
-
-# router = routers.DefaultRouter()
-# router.register('author', api_views.AuthorView)
-# router.register('users', api_views.UserView)
-# router.register('posts', api_views.PostView, base_name='posts')
-# router.register('author-posts', api_views.AuthorPostView, base_name='author_posts')
-# router.register('follow-request', api_views.FollowRequestView, base_name="follow_request")
 
 urlpatterns = [
     path('api_test', views.api_test, name='api_test'),

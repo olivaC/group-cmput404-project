@@ -2,8 +2,6 @@ from rest_framework import viewsets
 from rest_framework import permissions
 
 from app.serializers import *
-from django.http import HttpResponse, JsonResponse
-
 from django.shortcuts import render
 from django.urls import reverse
 from app.forms.post_forms import AuthorForm
@@ -11,9 +9,7 @@ import json
 import requests
 from django.http import HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib import messages
 from app.models import Author
-from rest_framework.response import Response
 
 
 class AuthorView(viewsets.ModelViewSet):

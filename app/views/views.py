@@ -25,6 +25,12 @@ from app.views import gh_stream
 @user_passes_test(api_check)
 @requires_csrf_token
 def index(request):
+    """
+    Index page. Shows all posts visible to current author.
+
+    :param request:
+    :return:
+    """
     user = request.user
     print(user.user.id)
     request.context['user'] = user
@@ -80,6 +86,13 @@ def index(request):
 @login_required
 @user_passes_test(api_check)
 def profile_view(request, id=None):
+    """
+    Show a users profile.
+
+    :param request:
+    :param id:
+    :return:
+    """
     author = get_object_or_404(Author, id=id)
     request.context['author'] = author
     current_user = get_object_or_404(Author, username=request.user)
@@ -102,6 +115,12 @@ def profile_view(request, id=None):
 
 @login_required
 def my_profile_view(request):
+    """
+    Show my profile.
+
+    :param request:
+    :return:
+    """
     request.context['author'] = request.user.user
     current_user = get_object_or_404(Author, username=request.user)
     request.context['self'] = current_user
@@ -112,6 +131,12 @@ def my_profile_view(request):
 @login_required
 @user_passes_test(api_check)
 def edit_profile(request):
+    """
+    Allows an author to edit their profile.
+
+    :param request:
+    :return:
+    """
     user = request.user
     author = request.user.user
     author_id = author.id
@@ -160,6 +185,12 @@ def edit_profile(request):
 
 
 def register_view(request):
+    """
+    Allows a new author to register.
+
+    :param request:
+    :return:
+    """
     if request.method == 'POST':
         next = request.POST.get("next", reverse("app:index"))
         form = UserCreateForm(request.POST)
@@ -193,6 +224,12 @@ def register_view(request):
 
 
 def login_view(request):
+    """
+    Login page.
+
+    :param request:
+    :return:
+    """
     if request.method == 'POST':
         form = LoginForm(request.POST)
         try:
