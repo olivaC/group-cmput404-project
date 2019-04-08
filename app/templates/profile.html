@@ -15,14 +15,19 @@
                  src="https://www.betwext.com/wp-content/uploads/2018/09/blank-profile-picture-973460_640.png"/>
         {% endif %}
 
-        <h1 class="m-0 h2 text-gray-800">{{ author.user.first_name }} {{ author.user.last_name }}</h1>
-        <div class="h5">
+        {% if author.remote %}
+            <h1 class="mb-2 h2 text-gray-800">{{ author.first_name }} {{ author.last_name }}</h1>
+        {% else %}
+            <h1 class="mb-2 h2 text-gray-800">{{ author.user.first_name }} {{ author.user.last_name }}</h1>
+        {% endif %}
+        <div class="m-0 h5">
             {{ author.username }}
             {% if author.github_url is not None %}
                 <p style="display:inline;">| {{ author.github_url }}</p>
             {% endif %}
 
         </div>
+        <p class="m-0"> {{ author.host_url }}</p>
 
         <hr>
         {% if author.bio is not None %}
@@ -32,11 +37,12 @@
         {% if author.remote %}
             {% if friends %}
                 <a href="{% url 'app:unfriend_remote_mutual' uuid=author.uuid %}?host={{ author.host_url }}"
-                                   class="btn btn-danger">Unfriend</a>
-{#            {% elif author in pending %}#}
-{#                <a href="" class="btn btn-warning">Pending</a>#}
+                   class="btn btn-danger">Unfriend</a>
+                {#            {% elif author in pending %}#}
+                {#                <a href="" class="btn btn-warning">Pending</a>#}
             {% else %}
-                <a href="{% url 'app:add_remote_friend' uuid=author.uuid %}?host={{ author.host_url }}" class="btn btn-warning">Add Friend</a>
+                <a href="{% url 'app:add_remote_friend' uuid=author.uuid %}?host={{ author.host_url }}"
+                   class="btn btn-success">Add Friend</a>
             {% endif %}
         {% else %}
             {% if author in friends %}
@@ -44,7 +50,7 @@
             {% elif author in pending %}
                 <a href="" class="btn btn-warning">Pending</a>
             {% elif author != self %}
-                <a href="{% url 'app:add_friend' id=author.id %}" class="btn btn-warning">Add Friend</a>
+                <a href="{% url 'app:add_friend' id=author.id %}" class="btn btn-primary">Add Friend</a>
             {% endif %}
         {% endif %}
 

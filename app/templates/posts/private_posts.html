@@ -3,11 +3,11 @@
 
 
 {% block page_title %}
-    401 Group | Dashboard
+    404 Group | Private Posts
 {% endblock %}
 
 {% block content %}
-    <h1 class="h3 mb-4 text-gray-800">Welcome {{ user.first_name }} {{ user.last_name }}</h1>
+    <h1 class="h3 mb-4 text-gray-800">Private Posts</h1>
     <div>
         {% for post in posts %}
             <div class="card shadow mb-4">
@@ -42,21 +42,15 @@
                     <div class="card-body">
                         <h5 class="mb-0 text-gray-800">{{ post.title }}</h5>
                         <p class="mb-0 small text-gray">{{ post.description}}</p>
-                        <p class="mb-0 small text-gray">{{ post.published|timezone:"America/Edmonton" }}</p>
+                        <p class="small text-gray">{{ post.published|timezone:"America/Edmonton" }}</p>
                         <hr>
                         <p class="m-4">{{ post.get_content }}</p>
                     </div>
                 </div>
                 <div class="card-footer">
-                    {% if post.remote %}
-                        <span>
-                            <a href="{% url "app:remote_post" post=post.id %}?host={{ post.author.host_url }}" class="btn btn-outline-primary">View Comments / Comment</a>
-                        </span>
-                    {% else %}
                         <span>
                             <a href="{% url "app:post_detail" id=post.id %}" class="btn btn-outline-primary">View Comments / Comment</a>
                         </span>
-                    {% endif %}
                 </div>
             </div>
         {% endfor %}

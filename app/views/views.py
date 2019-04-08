@@ -101,6 +101,15 @@ def profile_view(request, id=None):
 
 
 @login_required
+def my_profile_view(request):
+    request.context['author'] = request.user.user
+    current_user = get_object_or_404(Author, username=request.user)
+    request.context['self'] = current_user
+
+    return render(request, 'profile.html', request.context)
+
+
+@login_required
 @user_passes_test(api_check)
 def edit_profile(request):
     user = request.user

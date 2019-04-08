@@ -26,9 +26,8 @@
                         {% endif %}
 
                         {% if post.remote %}
-                            <a href="{% url "app:author_remote" %}?host={{ post.author.url }}"
-                               class="ml-2 font-weight-bold text-primary">
-                                {{ post.author.username }}
+                            <a href="{% url "app:author_remote" %}?host={{ post.author.url }}" class="ml-2 font-weight-bold text-primary">
+                                {{ post.author.username }} | {{ post.author.host_url }}
                             </a>
                         {% else %}
                             <a href="/author/{{ post.author.id }}" class="ml-2 font-weight-bold text-primary">
@@ -42,6 +41,7 @@
                 <div class="collapse show" id="collapseCardExample{{ post.id }}">
                     <div class="card-body">
                         <h5 class="mb-0 text-gray-800">{{ post.title }}</h5>
+                        <p class="mb-0 small text-gray">{{ post.description}}</p>
                         <p class="small text-gray">{{ post.published|timezone:"America/Edmonton" }}</p>
                         <hr>
                         <p class="m-4">{{ post.get_content }}</p>

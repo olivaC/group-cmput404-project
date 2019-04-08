@@ -4,6 +4,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
 from settings_server import *
 from django.forms import ModelForm
 from django.utils.html import mark_safe
@@ -92,6 +93,7 @@ class Post(models.Model):
     title = models.CharField(max_length=100, blank=True, null=True)
     description = models.CharField(max_length=50, blank=True, null=True)  # brief description
     visibility = models.CharField(max_length=100, choices=POST_PRIVACY, default='Private')
+    visibleTo = models.ManyToManyField(Author, blank=True, related_name='visibleTo')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
     content = models.TextField(default="")
     contentType = models.CharField(max_length=100, choices=POST_CONTENT_TYPE, default='Plain Text')
@@ -139,6 +141,8 @@ class Server(models.Model):
     user = models.OneToOneField(User, related_name='server_user', on_delete=models.CASCADE, blank=True, null=True)
     username = models.CharField(max_length=50, unique=True, blank=True, null=True)
     password = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    no_posts = models.BooleanField(default=False)
+    no_images = models.BooleanField(default=False)
 
     def __str__(self):
         return "Hostname: {}".format(self.hostname)
@@ -178,7 +182,10 @@ def create_user_author(sender, instance, created, **kwargs):
 
 class RemoteFriendRequest(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
-    author = models.URLField(blank=True, null=True)
+    author = models.URLField(blank=True, null=True)  # id
+    host = models.URLField(blank=True, null=True)  # host
+    displayName = models.CharField(max_length=50, unique=True, blank=True, null=True)  # display name
+    url = models.URLField(blank=True, null=True)
     friend = models.ForeignKey(Author, related_name='RemoteFriend', on_delete=models.CASCADE)  # Always a local author
     timestamp = models.DateTimeField(auto_now_add=True)
     server = models.ForeignKey(Server, related_name="RemoteFriendServer", on_delete=models.CASCADE)
@@ -188,6 +195,18 @@ class RemoteFriendRequest(models.Model):
 
 
 class RemoteFriend(models.Model):
-    author = models.ForeignKey(Author, related_name='remote_author', on_delete=models.CASCADE)
+    author = models.ForeignKey(Author, related_name="author_re", on_delete=models.CASCADE, null=True)
+    host = models.URLField(blank=True, null=True)  # host
+    displayName = models.CharField(max_length=50, unique=True, blank=True, null=True)  # display name
+    url = models.URLField(blank=True, null=True)
     friend = models.URLField(blank=True, null=True)
     server = models.ForeignKey(Server, related_name='remote_server', on_delete=models.CASCADE, null=True)
+
+
+class PendingRemoteFriend(models.Model):
+    author = models.ForeignKey(Author, related_name="sender", on_delete=models.CASCADE, null=True)
+    host = models.URLField(blank=True, null=True)  # host
+    displayName = models.CharField(max_length=50, unique=True, blank=True, null=True)  # display name
+    url = models.URLField(blank=True, null=True)
+    friend = models.URLField(blank=True, null=True)
+    server = models.ForeignKey(Server, related_name='pending_remote_server', on_delete=models.CASCADE, null=True)

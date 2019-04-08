@@ -31,6 +31,7 @@ urlpatterns = [
     path('create-post', app.views.post_views.create_post_view, name='create_post'),
     path('delete/<uuid:id>/', app.views.post_views.delete_post, name="delete"),
     path('author/<uuid:id>', views.profile_view, name="profile"),
+    path('profile', views.my_profile_view, name="my_profile"),
     path('profile/edit/', views.edit_profile, name="edit_profile"),
     path('post/edit/<uuid:id>/', post_views.edit_post, name="edit_post"),
     path('authors', user_views.all_author_view, name="all_authors"),
@@ -39,6 +40,7 @@ urlpatterns = [
     path('authors/unfollow/<uuid:id>/', user_views.unfollow_view, name="unfollow"),
     path('authors/unfollow-mutual/<uuid:id>/', user_views.unfollow_mutual_view, name="unfollow_mutual"),
     path('public-posts', app.views.post_views.public_post_view, name="public_posts"),
+    path('private-posts', app.views.post_views.private_friends_posts_view, name="private_posts"),
     path('search/', views.search_view, name="search_author"),
     path('new_followers/', user_views.new_followers_view, name="new_followers"),
     path('followers/', user_views.all_followers_view, name="followers"),
@@ -55,12 +57,13 @@ urlpatterns = [
     path('friend-request/send/<uuid:id>',user_views.send_friend_request, name='add_friend'),
     path('friend-request/cancel/<uuid:id>',user_views.cancel_friend_request, name='cancel_friend'),
     path('friend-request/accept/<uuid:id>',user_views.accept_friend_request, name='accept_friend'),
-    path('following/', user_views.all_requests_view, name="requests"),
+    path('friendrequest', user_views.all_requests_view, name="requests"),
 
     path('remote-friend-request/accept/',user_views.accept_remote_friend_request, name='accept_remote_friend'),
+    path('remote-friend-request/cancel/',user_views.cancel_remote_friend_request, name='cancel_remote_friend'),
     path('remote-friend-request/send/<str:uuid>',user_views.send_remote_friend_request, name='add_remote_friend'),
     path('unfollow-remote-mutual/<str:uuid>', user_views.unfriend_remote_mutual_view, name="unfriend_remote_mutual"),
 
-    path('friendrequest', api_views.friendrequest, name="friendrequest"),
+    #path('friendrequest', api_views.friendrequest, name="friendrequest"),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

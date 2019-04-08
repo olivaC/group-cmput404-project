@@ -85,6 +85,11 @@ def edit_post(request, id=None):
             post.content = form.cleaned_data.get('content')
             post.unlisted = form.cleaned_data.get('unlisted')
             post.contentType = form.cleaned_data.get('contentType')
+
+            visible_to = form.cleaned_data.get('visibleTo')
+            authors = Author.objects.filter(id__in=visible_to)
+            post.visibleTo.set(authors)
+
             post.save()
             return HttpResponseRedirect(reverse('app:my_posts'))
 
@@ -110,12 +115,19 @@ def create_post_view(request):
         try:
             if form.is_valid():
                 if form.cleaned_data.get('content'):
+                    visible_to = form.cleaned_data.get('visibleTo')
+                    authors = Author.objects.filter(id__in=visible_to)
+
                     post = Post.objects.create(author=user.user, content=form.cleaned_data.get('content'),
                                                description=form.cleaned_data.get('description'),
                                                title=form.cleaned_data.get('title'),
                                                visibility=form.cleaned_data.get('visibility'),
                                                unlisted=form.cleaned_data.get('unlisted'),
                                                contentType=form.cleaned_data.get('contentType'))
+
+                    for author in authors:
+                        post.visibleTo.add(author)
+
                     if "base64" in post.contentType:
                         post.title = post.id
                         post.save()
@@ -124,7 +136,8 @@ def create_post_view(request):
             messages.warning(request, 'Cannot post something empty!')
 
 
-        except:
+        except Exception as e:
+            print(e)
             request.context['next'] = request.GET.get('next', reverse("app:index"))
 
     form = PostCreateForm()
@@ -379,13 +392,17 @@ def mutual_friends_posts_view(request):
     if remote_friends:
         for remote in remote_friends:
             try:
+                raw_id = remote.url.split("/")[-1]
                 if remote.server.hostname.endswith("/"):
-                    url = "{}author-mutual/posts".format(remote.server.hostname, )
+                    url = "{}author/{}/posts".format(remote.server.hostname, raw_id)
+                    #url = "{}author-mutual/posts".format(remote.server.hostname, )
                 else:
-                    url = "{}/author-mutual/posts".format(remote.server.hostname)
+                    url = "{}/author/posts".format(remote.server.hostname, raw_id)
+                    # url = "{}/author-mutual/posts".format(remote.server.hostname)
 
                 headers = {'X-AUTHOR-ID': str(request.user.user.id)}
                 r = requests.get(url, auth=(remote.server.username, remote.server.password), headers=headers)
+                content = r.json()
                 if r.status_code != 200:
                     continue
                 else:
@@ -398,6 +415,33 @@ def mutual_friends_posts_view(request):
     request.context['posts'] = posts
 
     return render(request, 'posts/mutual_friend_posts.html', request.context)
+
+
+@login_required
+@user_passes_test(api_check)
+def private_friends_posts_view(request):
+    private_posts = Post.objects.all().filter(visibleTo=request.user.user).order_by('-published')
+
+    # for server in servers:
+    #     host = server.hostname
+    #     if not server.hostname.endswith("/"):
+    #         host = server.hostname + "/"
+    #     server_api = "{}posts".format(host)
+    #     try:
+    #         if server.username and server.password:
+    #             r = requests.get(server_api, auth=(server.username, server.password))
+    #             p = create_posts(r.json())
+    #             public_posts.extend(p)
+    #     except:
+    #         print("error")
+    #
+    # posts = public_posts + list(local_posts)
+    posts = list(private_posts)
+    posts.sort(key=lambda post: post.published, reverse=True)
+
+    request.context['posts'] = posts
+
+    return render(request, 'posts/private_posts.html', request.context)
 
 
 def unlisted_post_view(request, id=None):

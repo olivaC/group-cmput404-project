@@ -2,7 +2,7 @@ import requests
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
-from app.models import Comment, Author, Server, RemoteComment, RemoteFriend
+from app.models import Comment, Author, Server, RemoteComment, RemoteFriend, PendingRemoteFriend
 from settings_server import DOMAIN
 from datetime import datetime
 from pytz import utc
@@ -104,23 +104,74 @@ def addFriends(author):
 
     if remote_friends:
         for remote in remote_friends:
-            req = requests.get(remote.friend, auth=(remote.server.username, remote.server.password))
-            auth = req.json()
-            friend_dict = {'id': remote.friend, 'host': auth.get('host'),
-                           'displayName': auth.get('displayName'), 'url': remote.friend}
+
+            friend_dict = {'id': remote.url, 'host': remote.host,
+                           'displayName': remote.displayName, 'url': remote.url}
             friend_list.append(friend_dict)
 
+    remote = check_remote_friends(author)
+    friend_list += remote
     return friend_list
+
+
+def check_remote_friends(author):
+    auth_id = author.id
+    auth_url = author.url
+
+    pending = PendingRemoteFriend.objects.all().filter(author=author).first()
+
+    if pending:
+        remote_friends = []
+        hostname = pending.host
+        if not pending.host.endswith("/"):
+            hostname = pending.host + "/"
+        server = pending.server
+
+        try:
+
+            if server.username and server.password:
+                friend_id = pending.friend
+                raw_id = friend_id.split("/")[-1]
+                friends_api = "{}author/{}/friends/{}".format(hostname, raw_id, auth_id)
+                r = requests.get(friends_api, auth=(server.username, server.password))
+                f_content = r.json()
+                is_friend = f_content['friends']
+                if is_friend:
+                    friend_dict = {'id': pending.url, 'host': pending.host,
+                                   'displayName': pending.displayName, 'url': pending.url}
+                    remote_friends.append(friend_dict)
+                    pending.delete()
+
+                    remoteF = RemoteFriend.objects.all().filter(author=author, friend=friend_id)
+                    if remoteF:
+                        pass
+                    else:
+                        RemoteFriend.objects.create(author=author, friend=pending.friend, host=pending.host,
+                                                    displayName=pending.displayName, url=pending.url, server=server)
+
+            return remote_friends
+
+        except:
+            print("error")
+    else:
+        return []
 
 
 def postList(posts):
     post_list = list()
     for post in posts:
+        visible_to = list()
+        visible = post.visibleTo.all()
+        if visible:
+            for author in visible:
+                auth = "{}/api/author/{}".format(DOMAIN, author.id)
+                visible_to.append(auth)
+
         comments = commentList(post)
         comment_url = "{}/api/posts/{}/comments".format(DOMAIN, post.id)
         post_dict = {'author': addAuthor(post.author), 'title': post.title, 'description': post.description,
                      'contentType': post.contentType, 'content': post.content, 'published': post.published,
-                     'visibility': post.visibility, 'unlisted': post.unlisted, 'id': post.id,
+                     'visibility': post.visibility, 'visibleTo': visible_to, 'unlisted': post.unlisted, 'id': post.id,
                      'comments': comments[:5], 'next': comment_url, 'count': len(comments),
                      'origin': "{}/api/posts/{}".format(DOMAIN, post.id),
                      'source': "{}/api/posts/{}".format(DOMAIN, post.id)}
@@ -207,9 +258,17 @@ def postCreate(post):
     post_list = list()
     comments = commentList(post)
     comment_url = "{}/api/posts/{}/comments".format(DOMAIN, post.id)
+    visible_to = list()
+    visible = post.visibleTo.all()
+    if visible:
+        for author in visible:
+            auth = "{}/api/author/{}".format(DOMAIN, author.id)
+            visible_to.append(auth)
+
+    # visible_to = list(post.visibleTo)
     post_dict = {'author': addAuthor(post.author), 'title': post.title, 'description': post.description,
                  'contentType': post.contentType, 'content': post.content, 'published': post.published,
-                 'visibility': post.visibility, 'unlisted': post.unlisted, 'id': post.id,
+                 'visibility': post.visibility, 'visibleTo': visible_to, 'unlisted': post.unlisted, 'id': post.id,
                  'comments': comments[:5], 'next': comment_url, 'count': len(comments),
                  'source': "{}/api/posts/{}".format(DOMAIN, post.id),
                  'origin': "{}/api/posts/{}".format(DOMAIN, post.id)}
