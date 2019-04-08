@@ -16,6 +16,10 @@ https://young-plains-33934.herokuapp.com
 ## Resources Used
 [Resources](https://github.com/olivaC/group-cmput404-project/wiki/Resources)
 
+## Testing
+[Model Unit Tests](https://github.com/olivaC/group-cmput404-project/blob/master/app/tests.py)
+[Selenium Tests](https://github.com/olivaC/group-cmput404-project/blob/master/test_selenium.py)
+
 ## License
 Generally everything is LICENSED under the [MIT License](https://github.com/olivaC/group-cmput404-project/blob/master/LICENSE)
 
@@ -24,7 +28,7 @@ Generally everything is LICENSED under the [MIT License](https://github.com/oliv
 Musaed Alsobaie
 Carrol Jirakul
 Alex Li
-Carlo Oliva  
+Carlo Oliva
 Weichen Wang
 ```
 
