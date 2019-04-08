@@ -392,10 +392,13 @@ def mutual_friends_posts_view(request):
     if remote_friends:
         for remote in remote_friends:
             try:
+                raw_id = remote.url.split("/")[-1]
                 if remote.server.hostname.endswith("/"):
-                    url = "{}author-mutual/posts".format(remote.server.hostname, )
+                    url = "{}author/{}/posts".format(remote.server.hostname, raw_id)
+                    # url = "{}author-mutual/posts".format(remote.server.hostname, )
                 else:
-                    url = "{}/author-mutual/posts".format(remote.server.hostname)
+                    url = "{}author/{}/posts".format(remote.server.hostname, raw_id)
+                    # url = "{}/author-mutual/posts".format(remote.server.hostname)
 
                 headers = {'X-AUTHOR-ID': str(request.user.user.id)}
                 r = requests.get(url, auth=(remote.server.username, remote.server.password), headers=headers)
