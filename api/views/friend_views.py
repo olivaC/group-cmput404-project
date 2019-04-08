@@ -141,13 +141,17 @@ class IsFriendView(APIView):
                     remote_author = getRemoteAuthor(id2)
                     friend_id = remote_author.get('url')
 
-                authors = list()
-                author_id = "{}/author/{}".format(author.host_url, author.id)
-                authors.append(author_id)
+            else:
+                response['friends'] = False
+                friend_id = "{}/author/{}".format(author.host_url, id2)
 
-                authors.append(friend_id)
+            authors = list()
+            author_id = "{}/author/{}".format(author.host_url, author.id)
+            authors.append(author_id)
 
-                response['authors'] = authors
+            authors.append(friend_id)
+
+            response['authors'] = authors
 
             return Response(response, status=200)
 
@@ -376,6 +380,9 @@ class FriendRequestView(APIView):
                         RemoteFriendRequest.objects.create(
                             author=author.get('id'),
                             friend=local_author,
+                            host=author.get('host'),
+                            displayName=author.get('displayName'),
+                            url=author.get('url'),
                             server=remote
                         )
                         response['success'] = True

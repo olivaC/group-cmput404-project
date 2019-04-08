@@ -7,7 +7,7 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.settings import api_settings
 
 from api.api_utilities import postList, postCreate, str2bool, get_public_posts, getRemotePost
-from app.models import Post, Author, Server
+from app.models import Post, Author, Server, RemoteFriend
 
 import datetime
 
@@ -247,16 +247,23 @@ class AuthorPostView(APIView):
 
     def get(self, request, id):
         author = get_object_or_404(Author, id=id)
+        remote_id = request.META.get('HTTP_X_AUTHOR_ID')
         try:
             server = Server.objects.get(user=request.user)
-            response = dict()
-
             if server:
+                response = dict()
                 if server.no_posts:
                     response['posts'] = []
                     response['success'] = True
                     response['message'] = 'Server admin restricted posts.'
                     return Response(response, status=403)
+
+                remote = RemoteFriend.objects.all().filter(author=author).filter(friend__icontains=remote_id)
+                if remote:
+                    posts = Post.objects.all().filter(author=author).filter(visibility="PUBLIC") | Post.objects.all().filter(author=author).filter(visibility="FRIENDS")
+                else:
+                    posts = Post.objects.all().filter(author=author).filter(visibility="PUBLIC")
+
                 posts = Post.objects.all().filter(author=author).filter(visibility="PUBLIC")
                 if server.no_images:
                     posts = posts.exclude(contentType="image/png;base64").exclude(
