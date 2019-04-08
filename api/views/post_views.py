@@ -1,4 +1,5 @@
 import requests
+from django.http import HttpResponse
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -260,7 +261,8 @@ class AuthorPostView(APIView):
 
                 remote = RemoteFriend.objects.all().filter(author=author).filter(friend__icontains=remote_id)
                 if remote:
-                    posts = Post.objects.all().filter(author=author).filter(visibility="PUBLIC") | Post.objects.all().filter(author=author).filter(visibility="FRIENDS")
+                    posts = Post.objects.all().filter(author=author).filter(
+                        visibility="PUBLIC") | Post.objects.all().filter(author=author).filter(visibility="FRIENDS")
                 else:
                     posts = Post.objects.all().filter(author=author).filter(visibility="PUBLIC")
 
@@ -320,9 +322,25 @@ class SinglePostView(APIView):
         response = dict()
         response['query'] = 'posts'
 
-        try:
-            yar = Post.objects.all()
+        if not request.user.is_authenticated:
             post = Post.objects.get(id=id)
+            if post.unlisted:
+                if post.contentType in ['image/png;base64', 'image/jpeg;base64']:
+                    response = post.get_content()
+                    return HttpResponse(response)
+                else:
+                    post = postCreate(post)
+                    response['success'] = True
+                    response['posts'] = post
+                    response['count'] = 1
+                    response['message'] = 'Unlisted post'
+                    return Response(response, status=200)
+
+        try:
+            post = Post.objects.get(id=id)
+            if post.contentType in ['image/png;base64', 'image/jpeg;base64']:
+                response = post.get_content()
+                return HttpResponse(response)
             post = postCreate(post)
         except:
             post = getRemotePost(id)
