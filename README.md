@@ -17,7 +17,7 @@ https://young-plains-33934.herokuapp.com
 [Resources](https://github.com/olivaC/group-cmput404-project/wiki/Resources)
 
 ## Testing
-[Model Unit Tests](https://github.com/olivaC/group-cmput404-project/blob/master/app/tests.py)
+[Model Unit Tests](https://github.com/olivaC/group-cmput404-project/blob/master/app/tests.py)  
 [Selenium Tests](https://github.com/olivaC/group-cmput404-project/blob/master/test_selenium.py)
 
 ## License
