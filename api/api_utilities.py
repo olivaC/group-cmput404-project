@@ -2,7 +2,7 @@ import requests
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
-from app.models import Comment, Author, Server, RemoteComment, RemoteFriend
+from app.models import Comment, Author, Server, RemoteComment, RemoteFriend, PendingRemoteFriend
 from settings_server import DOMAIN
 from datetime import datetime
 from pytz import utc
@@ -94,7 +94,7 @@ def addAuthor2():
 
 def addFriends(author):
     friends = author.friends.all()
-    remote_friends = RemoteFriend.objects.all().filter(author=author)
+    remote_friends = RemoteFriend.objects.all().filter(author=author.url)
     friend_list = list()
     if friends:
         for friend in friends:
@@ -115,38 +115,45 @@ def addFriends(author):
 
 def check_remote_friends(author):
     auth_id = author.id
-    servers = Server.objects.all()
+    auth_url = author.url
 
-    for server in servers:
-        host = server.hostname
-        if not server.hostname.endswith("/"):
-            host = server.hostname + "/"
-        server_api = "{}author".format(host)
+    pending = PendingRemoteFriend.objects.all().filter(author__icontains=auth_id).first()
+
+    if pending:
+        remote_friends = []
+        hostname = pending.host
+        if not pending.host.endswith("/"):
+            hostname = pending.host + "/"
+        server = pending.server
+
         try:
+
             if server.username and server.password:
-                r = requests.get(server_api, auth=(server.username, server.password))
-                content = r.json()
-                remote_friends = []
-                auth = content['author']
-                for i in auth:
-                    author_id = i['url']
-                    raw_id = author_id.split("/")[-1]
-                    friends_api = "{}/{}/friends/{}".format(server_api, raw_id, auth_id)
-                    rf = requests.get(friends_api, auth=(server.username, server.password))
-                    f_content = rf.json()
-                    is_friend = f_content['friends']
-                    if is_friend:
-                        friend_dict = {'id': i.get('id'), 'host': i.get('host'),
-                                       'displayName': i.get('displayName'), 'url': i.get('url')}
-                        remote_friends.append(friend_dict)
+                friend_id = pending.friend
+                raw_id = friend_id.split("/")[-1]
+                friends_api = "{}author/{}/friends/{}".format(hostname, raw_id, auth_id)
+                r = requests.get(friends_api, auth=(server.username, server.password))
+                f_content = r.json()
+                is_friend = f_content['friends']
+                if is_friend:
+                    friend_dict = {'id': pending.friend, 'host': pending.host,
+                                   'displayName': pending.displayName, 'url': pending.url}
+                    remote_friends.append(friend_dict)
+                    pending.delete()
 
-                        remoteF = RemoteFriend.objects.all().filter(author=author, friend=i.get('url'))
+                    remoteF = RemoteFriend.objects.all().filter(author=author, friend=friend_id)
+                    if remoteF:
+                        pass
+                    else:
+                        RemoteFriend.objects.create(author=auth_url, friend=pending.friend, host=pending.host,
+                                                    displayName=pending.displayName, url=pending.url, server=server)
 
-
-                return remote_friends
+            return remote_friends
 
         except:
             print("error")
+    else:
+        return []
 
 
 def postList(posts):

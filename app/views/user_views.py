@@ -46,7 +46,7 @@ def follow_view(request, id):
         FollowRequest.objects.create(
             author=current_author,
             friend=auth
-        )
+         )
 
     auth_follow = FollowRequest.objects.all().filter(friend=current_author).filter(author=auth)
     if auth_follow:
@@ -181,7 +181,7 @@ def mutual_friends_view(request):
 
     all_friends.extend(friends)
     current_author = request.user.user
-    remote_friends = RemoteFriend.objects.all().filter(author=current_author)
+    remote_friends = RemoteFriend.objects.all().filter(author=current_author.url)
 
     if remote_friends:
         for remote in remote_friends:
@@ -360,7 +360,7 @@ def send_remote_friend_request(request, uuid):
         if r.status_code == 200:
             print("friend request sent")
             PendingRemoteFriend.objects.create(author=author['id'], friend=friend['id'], host=friend['host'],
-                                        displayName=friend['displayName'], url=friend['url'])
+                                               displayName=friend['displayName'], url=friend['url'], server=server)
         else:
             print("Errors in friend request")
 

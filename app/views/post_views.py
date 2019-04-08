@@ -385,7 +385,7 @@ def mutual_friends_posts_view(request):
         visibility="PUBLIC")
 
     current_author = request.user.user
-    remote_friends = RemoteFriend.objects.all().filter(author=current_author)
+    remote_friends = RemoteFriend.objects.all().filter(author=current_author.url)
     print(remote_friends)
     all_posts = list()
     all_posts.extend(posts)

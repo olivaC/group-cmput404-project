@@ -207,3 +207,4 @@ class PendingRemoteFriend(models.Model):
     displayName = models.CharField(max_length=50, unique=True, blank=True, null=True)  # display name
     url = models.URLField(blank=True, null=True)
     friend = models.URLField(blank=True, null=True)
+    server = models.ForeignKey(Server, related_name='pending_remote_server', on_delete=models.CASCADE, null=True)
