@@ -3,7 +3,6 @@ from django.test import TestCase
 from app.models import *
 from factory.django import DjangoModelFactory
 from django.contrib.auth.models import User
-from selenium import webdriver
 
 
 class UserFactory(DjangoModelFactory):
@@ -225,3 +224,42 @@ class CommentModelTest(TestCase):
         self.assertEqual(comment.post.author, author1)
         self.assertEqual(comment.comment, "This is a test")
 
+
+class FriendRequestModelTest(TestCase):
+
+    def setUp(self):
+        user = UserFactory(username='defaultUser', email='defaultEmail')
+        user.first_name = 'defaultFirst'
+        user.last_name = 'defaultLast'
+        user.save()
+
+        Author.objects.create(username="RemoteAuthor", host_url="remoteurl.com")
+
+    def test_friend_request(self):
+        author1 = Author.objects.get(username="RemoteAuthor")
+        author2 = Author.objects.get(username="defaultUser")
+
+        friend_request = FriendRequest.objects.create(author=author1, friend=author2)
+        self.assertEqual(friend_request.author, author1)
+        self.assertEqual(friend_request.friend, author2)
+
+
+class ServerModelTest(TestCase):
+    def setUp(self):
+        user = UserFactory(username='defaultUser', email='defaultEmail')
+        user.first_name = 'defaultFirst'
+        user.last_name = 'defaultLast'
+        user.save()
+
+        Author.objects.create(username="RemoteAuthor", host_url="remoteurl.com")
+
+    def test_create_server_model(self):
+        user = User.objects.get(username='defaultUser')
+        server = Server.objects.create(
+            user=user,
+            username="testHost",
+            password="testPassword",
+            hostname="http://test.com",
+        )
+
+        self.assertEqual(server.username, "testHost")
