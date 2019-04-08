@@ -11,7 +11,7 @@ def test_home():
     password = driver.find_element_by_name("password")
     password.send_keys("ualberta123")
 
-    
+
 
 
 
