@@ -50,4 +50,14 @@ class Migration(migrations.Migration):
             name='author',
             field=models.URLField(blank=True, null=True),
         ),
+        migrations.AddField(
+            model_name='server',
+            name='no_images',
+            field=models.BooleanField(default=False),
+        ),
+        migrations.AddField(
+            model_name='server',
+            name='no_posts',
+            field=models.BooleanField(default=False),
+        ),
     ]
