@@ -284,7 +284,8 @@ def accept_remote_friend_request(request):
     current_author = request.user.user
     f_request = RemoteFriendRequest.objects.filter(friend=current_author, author=url).first()
 
-    r = RemoteFriend.objects.create(author=current_author, friend=url, server=server)
+    r = RemoteFriend.objects.create(author=current_author, friend=url, host=f_request.host,
+                                    displayName=f_request.displayName, url=f_request.url, server=server)
     if r:
         f_request.delete()
 
@@ -358,6 +359,8 @@ def send_remote_friend_request(request, uuid):
 
         if r.status_code == 200:
             print("friend request sent")
+            PendingRemoteFriend.objects.create(author=author['id'], friend=friend['id'], host=friend['host'],
+                                        displayName=friend['displayName'], url=friend['url'])
         else:
             print("Errors in friend request")
 

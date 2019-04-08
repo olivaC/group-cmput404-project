@@ -104,13 +104,49 @@ def addFriends(author):
 
     if remote_friends:
         for remote in remote_friends:
-            req = requests.get(remote.friend, auth=(remote.server.username, remote.server.password))
-            auth = req.json()
-            friend_dict = {'id': remote.friend, 'host': auth.get('host'),
-                           'displayName': auth.get('displayName'), 'url': remote.friend}
+            friend_dict = {'id': remote.author, 'host': remote.host,
+                           'displayName': remote.displayName, 'url': remote.url}
             friend_list.append(friend_dict)
 
+    remote = check_remote_friends(author)
+    friend_list += remote
     return friend_list
+
+
+def check_remote_friends(author):
+    auth_id = author.id
+    servers = Server.objects.all()
+
+    for server in servers:
+        host = server.hostname
+        if not server.hostname.endswith("/"):
+            host = server.hostname + "/"
+        server_api = "{}author".format(host)
+        try:
+            if server.username and server.password:
+                r = requests.get(server_api, auth=(server.username, server.password))
+                content = r.json()
+                remote_friends = []
+                auth = content['author']
+                for i in auth:
+                    author_id = i['url']
+                    raw_id = author_id.split("/")[-1]
+                    friends_api = "{}/{}/friends/{}".format(server_api, raw_id, auth_id)
+                    rf = requests.get(friends_api, auth=(server.username, server.password))
+                    f_content = rf.json()
+                    is_friend = f_content['friends']
+                    if is_friend:
+                        friend_dict = {'id': i.get('id'), 'host': i.get('host'),
+                                       'displayName': i.get('displayName'), 'url': i.get('url')}
+                        remote_friends.append(friend_dict)
+
+                        remoteF = RemoteFriend.objects.all().filter(author=author, friend=i.get('url'))
+
+
+                return remote_friends
+
+        except:
+            print("error")
 
 
 def postList(posts):

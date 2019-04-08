@@ -180,7 +180,10 @@ def create_user_author(sender, instance, created, **kwargs):
 
 class RemoteFriendRequest(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
-    author = models.URLField(blank=True, null=True)
+    author = models.URLField(blank=True, null=True)  # id
+    host = models.URLField(blank=True, null=True)  # host
+    displayName = models.CharField(max_length=50, unique=True, blank=True, null=True)  # display name
+    url = models.URLField(blank=True, null=True)
     friend = models.ForeignKey(Author, related_name='RemoteFriend', on_delete=models.CASCADE)  # Always a local author
     timestamp = models.DateTimeField(auto_now_add=True)
     server = models.ForeignKey(Server, related_name="RemoteFriendServer", on_delete=models.CASCADE)
@@ -190,6 +193,17 @@ class RemoteFriendRequest(models.Model):
 
 
 class RemoteFriend(models.Model):
-    author = models.ForeignKey(Author, related_name='remote_author', on_delete=models.CASCADE)
+    author = models.URLField(blank=True, null=True)  # id
+    host = models.URLField(blank=True, null=True)  # host
+    displayName = models.CharField(max_length=50, unique=True, blank=True, null=True)  # display name
+    url = models.URLField(blank=True, null=True)
     friend = models.URLField(blank=True, null=True)
     server = models.ForeignKey(Server, related_name='remote_server', on_delete=models.CASCADE, null=True)
+
+
+class PendingRemoteFriend(models.Model):
+    author = models.URLField(blank=True, null=True)  # id
+    host = models.URLField(blank=True, null=True)  # host
+    displayName = models.CharField(max_length=50, unique=True, blank=True, null=True)  # display name
+    url = models.URLField(blank=True, null=True)
+    friend = models.URLField(blank=True, null=True)
