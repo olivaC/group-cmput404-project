@@ -25,7 +25,6 @@ def unquote_redirect_url(url):
     return url
 
 
-
 def api_check(user):
     if 'frandzone' in user.username or 'testApi' in user.username:
         return False
@@ -64,7 +63,6 @@ def get_image_from_base64(base64String):
     return base64.b64decode(base64String)
 
 
-
 def create_author(author):
     i = Author()
     if not author.get('displayName'):
@@ -97,7 +95,8 @@ def create_posts(posts):
         post.title = i.get('title')
         post.remote = 'remote'
         post.content = i.get('content')
-        post.content = post.get_content()
+        if post.contentType not in ['image/png;base64', 'image/jpeg;base64']:
+            post.content = post.get_content()
         post_list.append(post)
 
     return post_list
@@ -116,7 +115,8 @@ def create_post(i):
     post.title = i.get('title')
     post.remote = 'remote'
     post.content = i.get('content')
-    post.content = post.get_content()
+    if post.contentType not in ['image/png;base64', 'image/jpeg;base64']:
+        post.content = post.get_content()
 
     return post
 
