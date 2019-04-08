@@ -1,6 +1,3 @@
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -50,6 +47,10 @@ class AuthorListView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
+        """
+        /author
+        Gets a list of all local authors
+        """
         authors = addAuthor2()
 
         response = dict()

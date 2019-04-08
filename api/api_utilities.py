@@ -93,6 +93,12 @@ def addAuthor2():
 
 
 def addFriends(author):
+    """
+    Helper function to add all friends.
+
+    :param author:
+    :return:
+    """
     friends = author.friends.all()
     remote_friends = RemoteFriend.objects.all().filter(author=author)
     friend_list = list()
@@ -104,7 +110,6 @@ def addFriends(author):
 
     if remote_friends:
         for remote in remote_friends:
-
             friend_dict = {'id': remote.url, 'host': remote.host,
                            'displayName': remote.displayName, 'url': remote.url}
             friend_list.append(friend_dict)
@@ -115,6 +120,12 @@ def addFriends(author):
 
 
 def check_remote_friends(author):
+    """
+    Helper to check remote friends.
+
+    :param author:
+    :return:
+    """
     auth_id = author.id
     auth_url = author.url
 
@@ -158,6 +169,12 @@ def check_remote_friends(author):
 
 
 def postList(posts):
+    """
+    Helper to create a list of posts.
+
+    :param posts:
+    :return:
+    """
     post_list = list()
     for post in posts:
         visible_to = list()
@@ -200,37 +217,51 @@ def remoteCommentList(post):
 
 
 def remotePostList(host, posts, public):
+    """
+    Helper to create a remote post list.
+
+    :param host:
+    :param posts:
+    :param public:
+    :return:
+    """
     post_list = list()
     posts = posts.get('posts')
     for post in posts:
-        if not any(post['id'] == 'red' for post in public):
-            author = remoteAddAuthor(post.get('author'))
-            title = post.get('title')
-            description = post.get('description')
-            contentType = post.get('contentType')
-            content = post.get('content')
-            published = utc.localize(datetime.strptime(post.get('published'), '%Y-%m-%dT%H:%M:%S.%fZ'))
-            visibility = post.get('visibility')
-            unlisted = post.get('unlisted')
-            id = post.get('id')
-            origin = post.get('source')
-            comments = remoteCommentList(post)
-            count = post.get('count')
-            next = "{}/api/posts/{}/comments".format(DOMAIN, id)
-            if host.endswith("/"):
-                host = host[:-1]
-            source = "{}/posts/{}".format(host, post.get('id'))
+        author = remoteAddAuthor(post.get('author'))
+        title = post.get('title')
+        description = post.get('description')
+        contentType = post.get('contentType')
+        content = post.get('content')
+        published = utc.localize(datetime.strptime(post.get('published'), '%Y-%m-%dT%H:%M:%S.%fZ'))
+        visibility = post.get('visibility')
+        unlisted = post.get('unlisted')
+        id = post.get('id')
+        origin = post.get('source')
+        comments = remoteCommentList(post)
+        count = post.get('count')
+        next = "{}/api/posts/{}/comments".format(DOMAIN, id)
+        if host.endswith("/"):
+            host = host[:-1]
+        source = "{}/posts/{}".format(host, post.get('id'))
 
-            post_dict = {'author': author, 'title': title, 'description': description,
-                         'contentType': contentType, 'content': content, 'published': published,
-                         'visibility': visibility, 'unlisted': unlisted, 'id': id,
-                         'comments': comments, 'origin': origin,
-                         'source': source, 'count': count, 'next': next}
-            post_list.append(post_dict)
+        post_dict = {'author': author, 'title': title, 'description': description,
+                     'contentType': contentType, 'content': content, 'published': published,
+                     'visibility': visibility, 'unlisted': unlisted, 'id': id,
+                     'comments': comments, 'origin': origin,
+                     'source': source, 'count': count, 'next': next}
+        post_list.append(post_dict)
     return post_list
 
 
 def remotePostCreate(host, post):
+    """
+    Helper to create a remote post.
+
+    :param host:
+    :param post:
+    :return:
+    """
     post = post.get('posts')[0]
     author = remoteAddAuthor(post.get('author'))
     title = post.get('title')
@@ -255,6 +286,12 @@ def remotePostCreate(host, post):
 
 
 def postCreate(post):
+    """
+    Helper to create a post.
+
+    :param post:
+    :return:
+    """
     post_list = list()
     comments = commentList(post)
     comment_url = "{}/api/posts/{}/comments".format(DOMAIN, post.id)
@@ -277,6 +314,12 @@ def postCreate(post):
 
 
 def commentList(post):
+    """
+    Helper to get all comments.
+
+    :param post:
+    :return:
+    """
     comments = Comment.objects.all().filter(post=post).order_by('-published')
     remote_comments = RemoteComment.objects.all().filter(post=post).order_by('published')
     comment_list = list()
@@ -312,6 +355,12 @@ def commentList(post):
 
 
 def getRemotePost(post_id):
+    """
+    Helper to get a remote post.
+
+    :param post_id:
+    :return:
+    """
     servers = Server.objects.all()
     for server in servers:
         if server.username and server.password:
@@ -332,6 +381,12 @@ def getRemotePost(post_id):
 
 
 def getRemoteComments(post_id):
+    """
+    Helper to get remote comments.
+
+    :param post_id:
+    :return:
+    """
     servers = Server.objects.all()
     for server in servers:
         if server.username and server.password:
@@ -353,6 +408,12 @@ def getRemoteComments(post_id):
 
 
 def getRemoteAuthor(author_id):
+    """
+    Helper to get a remote author.
+
+    :param author_id:
+    :return:
+    """
     servers = Server.objects.all()
     for server in servers:
         if server.username and server.password:
@@ -373,6 +434,13 @@ def getRemoteAuthor(author_id):
 
 
 def createRemoteAuthor2(author, author_id):
+    """
+    Helper to create a remote author
+
+    :param author:
+    :param author_id:
+    :return:
+    """
     author_dict = dict()
     author_dict['id'] = "{}/api/author/{}".format(DOMAIN, author_id)
     author_dict['host'] = author.get('host')
@@ -397,10 +465,22 @@ def createRemoteAuthor2(author, author_id):
 
 # https://stackoverflow.com/questions/715417/converting-from-a-string-to-boolean-in-python
 def str2bool(v):
+    """
+    Helper to convert a string to a boolean.
+
+    :param v:
+    :return:
+    """
     return v.lower() in ("yes", "true", "t", "1")
 
 
 def get_public_posts(server_posts):
+    """
+    Helper to get all public posts
+    
+    :param server_posts:
+    :return:
+    """
     public_list = server_posts
     servers = Server.objects.all()
 
@@ -412,7 +492,7 @@ def get_public_posts(server_posts):
             server_api = "{}posts".format(host)
             try:
                 s = requests.Session()
-
+                # https://stackoverflow.com/questions/15431044/can-i-set-max-retries-for-requests-request
                 retries = Retry(total=5,
                                 backoff_factor=0.1,
                                 status_forcelist=[500, 502, 503, 504])

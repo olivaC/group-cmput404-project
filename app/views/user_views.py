@@ -1,16 +1,10 @@
 import json
-
 import requests
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.urls import reverse
 from urllib.parse import urlparse
-from datetime import datetime
-from pytz import utc
-
-from api.api_utilities import remoteAddAuthor
 from app.models import *
 from django.db.models.functions import Lower
 
@@ -20,6 +14,12 @@ from app.utilities import api_check, create_author
 @login_required
 @user_passes_test(api_check)
 def all_author_view(request):
+    """
+    View to show all local authors.
+
+    :param request:
+    :return:
+    """
     user = request.user
     current_author = request.user.user
     authors = Author.objects.all().order_by(Lower('username')).exclude(id=current_author.id)
@@ -40,13 +40,20 @@ def all_author_view(request):
 @login_required
 @user_passes_test(api_check)
 def follow_view(request, id):
+    """
+    View for author to follow another author.
+
+    :param request:
+    :param id:
+    :return:
+    """
     current_author = request.user.user
     auth = Author.objects.filter(id=id).first()
     if auth:
         FollowRequest.objects.create(
             author=current_author,
             friend=auth
-         )
+        )
 
     auth_follow = FollowRequest.objects.all().filter(friend=current_author).filter(author=auth)
     if auth_follow:
@@ -64,6 +71,13 @@ def follow_view(request, id):
 @login_required
 @user_passes_test(api_check)
 def unfollow_view(request, id):
+    """
+    View to allow an author to unfollow another author.
+
+    :param request:
+    :param id:
+    :return:
+    """
     current_author = request.user.user
     auth = Author.objects.filter(id=id).first()
     unfollow = FollowRequest.objects.all().filter(author=current_author).filter(friend=auth)
@@ -77,6 +91,13 @@ def unfollow_view(request, id):
 @login_required
 @user_passes_test(api_check)
 def unfollow_mutual_view(request, id):
+    """
+    View to unfollow a mutual friend.
+
+    :param request:
+    :param id:
+    :return:
+    """
     current_author = request.user.user
     auth = Author.objects.filter(id=id).first()
     # unfollow = FollowRequest.objects.all().filter(author=current_author).filter(friend=auth)
@@ -90,6 +111,13 @@ def unfollow_mutual_view(request, id):
 @login_required
 @user_passes_test(api_check)
 def unfriend_remote_mutual_view(request, uuid):
+    """
+    View to unfriend a remote mutual friend.
+
+    :param request:
+    :param uuid:
+    :return:
+    """
     host = request.GET.get('host', '')
     server = Server.objects.get(hostname=host)
 
@@ -110,6 +138,12 @@ def unfriend_remote_mutual_view(request, uuid):
 @login_required
 @user_passes_test(api_check)
 def new_followers_view(request):
+    """
+    View to show new followers.
+
+    :param request:
+    :return:
+    """
     current_author = request.user.user
     followers_new = FollowRequest.objects.all().filter(friend=current_author).filter(acknowledged=False)
 
@@ -125,6 +159,12 @@ def new_followers_view(request):
 @login_required
 @user_passes_test(api_check)
 def all_followers_view(request):
+    """
+    View to see all followers.
+
+    :param request:
+    :return:
+    """
     current_author = request.user.user
     followers = FollowRequest.objects.all().filter(friend=current_author)
     following = FollowRequest.objects.all().filter(author=current_author).values('friend')
@@ -139,6 +179,12 @@ def all_followers_view(request):
 @login_required
 @user_passes_test(api_check)
 def all_requests_view(request):
+    """
+    View to see all new friend requests.
+
+    :param request:
+    :return:
+    """
     current_author = request.user.user
     f_requests = FriendRequest.objects.all().filter(friend=current_author)
     r_requests = RemoteFriendRequest.objects.all().filter(friend=current_author)
@@ -173,6 +219,12 @@ def all_requests_view(request):
 
 @login_required
 def mutual_friends_view(request):
+    """
+    View to see mutual friends.
+
+    :param request:
+    :return:
+    """
     all_friends = list()
     friends = request.user.user.friends.all()
     posts = Post.objects.all().filter(author__id__in=friends).filter(visibility="FRIENDS") | Post.objects.all().filter(
@@ -204,6 +256,12 @@ def mutual_friends_view(request):
 
 
 def profile_remote_view(request):
+    """
+    View a remote profile on the front end app.
+
+    :param request:
+    :return:
+    """
     url = request.GET.get('host', '')
     url_parse = urlparse(url)
     req = "{}://{}".format(url_parse.scheme, url_parse.netloc)
@@ -243,6 +301,13 @@ def profile_remote_view(request):
 
 
 def send_friend_request(request, id):
+    """
+    Send friend request to local author on front end app.
+
+    :param request:
+    :param id:
+    :return:
+    """
     current_author = request.user.user
     auth = Author.objects.filter(id=id).first()
 
@@ -256,6 +321,13 @@ def send_friend_request(request, id):
 
 
 def cancel_friend_request(request, id):
+    """
+    Cancel a friend request.
+
+    :param request:
+    :param id:
+    :return:
+    """
     current_author = request.user.user
     auth = Author.objects.filter(id=id).first()
     f_request = FriendRequest.objects.filter(friend=current_author, author=auth).first()
@@ -264,6 +336,13 @@ def cancel_friend_request(request, id):
 
 
 def accept_friend_request(request, id):
+    """
+    Accept a friend request.
+
+    :param request:
+    :param id:
+    :return:
+    """
     current_author = request.user.user
     auth = Author.objects.filter(id=id).first()
     f_request = FriendRequest.objects.filter(friend=current_author, author=auth).first()
@@ -276,6 +355,12 @@ def accept_friend_request(request, id):
 
 
 def accept_remote_friend_request(request):
+    """
+    Accept a remote friend request.
+
+    :param request:
+    :return:
+    """
     url = request.GET.get('id', '')
     url_parse = urlparse(url)
     req = "{}://{}".format(url_parse.scheme, url_parse.netloc)
@@ -293,6 +378,12 @@ def accept_remote_friend_request(request):
 
 
 def cancel_remote_friend_request(request):
+    """
+    Cancel a remote friend request.
+
+    :param request:
+    :return:
+    """
     url = request.GET.get('id', '')
     url_parse = urlparse(url)
     req = "{}://{}".format(url_parse.scheme, url_parse.netloc)
@@ -308,6 +399,13 @@ def cancel_remote_friend_request(request):
 
 
 def send_remote_friend_request(request, uuid):
+    """
+    Send a remote friend request.
+
+    :param request:
+    :param uuid:
+    :return:
+    """
     host = request.GET.get('host', '')
     server = Server.objects.get(hostname=host)
 

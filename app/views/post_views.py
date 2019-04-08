@@ -5,24 +5,24 @@ from django.forms import model_to_dict
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
-from django.core import serializers
-from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
-from SocialDistribution import settings
 from app.forms.post_forms import PostCreateForm, CommentCreateForm
 from app.models import *
-from app.utilities import *
 
 from app.serializers import PostSerializer
 from app.utilities import *
 import json
 from datetime import datetime
 
-from pytz import utc
-
 
 @login_required
 @user_passes_test(api_check)
 def my_posts_view(request):
+    """
+    Frontend application to get all posts by current author.
+
+    :param request:
+    :return:
+    """
     user = request.user
     request.context['user'] = user
 
@@ -53,6 +53,13 @@ def my_posts_view(request):
 @login_required
 @user_passes_test(api_check)
 def delete_post(request, id=None):
+    """
+    Endpoint to delete a post using the frontend application.
+
+    :param request:
+    :param id:
+    :return:
+    """
     post = get_object_or_404(Post, id=id)
 
     try:
@@ -74,6 +81,13 @@ def delete_post(request, id=None):
 @login_required
 @user_passes_test(api_check)
 def edit_post(request, id=None):
+    """
+    View for editing a post.
+
+    :param request:
+    :param id:
+    :return:
+    """
     post = get_object_or_404(Post, id=id)
     if request.method == 'POST':
         next = request.POST.get("next", reverse("app:my_posts"))
@@ -106,6 +120,12 @@ def edit_post(request, id=None):
 @login_required
 @user_passes_test(api_check)
 def create_post_view(request):
+    """
+    View to create a new post.
+
+    :param request:
+    :return:
+    """
     user = request.user
     request.context['user'] = user
 
@@ -180,6 +200,12 @@ def create_image_view(request):
 @login_required
 @user_passes_test(api_check)
 def public_post_view(request):
+    """
+    View to show all public posts available.
+
+    :param request:
+    :return:
+    """
     local_posts = Post.objects.all().filter(visibility="PUBLIC").order_by('-published')
 
     servers = Server.objects.all()
@@ -209,6 +235,13 @@ def public_post_view(request):
 @login_required
 @user_passes_test(api_check)
 def create_comment_view(request, id=None):
+    """
+    View to show a post detail and to add comments.
+
+    :param request:
+    :param id:
+    :return:
+    """
     post = get_object_or_404(Post, id=id)
     comments = Comment.objects.all().filter(post=post)
     remote_comments = RemoteComment.objects.all().filter(post=post)
@@ -267,6 +300,13 @@ def create_comment_view(request, id=None):
 @login_required
 @user_passes_test(api_check)
 def remote_post_view(request, post):
+    """
+    Show a remote post detail and send remote comments.
+
+    :param request:
+    :param post:
+    :return:
+    """
     host = request.GET.get('host', '')
     print(host)
     server = Server.objects.get(hostname=host)
@@ -351,6 +391,12 @@ def remote_post_view(request, post):
 @login_required
 @user_passes_test(api_check)
 def foaf_posts_view(request):
+    """
+    View to show all FOAF posts. Locally.
+
+    :param request:
+    :return:
+    """
     user = request.user
     request.context['user'] = user
 
@@ -375,6 +421,12 @@ def foaf_posts_view(request):
 @login_required
 @user_passes_test(api_check)
 def mutual_friends_posts_view(request):
+    """
+    Show all mutual friends view.
+
+    :param request:
+    :return:
+    """
     user = request.user
     request.context['user'] = user
 
@@ -395,7 +447,7 @@ def mutual_friends_posts_view(request):
                 raw_id = remote.url.split("/")[-1]
                 if remote.server.hostname.endswith("/"):
                     url = "{}author/{}/posts".format(remote.server.hostname, raw_id)
-                    #url = "{}author-mutual/posts".format(remote.server.hostname, )
+                    # url = "{}author-mutual/posts".format(remote.server.hostname, )
                 else:
                     url = "{}/author/posts".format(remote.server.hostname, raw_id)
                     # url = "{}/author-mutual/posts".format(remote.server.hostname)
@@ -420,22 +472,13 @@ def mutual_friends_posts_view(request):
 @login_required
 @user_passes_test(api_check)
 def private_friends_posts_view(request):
-    private_posts = Post.objects.all().filter(visibleTo=request.user.user).order_by('-published')
+    """
+    Only show private friends posts that author lets see.
 
-    # for server in servers:
-    #     host = server.hostname
-    #     if not server.hostname.endswith("/"):
-    #         host = server.hostname + "/"
-    #     server_api = "{}posts".format(host)
-    #     try:
-    #         if server.username and server.password:
-    #             r = requests.get(server_api, auth=(server.username, server.password))
-    #             p = create_posts(r.json())
-    #             public_posts.extend(p)
-    #     except:
-    #         print("error")
-    #
-    # posts = public_posts + list(local_posts)
+    :param request:
+    :return:
+    """
+    private_posts = Post.objects.all().filter(visibleTo=request.user.user).order_by('-published')
     posts = list(private_posts)
     posts.sort(key=lambda post: post.published, reverse=True)
 
@@ -445,6 +488,13 @@ def private_friends_posts_view(request):
 
 
 def unlisted_post_view(request, id=None):
+    """
+    Gets an unlisted post. Not used.
+
+    :param request:
+    :param id:
+    :return:
+    """
     post = get_object_or_404(Post, id=id)
 
     if post.unlisted:
