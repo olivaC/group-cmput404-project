@@ -227,11 +227,16 @@ class AuthorPostView(APIView):
 
     def get(self, request, id):
         author = get_object_or_404(Author, id=id)
+        remote_id = request.META.get('HTTP_X_AUTHOR_ID')
         try:
             server = Server.objects.get(user=request.user)
             if server:
+                remote = RemoteFriend.objects.all().filter(author=author).filter(friend__icontains=remote_id)
+                if remote:
+                    posts = Post.objects.all().filter(author=author).filter(visibility="PUBLIC") | Post.objects.all().filter(author=author).filter(visibility="FRIENDS")
+                else:
+                    posts = Post.objects.all().filter(author=author).filter(visibility="PUBLIC")
                 response = dict()
-                posts = Post.objects.all().filter(author=author).filter(visibility="PUBLIC")
                 post_list = postList(posts)
                 response['posts'] = post_list
                 response['count'] = len(post_list)
