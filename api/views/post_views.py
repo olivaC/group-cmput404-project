@@ -7,7 +7,7 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.settings import api_settings
 
 from api.api_utilities import postList, postCreate, str2bool, get_public_posts, getRemotePost
-from app.models import Post, Author, Server
+from app.models import Post, Author, Server, RemoteFriend
 
 import datetime
 
