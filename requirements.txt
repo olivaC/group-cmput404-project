@@ -15,7 +15,7 @@ django-heroku==0.3.1
 django-markdown==0.8.4
 django-rest-auth==0.9.3
 django-rest-swagger==2.2.0
-djangorestframework==3.9.1
+djangorestframework==3.11.2
 factory-boy==2.11.1
 Faker==1.0.2
 gunicorn==19.9.0
